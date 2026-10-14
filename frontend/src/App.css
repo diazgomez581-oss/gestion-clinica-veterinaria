@@ -1,0 +1,1116 @@
+/* ==========================================================================
+   ESTILOS GENERALES: BLANCO, AZUL MARINO Y AQUA (CLÍNICA VETERINARIA)
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #f8fafc; /* Fondo blanco humo suave */
+  color: #1e293b;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow-x: hidden;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   NAVBAR SUPERIOR FIJO (AZUL MARINO Y AQUA)
+   -------------------------------------------------------------------------- */
+.top-navbar-clean {
+  height: 60px;
+  background-color: #0f2942; /* Azul marino clínico */
+  border-bottom: 2px solid #06b6d4; /* Línea de acento Aqua */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+}
+
+.nav-left-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-hamburguer-clean {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.2s ease;
+}
+
+.btn-hamburguer-clean:hover {
+  background: #06b6d4;
+  color: #0f2942;
+}
+
+.brand-clean-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-title-clean {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.brand-univ-tag {
+  font-size: 0.72rem;
+  color: #38bdf8; /* Aqua suave */
+  font-weight: 600;
+}
+
+.nav-center-group {
+  flex: 1;
+  max-width: 480px;
+  margin: 0 24px;
+}
+
+.search-bar-clean {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 24px;
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-icon-clean {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.search-field-clean {
+  background: transparent;
+  border: none;
+  color: #1e293b;
+  font-size: 0.84rem;
+  outline: none;
+  width: 100%;
+}
+
+.nav-right-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.tag-faculty {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.user-menu-relative {
+  position: relative;
+}
+
+.btn-user-avatar-clean {
+  background: #ffffff;
+  border: 2px solid #06b6d4;
+  color: #0f2942;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+/* Dropdown Usuario */
+.dropdown-box-clean {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  width: 210px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 8px 0;
+  z-index: 200;
+}
+
+.dropdown-user-info {
+  padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name-text {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f2942;
+}
+
+.user-role-text {
+  font-size: 0.74rem;
+  color: #64748b;
+}
+
+.dropdown-divider-clean {
+  border: none;
+  border-top: 1px solid #f1f5f9;
+  margin: 6px 0;
+}
+
+.dropdown-btn-clean {
+  width: 100%;
+  padding: 9px 16px;
+  background: transparent;
+  border: none;
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dropdown-btn-clean:hover {
+  background: #f0fdfa;
+  color: #0891b2;
+}
+
+.dropdown-btn-clean.btn-logout-clean {
+  color: #ef4444;
+}
+
+.dropdown-btn-clean.btn-logout-clean:hover {
+  background: #fef2f2;
+}
+
+/* --------------------------------------------------------------------------
+   CUERPO PRINCIPAL
+   -------------------------------------------------------------------------- */
+.app-body {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 60px);
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar-clean {
+  width: 250px;
+  background-color: #0f2942;
+  border-right: 1px solid #1e3a5f;
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  transition: width 0.25s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-clean.collapsed {
+  width: 68px;
+  padding: 16px 8px;
+}
+
+.nav-section-clean {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.section-header-clean {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #38bdf8;
+  cursor: pointer;
+}
+
+.chevron-icon {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.section-links-clean {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-link-clean {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  background: transparent;
+  border: none;
+  color: #cbd5e1;
+  font-size: 0.84rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.sidebar-clean.collapsed .sidebar-link-clean {
+  justify-content: center;
+  padding: 10px;
+}
+
+.link-icon {
+  font-size: 1rem;
+  min-width: 20px;
+}
+
+.link-text {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.sidebar-link-clean:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.sidebar-link-clean.active {
+  background: rgba(6, 182, 212, 0.18);
+  color: #38bdf8;
+  border-left: 3px solid #06b6d4;
+  font-weight: 700;
+}
+
+.badge-aqua-clean {
+  background: #06b6d4;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.badge-amber-clean {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+/* Área de Contenido */
+.content-viewport {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #f8fafc;
+}
+
+/* --------------------------------------------------------------------------
+   DASHBOARD BLANCO Y AQUA
+   -------------------------------------------------------------------------- */
+.dash-white-layout {
+  padding: 24px 32px;
+}
+
+.dash-header-clean {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.dash-title-clean {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #0f2942;
+  margin: 0;
+}
+
+.dash-date-clean {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-top: 3px;
+}
+
+.btn-new-appointment {
+  background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+  color: #ffffff;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 3px 8px rgba(6, 182, 212, 0.3);
+}
+
+/* KPIs Blancos */
+.dash-kpi-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.kpi-card-white {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.kpi-title-text {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.kpi-number-text {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f2942;
+  margin: 3px 0;
+}
+
+.kpi-number-text.text-aqua { color: #0891b2; }
+.kpi-number-text.text-pink { color: #be185d; }
+
+.kpi-sub-text {
+  font-size: 0.74rem;
+  color: #94a3b8;
+}
+
+.kpi-avatar-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.circle-aqua { background: #e0f2fe; color: #0284c7; }
+.circle-amber { background: #fef3c7; color: #b45309; }
+.circle-blue { background: #e0f7fa; color: #00838f; }
+.circle-pink { background: #fce7f3; color: #be185d; }
+
+/* Grid de Paneles Blancos */
+.dash-grid-two {
+  display: grid;
+  grid-template-columns: 1.6fr 1.1fr;
+  gap: 20px;
+}
+
+.clean-panel-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.clean-panel-header {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.panel-title-flex {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-heading {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f2942;
+  margin: 0;
+}
+
+.panel-tag-aqua {
+  font-size: 0.68rem;
+  background: #f1f5f9;
+  color: #0891b2;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.btn-outline-action {
+  background: #ffffff;
+  border: 1px solid #06b6d4;
+  color: #0891b2;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.panel-clock-text {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.panel-search-padding {
+  padding: 14px 20px;
+}
+
+.table-search-input {
+  width: 100%;
+  padding: 9px 14px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+  font-size: 0.84rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+/* Tabla Blanca */
+.clean-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.clean-table th {
+  background: #f8fafc;
+  padding: 10px 18px;
+  color: #64748b;
+  font-weight: 600;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.clean-table td {
+  padding: 12px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.pill-hour-aqua {
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.pet-cell-flex {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pet-icon-bubble {
+  background: #f1f5f9;
+  padding: 6px;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.pet-name-title {
+  color: #0f172a;
+}
+
+.owner-subtitle {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.vet-cell-pill {
+  background: #f0fdfa;
+  color: #0f766e;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.motive-cell-text {
+  color: #334155;
+}
+
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.status-badge.gray { background: #f1f5f9; color: #64748b; }
+.status-badge.yellow { background: #fef3c7; color: #92400e; }
+.status-badge.aqua { background: #ecfdf5; color: #047857; }
+
+.btn-file-blue {
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-checkin-orange {
+  background: #d97706;
+  color: #ffffff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Cola de Espera */
+.queue-list-padding {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.queue-card-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px;
+  background: #ffffff;
+}
+
+.queue-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.queue-title-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #0f2942;
+}
+
+.queue-number-bubble {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #e0f2fe;
+  color: #0369a1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.wait-badge-warn { font-size: 0.74rem; color: #b45309; font-weight: 700; }
+.wait-badge-normal { font-size: 0.74rem; color: #64748b; }
+.queue-owner-desc { font-size: 0.8rem; color: #475569; margin-bottom: 4px; }
+.queue-vet-name { font-size: 0.76rem; color: #0891b2; font-weight: 600; margin-bottom: 10px; }
+
+.queue-btn-group {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-call-patient {
+  flex: 1;
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-patient-file {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Actividad Reciente */
+.activity-padding {
+  padding: 0 20px 14px 20px;
+}
+
+.activity-item-line {
+  display: flex;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.activity-item-line.border-none {
+  border-bottom: none;
+}
+
+.timeline-dot-clean {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.dot-aqua { background: #06b6d4; }
+.dot-blue { background: #0284c7; }
+.dot-amber { background: #f59e0b; }
+
+.activity-headline { font-size: 0.84rem; color: #0f172a; }
+.activity-desc { font-size: 0.78rem; color: #64748b; margin-top: 2px; }
+.activity-timestamp { font-size: 0.72rem; color: #94a3b8; margin-top: 2px; }
+
+/* Contenedor del Logo y Título */
+.brand-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* Logo más grande, nítido y con marco de realce */
+/* Logo sin fondo ni borde blanco, con tamaño destacado */
+.navbar-logo-img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  display: block;
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  filter: drop-shadow(0 2px 6px rgba(6, 182, 212, 0.4)); /* Realce sutil con el brillo aqua */
+}
+/* Ajuste proporcional del texto institucional */
+.brand-title-clean {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.brand-univ-tag {
+  font-size: 0.76rem;
+  color: #38bdf8; /* Aqua suave */
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   VISTA DEDICADA: PROGRAMAR CITA (CIT-01)
+   ========================================================================== */
+.cita-page-container {
+  padding: 24px 32px;
+  background-color: #f8fafc;
+  min-height: 100%;
+}
+
+.cita-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.cita-breadcrumb {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.breadcrumb-link {
+  color: #0891b2;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.cita-page-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #0f2942;
+  margin: 0;
+}
+
+.cita-page-sub {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-top: 3px;
+}
+
+.btn-volver-dash {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-volver-dash:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+/* Alertas */
+.alert-banner-success {
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+.alert-banner-danger {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* Disposición en 2 columnas */
+.cita-form-layout {
+  display: grid;
+  grid-template-columns: 2.2fr 1fr;
+  gap: 24px;
+}
+
+.cita-form-main {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cita-card-section {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.section-title-aqua {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0891b2;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+}
+
+.fields-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.input-group-vet {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.input-group-vet label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.input-group-vet input,
+.input-group-vet select,
+.input-group-vet textarea {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  font-size: 0.85rem;
+  color: #1e293b;
+  outline: none;
+  font-family: inherit;
+}
+
+.input-group-vet input:focus,
+.input-group-vet select:focus,
+.input-group-vet textarea:focus {
+  border-color: #06b6d4;
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.15);
+}
+
+/* Selector de Horas */
+.time-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.time-slot-btn {
+  padding: 8px 4px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.time-slot-btn small {
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.slot-available {
+  background: #ffffff;
+  color: #0f2942;
+  border-color: #cbd5e1;
+}
+
+.slot-available:hover {
+  background: #f0fdfa;
+  border-color: #06b6d4;
+  color: #0891b2;
+}
+
+.slot-selected {
+  background: #0891b2;
+  color: #ffffff;
+  border-color: #0891b2;
+  box-shadow: 0 2px 6px rgba(8, 145, 178, 0.3);
+}
+
+.slot-occupied {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Columna Lateral de Resumen */
+.summary-card-sticky {
+  position: sticky;
+  top: 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 22px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.summary-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.summary-card-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: #0f2942;
+}
+
+.summary-badge-status {
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+}
+
+.summary-item {
+  margin-bottom: 12px;
+}
+
+.summary-label {
+  font-size: 0.72rem;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 700;
+  display: block;
+}
+
+.summary-val {
+  font-size: 0.88rem;
+  color: #1e293b;
+  margin-top: 2px;
+}
+
+.text-aqua-bold {
+  color: #0891b2;
+  font-weight: 700;
+}
+
+.summary-divider {
+  border: none;
+  border-top: 1px solid #f1f5f9;
+  margin: 16px 0;
+}
+
+.summary-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-confirm-save {
+  background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+  color: #ffffff;
+  border: none;
+  padding: 11px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(6, 182, 212, 0.3);
+  transition: transform 0.15s ease;
+}
+
+.btn-confirm-save:hover {
+  transform: translateY(-1px);
+}
+
+.btn-cancel-flat {
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  color: #64748b;
+  padding: 9px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  cursor: pointer;
+}
+
+.btn-cancel-flat:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+/* ==========================================================================
+   BUSCADOR DE PROPIETARIOS Y AUTO-COMPLETADO (CIT-01)
+   ========================================================================== */
+.search-propietario-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.input-search-prop {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 2px solid #06b6d4; /* Resalte Aqua */
+  font-size: 0.88rem;
+  background-color: #ffffff;
+  color: #0f2942;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.dropdown-prop-results {
+  position: absolute;
+  top: 105%;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  max-height: 190px;
+  overflow-y: auto;
+  z-index: 50;
+}
+
+.prop-result-item {
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.15s ease;
+}
+
+.prop-result-item:hover {
+  background-color: #f0fdfa; /* Resalte Aqua suave */
+}
+
+.input-disabled-clean {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  cursor: not-allowed;
+  border-color: #e2e8f0 !important;
+} 
