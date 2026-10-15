@@ -3,13 +3,13 @@ import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import ProgramarCitaPage from './modulos/citas/ProgramarCitaPage';
+import CalendarioCitasPage from './modulos/citas/CalendarioCitasPage';
 import './App.css';
 
 export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [vistaActual, setVistaActual] = useState('dashboard'); // 'dashboard' | 'programar-cita'
+  const [vistaActual, setVistaActual] = useState('dashboard'); // 'dashboard' | 'programar-cita' | 'calendario'
 
-  // Estado compartido de citas
   const [citas, setCitas] = useState([
     { id: 1, hora: '08:00', fecha: new Date().toISOString().split('T')[0], mascota: 'Max', icono: '🐶', dueno: 'María Rodríguez', vet: 'Dr. Morales', veterinario: 'Dr. Morales', motivo: 'Consulta general', estado: 'Atendida', espera: null },
     { id: 2, hora: '09:00', fecha: new Date().toISOString().split('T')[0], mascota: 'Luna', icono: '🐱', dueno: 'Ana Martínez', vet: 'Dra. García', veterinario: 'Dra. García', motivo: 'Control rutina', estado: 'En espera', espera: '23 min esperando', alerta: true },
@@ -26,6 +26,8 @@ export default function App() {
   const handleNavegacion = (seccion) => {
     if (seccion === 'citas' || seccion === 'programar-cita') {
       setVistaActual('programar-cita');
+    } else if (seccion === 'calendario') {
+      setVistaActual('calendario');
     } else {
       setVistaActual(seccion);
     }
@@ -33,29 +35,31 @@ export default function App() {
 
   return (
     <div className="app-container">
-      {/* Barra superior con el logo institucional */}
       <Navbar 
         onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
         isSidebarCollapsed={sidebarCollapsed}
       />
 
       <div className="app-body">
-        {/* Barra lateral */}
         <Sidebar 
           collapsed={sidebarCollapsed}
           seccionActiva={vistaActual === 'programar-cita' ? 'citas' : vistaActual}
           onSelectSeccion={handleNavegacion}
           totalCitas={citas.length}
-          enEspera={citas.filter(c => c.estado === 'En espera').length}
+          enEspera={citas.filter(c => c.estado === 'En espera' || c.estado === 'En Sala de Espera').length}
         />
 
-        {/* Contenido principal dinámico */}
         <main className="content-viewport">
           {vistaActual === 'programar-cita' ? (
             <ProgramarCitaPage
               citasExistentes={citas}
               onCitaGuardada={handleAgregarCita}
               onVolver={() => setVistaActual('dashboard')}
+            />
+          ) : vistaActual === 'calendario' ? (
+            <CalendarioCitasPage
+              onVolver={() => setVistaActual('dashboard')}
+              onIrAProgramar={() => setVistaActual('programar-cita')}
             />
           ) : (
             <Dashboard 

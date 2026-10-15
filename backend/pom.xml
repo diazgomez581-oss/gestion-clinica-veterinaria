@@ -20,7 +20,7 @@
 
     <properties>
         <!-- Configurado con tu versión instalada: Java 25 -->
-        <java.version>25</java.version>
+        <java.version>21</java.version>
     </properties>
 
     <dependencies>

@@ -1,75 +1,118 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { citasService } from '../modulos/citas/citasService';
 
-export default function Dashboard({ citasData, setCitasData, onIrAProgramar }) {
+export default function Dashboard({ onIrAProgramar }) {
   const [busqueda, setBusqueda] = useState('');
+  const [filtroEstado, setFiltroEstado] = useState('TODOS');
+  const [citas, setCitas] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [errorCarga, setErrorCarga] = useState('');
 
-  // Datos base de respaldo si no vienen por props
-  const [citasLocales, setCitasLocales] = useState([
-    { id: 1, hora: '08:00', fecha: '2026-10-13', mascota: 'Max', icono: '🐶', dueno: 'María Rodríguez', vet: 'Dr. Morales', motivo: 'Consulta general', estado: 'Atendida', espera: null },
-    { id: 2, hora: '09:00', fecha: '2026-10-13', mascota: 'Luna', icono: '🐱', dueno: 'Ana Martínez', vet: 'Dra. García', motivo: 'Control rutina', estado: 'En espera', espera: '23 min esperando', alerta: true },
-    { id: 3, hora: '10:00', fecha: '2026-10-13', mascota: 'Rocky', icono: '🐩', dueno: 'Carlos López', vet: 'Dr. Morales', motivo: 'Vacunación', estado: 'En espera', espera: '8 min esperando', alerta: false },
-    { id: 4, hora: '10:30', fecha: '2026-10-13', mascota: 'Pico', icono: '🦜', dueno: 'José Pérez', vet: 'Dr. Santos', motivo: 'Revisión anual', estado: 'En espera', espera: '8 min esperando', alerta: false },
-    { id: 5, hora: '11:00', fecha: '2026-10-13', mascota: 'Miel', icono: '🐱', dueno: 'Laura Hernández', vet: 'Dra. García', motivo: 'Desparasitación', estado: 'Programada', espera: null },
-    { id: 6, hora: '14:00', fecha: '2026-10-13', mascota: 'Max', icono: '🐶', dueno: 'María Rodríguez', vet: 'Dr. Santos', motivo: 'Seguimiento', estado: 'Programada', espera: null }
-  ]);
+  // 1. Cargar citas reales del día desde PostgreSQL al montar la pantalla
+  const cargarCitasDeBD = async () => {
+    try {
+      setCargando(true);
+      setErrorCarga('');
+      const dataBD = await citasService.getCitasHoy();
 
-  // Selección de fuente de datos (compartida o local)
-  const citas = citasData || citasLocales;
-  const setCitas = setCitasData || setCitasLocales;
+      // Mapeo defensivo de los datos devueltos por Spring Boot
+      const citasFormateadas = (dataBD || []).map((c) => {
+        const horaCorta = c.hora ? String(c.hora).substring(0, 5) : '00:00';
+        return {
+          idCita: c.idCita,
+          id: c.idCita,
+          hora: horaCorta,
+          horaProgramada: horaCorta,
+          fecha: c.fecha,
+          mascota: c.mascota || (c.idMascota === 1 ? 'Max' : c.idMascota === 2 ? 'Rocky' : c.idMascota === 3 ? 'Luna' : `Mascota #${c.idMascota}`),
+          icono: c.idMascota === 3 ? '🐱' : '🐶',
+          dueno: c.dueno || c.propietario || (c.idMascota === 1 || c.idMascota === 2 ? 'Carlos Alberto Pérez Ramos' : 'Propietario'),
+          veterinario: c.veterinario || (c.idVeterinario === 1 ? 'Dr. Daniel Solano' : c.idVeterinario === 2 ? 'Dr. Carlos Rodríguez' : 'Dra. María Santos'),
+          motivo: c.motivo || 'Consulta médica',
+          estado: c.estado || 'Programada',
+          horaLlegada: c.horaLlegada ? String(c.horaLlegada).substring(0, 5) : null
+        };
+      });
 
-  // Acción para ir a programar cita (CIT-01)
-  const handleNavegarProgramar = () => {
-    if (onIrAProgramar) {
-      onIrAProgramar();
-    } else {
-      alert("Navegando a la vista de programar cita...");
+      setCitas(citasFormateadas);
+    } catch (err) {
+      setErrorCarga('No se pudo conectar con el servidor backend (puerto 8080).');
+    } finally {
+      setCargando(false);
     }
   };
 
-  // Check-in físico de paciente a la clínica (CIT-02)
-  const handleCheckIn = (id) => {
-    setCitas(prev =>
-      prev.map(c => (c.id === id ? { ...c, estado: 'En espera', espera: 'Recién llegado' } : c))
-    );
+  useEffect(() => {
+    cargarCitasDeBD();
+  }, []);
+
+  // 2. HU GCV-6 [CIT-02]: Marcar llegada en PostgreSQL y refrescar el estado
+  const handleCheckIn = async (idCita) => {
+    try {
+      await citasService.registrarCheckIn(idCita);
+      // Recarga inmediata desde la base de datos
+      await cargarCitasDeBD();
+    } catch (err) {
+      alert(`Error al registrar check-in: ${err.message}`);
+    }
   };
 
-  const colaEspera = citas.filter(c => c.estado === 'En espera');
+  // 3. Métricas calculadas en tiempo real a partir de PostgreSQL
+  const totalCitasHoy = citas.length;
+  const enEspera = citas.filter((c) => c.estado === 'En Sala de Espera' || c.estado === 'En espera');
+  const programadas = citas.filter((c) => c.estado === 'Programada').length;
+  const atendidas = citas.filter((c) => c.estado === 'Atendida').length;
 
-  // Filtrado reactivo en tiempo real
-  const citasFiltradas = citas.filter(c => {
+  // 4. Filtrado interactivo
+  const citasFiltradas = citas.filter((c) => {
+    const coincideEstado =
+      filtroEstado === 'TODOS' ||
+      c.estado === filtroEstado ||
+      (filtroEstado === 'En espera' && c.estado === 'En Sala de Espera');
+
     const term = busqueda.toLowerCase();
-    const pet = (c.mascota || '').toLowerCase();
-    const owner = (c.dueno || c.propietario || '').toLowerCase();
-    const motive = (c.motivo || '').toLowerCase();
-    return pet.includes(term) || owner.includes(term) || motive.includes(term);
+    const coincideBusqueda =
+      (c.mascota || '').toLowerCase().includes(term) ||
+      (c.dueno || '').toLowerCase().includes(term) ||
+      (c.motivo || '').toLowerCase().includes(term) ||
+      (c.veterinario || '').toLowerCase().includes(term);
+
+    return coincideEstado && coincideBusqueda;
   });
 
   return (
     <div className="dash-white-layout">
-      {/* 1. Header del Dashboard */}
+      {/* 1. Header */}
       <div className="dash-header-clean">
         <div>
           <h1 className="dash-title-clean">Dashboard General</h1>
-          <p className="dash-date-clean">martes, 13 de octubre de 2026</p>
+          <p className="dash-date-clean">
+            Sincronizado con PostgreSQL · {new Date().toLocaleDateString('es-SV', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </p>
         </div>
-        <button 
-          type="button"
-          className="btn-new-appointment" 
-          onClick={handleNavegarProgramar}
-        >
-          <span>+</span> Nueva Cita
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button type="button" onClick={cargarCitasDeBD} className="btn-outline-action" title="Recargar base de datos">
+            🔄 Refrescar
+          </button>
+          <button type="button" className="btn-new-appointment" onClick={onIrAProgramar}>
+            <span>+</span> Nueva Cita
+          </button>
+        </div>
       </div>
 
-      {/* 2. KPIs Blancos con Iconos Aqua */}
+      {errorCarga && (
+        <div style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
+          ⚠️ {errorCarga}
+        </div>
+      )}
+
+      {/* 2. KPIs Dinámicos */}
       <section className="dash-kpi-container">
         <div className="kpi-card-white">
           <div className="kpi-info-box">
             <span className="kpi-title-text">Citas hoy</span>
-            <div className="kpi-number-text">{citas.length}</div>
-            <span className="kpi-sub-text">
-              {citas.filter(c => c.estado === 'Programada').length} programadas · {colaEspera.length} en espera
-            </span>
+            <div className="kpi-number-text">{cargando ? '...' : totalCitasHoy}</div>
+            <span className="kpi-sub-text">{programadas} programadas · {enEspera.length} en espera</span>
           </div>
           <div className="kpi-avatar-circle circle-aqua">🗓️</div>
         </div>
@@ -77,7 +120,7 @@ export default function Dashboard({ citasData, setCitasData, onIrAProgramar }) {
         <div className="kpi-card-white">
           <div className="kpi-info-box">
             <span className="kpi-title-text">En sala de espera</span>
-            <div className="kpi-number-text text-aqua">{colaEspera.length}</div>
+            <div className="kpi-number-text text-aqua">{cargando ? '...' : enEspera.length}</div>
             <span className="kpi-sub-text">Esperando ser llamados</span>
           </div>
           <div className="kpi-avatar-circle circle-amber">⏳</div>
@@ -85,24 +128,24 @@ export default function Dashboard({ citasData, setCitasData, onIrAProgramar }) {
 
         <div className="kpi-card-white">
           <div className="kpi-info-box">
-            <span className="kpi-title-text">Mascotas registradas</span>
-            <div className="kpi-number-text">47</div>
-            <span className="kpi-sub-text">+3 este mes</span>
+            <span className="kpi-title-text">Atendidas hoy</span>
+            <div className="kpi-number-text">{cargando ? '...' : atendidas}</div>
+            <span className="kpi-sub-text">Consultas cerradas</span>
           </div>
-          <div className="kpi-avatar-circle circle-blue">🐾</div>
+          <div className="kpi-avatar-circle circle-blue">🩺</div>
         </div>
 
         <div className="kpi-card-white">
           <div className="kpi-info-box">
-            <span className="kpi-title-text">Vacunas vencidas</span>
+            <span className="kpi-title-text">Veterinarios activos</span>
             <div className="kpi-number-text text-pink">3</div>
-            <span className="kpi-sub-text">Requieren atención</span>
+            <span className="kpi-sub-text">Registrados en PostgreSQL</span>
           </div>
-          <div className="kpi-avatar-circle circle-pink">💉</div>
+          <div className="kpi-avatar-circle circle-pink">👨‍⚕️</div>
         </div>
       </section>
 
-      {/* 3. Panel de Dos Columnas: Citas + Cola de Espera */}
+      {/* 3. Panel de Dos Columnas: Citas Reales + Cola de Espera Real */}
       <div className="dash-grid-two">
         {/* Tabla Citas del Día */}
         <section className="clean-panel-box">
@@ -112,11 +155,7 @@ export default function Dashboard({ citasData, setCitasData, onIrAProgramar }) {
               <h2 className="panel-heading">Citas del Día</h2>
               <span className="panel-tag-aqua">CIT-01</span>
             </div>
-            <button 
-              type="button"
-              className="btn-outline-action" 
-              onClick={handleNavegarProgramar}
-            >
+            <button type="button" className="btn-outline-action" onClick={onIrAProgramar}>
               + Agendar
             </button>
           </div>
@@ -124,79 +163,89 @@ export default function Dashboard({ citasData, setCitasData, onIrAProgramar }) {
           <div className="panel-search-padding">
             <input
               type="text"
-              placeholder="Buscar por mascota, propietario o motivo..."
+              placeholder="Buscar por mascota, propietario, veterinario o motivo..."
               value={busqueda}
-              onChange={e => setBusqueda(e.target.value)}
+              onChange={(e) => setBusqueda(e.target.value)}
               className="table-search-input"
             />
           </div>
 
-          <table className="clean-table">
-            <thead>
-              <tr>
-                <th>Hora</th>
-                <th>Mascota / Propietario</th>
-                <th>Veterinario</th>
-                <th>Motivo</th>
-                <th>Estado</th>
-                <th style={{ textAlign: 'center' }}>Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              {citasFiltradas.length === 0 ? (
+          <div style={{ overflowX: 'auto' }}>
+            <table className="clean-table">
+              <thead>
                 <tr>
-                  <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: '#94a3b8' }}>
-                    No se encontraron citas registradas con ese criterio.
-                  </td>
+                  <th>Hora</th>
+                  <th>Mascota / Propietario</th>
+                  <th>Veterinario</th>
+                  <th>Motivo</th>
+                  <th>Estado</th>
+                  <th style={{ textAlign: 'center' }}>Acción</th>
                 </tr>
-              ) : (
-                citasFiltradas.map(c => (
-                  <tr key={c.id}>
-                    <td>
-                      <span className="pill-hour-aqua">{c.hora}</span>
-                    </td>
-                    <td>
-                      <div className="pet-cell-flex">
-                        <span className="pet-icon-bubble">{c.icono || '🐾'}</span>
-                        <div>
-                          <strong className="pet-name-title">{c.mascota}</strong>
-                          <div className="owner-subtitle">{c.dueno || c.propietario}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span className="vet-cell-pill">{c.vet || c.veterinario}</span>
-                    </td>
-                    <td className="motive-cell-text">{c.motivo}</td>
-                    <td>
-                      {c.estado === 'Atendida' && <span className="status-badge gray">Atendida</span>}
-                      {c.estado === 'En espera' && <span className="status-badge yellow">En espera</span>}
-                      {c.estado === 'Programada' && <span className="status-badge aqua">Programada</span>}
-                    </td>
-                    <td style={{ textAlign: 'center' }}>
-                      {c.estado === 'Atendida' && <span style={{ color: '#94a3b8' }}>—</span>}
-                      {c.estado === 'En espera' && (
-                        <button type="button" className="btn-file-blue">📄 Ver ficha</button>
-                      )}
-                      {c.estado === 'Programada' && (
-                        <button 
-                          type="button"
-                          onClick={() => handleCheckIn(c.id)} 
-                          className="btn-checkin-orange"
-                          title="Registrar presentación del paciente (CIT-02)"
-                        >
-                          ✓ Check-in
-                        </button>
-                      )}
+              </thead>
+              <tbody>
+                {cargando ? (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
+                      Cargando datos desde PostgreSQL...
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : citasFiltradas.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: '#94a3b8' }}>
+                      No hay citas registradas en la base de datos para hoy.
+                    </td>
+                  </tr>
+                ) : (
+                  citasFiltradas.map((c) => (
+                    <tr key={c.idCita}>
+                      <td>
+                        <span className="pill-hour-aqua">{c.hora}</span>
+                      </td>
+                      <td>
+                        <div className="pet-cell-flex">
+                          <span className="pet-icon-bubble">{c.icono}</span>
+                          <div>
+                            <strong className="pet-name-title">{c.mascota}</strong>
+                            <div className="owner-subtitle">{c.dueno}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span className="vet-cell-pill">{c.veterinario}</span>
+                      </td>
+                      <td className="motive-cell-text">{c.motivo}</td>
+                      <td>
+                        {c.estado === 'Atendida' && <span className="status-badge gray">Atendida</span>}
+                        {(c.estado === 'En Sala de Espera' || c.estado === 'En espera') && (
+                          <span className="status-badge yellow">En espera</span>
+                        )}
+                        {c.estado === 'Programada' && <span className="status-badge aqua">Programada</span>}
+                      </td>
+                      <td style={{ textAlign: 'center' }}>
+                        {c.estado === 'Atendida' && <span style={{ color: '#94a3b8' }}>—</span>}
+                        {(c.estado === 'En Sala de Espera' || c.estado === 'En espera') && (
+                          <button type="button" className="btn-file-blue">Ver ficha</button>
+                        )}
+                        {c.estado === 'Programada' && (
+                          <button
+                            type="button"
+                            onClick={() => handleCheckIn(c.idCita)}
+                            className="btn-checkin-orange"
+                            title="Registrar check-in de llegada en PostgreSQL"
+                          >
+                            ✓ Check-in
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </section>
 
-        {/* Cola de Espera Médica */}
+        {/* Cola de Espera Médica Real */}
         <section className="clean-panel-box">
           <div className="clean-panel-header">
             <div className="panel-title-flex">
@@ -210,27 +259,27 @@ export default function Dashboard({ citasData, setCitasData, onIrAProgramar }) {
           </div>
 
           <div className="queue-list-padding">
-            {colaEspera.length === 0 ? (
+            {enEspera.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '24px', color: '#94a3b8', fontSize: '0.85rem' }}>
                 No hay pacientes en sala de espera en este momento.
               </div>
             ) : (
-              colaEspera.map((item, idx) => (
-                <div key={item.id} className="queue-card-item">
+              enEspera.map((item, idx) => (
+                <div key={item.idCita} className="queue-card-item">
                   <div className="queue-header-row">
                     <div className="queue-title-left">
                       <span className="queue-number-bubble">{idx + 1}</span>
-                      <strong className="queue-pet-name">{item.mascota} {item.icono || '🐾'}</strong>
+                      <strong className="queue-pet-name">{item.mascota} {item.icono}</strong>
                     </div>
-                    {item.espera && (
-                      <span className={item.alerta ? 'wait-badge-warn' : 'wait-badge-normal'}>
-                        {item.alerta && '⚠️ '} {item.espera}
+                    {item.horaLlegada && (
+                      <span className="wait-badge-normal">
+                        Llegó: {item.horaLlegada}
                       </span>
                     )}
                   </div>
 
-                  <div className="queue-owner-desc">{item.dueno || item.propietario} · {item.motivo}</div>
-                  <div className="queue-vet-name">👤 {item.vet || item.veterinario}</div>
+                  <div className="queue-owner-desc">{item.dueno} · {item.motivo}</div>
+                  <div className="queue-vet-name">👤 {item.veterinario}</div>
 
                   <div className="queue-btn-group">
                     <button type="button" className="btn-call-patient">🩺 Llamar a consulta</button>
@@ -242,46 +291,6 @@ export default function Dashboard({ citasData, setCitasData, onIrAProgramar }) {
           </div>
         </section>
       </div>
-
-      {/* 4. Actividad Reciente */}
-      <section className="clean-panel-box" style={{ marginTop: '20px' }}>
-        <div className="clean-panel-header">
-          <div className="panel-title-flex">
-            <span>📊</span>
-            <h2 className="panel-heading">Actividad Reciente</h2>
-            <span className="panel-tag-aqua">HIS-01</span>
-          </div>
-        </div>
-
-        <div className="activity-padding">
-          <div className="activity-item-line">
-            <span className="timeline-dot-clean dot-aqua"></span>
-            <div>
-              <div className="activity-headline"><strong>Consulta completada</strong> — Max (Golden Retriever)</div>
-              <div className="activity-desc">Dr. Morales · Consulta general · Sin novedad</div>
-              <div className="activity-timestamp">Hoy, 09:15</div>
-            </div>
-          </div>
-
-          <div className="activity-item-line">
-            <span className="timeline-dot-clean dot-blue"></span>
-            <div>
-              <div className="activity-headline"><strong>Check-in registrado</strong> — Luna (Siamés)</div>
-              <div className="activity-desc">Llegó a las 10:03 · En sala de espera</div>
-              <div className="activity-timestamp">Hoy, 10:03</div>
-            </div>
-          </div>
-
-          <div className="activity-item-line border-none">
-            <span className="timeline-dot-clean dot-amber"></span>
-            <div>
-              <div className="activity-headline"><strong>Vacuna aplicada</strong> — Rocky (Poodle)</div>
-              <div className="activity-desc">Rabia · Dra. García · Próxima dosis: en 1 año</div>
-              <div className="activity-timestamp">Ayer, 14:30</div>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

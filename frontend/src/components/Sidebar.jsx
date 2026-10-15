@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function Sidebar({ seccionActiva = 'citas', onSelectSeccion, collapsed = false }) {
+export default function Sidebar({ seccionActiva = 'citas', onSelectSeccion, collapsed = false, totalCitas = 0, enEspera = 0 }) {
   const [openGroups, setOpenGroups] = useState({ pacientes: true, citas: true, clinica: true });
 
   const toggle = (key) => setOpenGroups(prev => ({ ...prev, [key]: !prev[key] }));
@@ -74,7 +74,15 @@ export default function Sidebar({ seccionActiva = 'citas', onSelectSeccion, coll
             >
               <span className="link-icon">🗓️</span>
               {!collapsed && <span className="link-text">Citas del Día</span>}
-              {!collapsed && <span className="badge-aqua-clean">6</span>}
+              {!collapsed && <span className="badge-aqua-clean">{totalCitas}</span>}
+            </button>
+            <button
+              onClick={() => onSelectSeccion('calendario')}
+              className={`sidebar-link-clean ${seccionActiva === 'calendario' ? 'active' : ''}`}
+              title="Calendario y Agenda"
+            >
+              <span className="link-icon">📅</span>
+              {!collapsed && <span className="link-text">Calendario y Agenda</span>}
             </button>
             <button
               onClick={() => onSelectSeccion('espera')}
@@ -83,7 +91,7 @@ export default function Sidebar({ seccionActiva = 'citas', onSelectSeccion, coll
             >
               <span className="link-icon">⏳</span>
               {!collapsed && <span className="link-text">Cola de Espera</span>}
-              {!collapsed && <span className="badge-amber-clean">3</span>}
+              {!collapsed && <span className="badge-amber-clean">{enEspera}</span>}
             </button>
           </div>
         )}
