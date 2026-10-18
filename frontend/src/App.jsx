@@ -4,11 +4,13 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import ProgramarCitaPage from './modulos/citas/ProgramarCitaPage';
 import CalendarioCitasPage from './modulos/citas/CalendarioCitasPage';
+import RegistroPropietarioPage from './modulos/propietarios/RegistroPropietarioPage';
 import './App.css';
 
 export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [vistaActual, setVistaActual] = useState('dashboard'); // 'dashboard' | 'programar-cita' | 'calendario'
+  // 'dashboard' | 'programar-cita' | 'calendario' | 'propietarios'
+  const [vistaActual, setVistaActual] = useState('dashboard');
 
   const [citas, setCitas] = useState([
     { id: 1, hora: '08:00', fecha: new Date().toISOString().split('T')[0], mascota: 'Max', icono: '🐶', dueno: 'María Rodríguez', vet: 'Dr. Morales', veterinario: 'Dr. Morales', motivo: 'Consulta general', estado: 'Atendida', espera: null },
@@ -28,6 +30,8 @@ export default function App() {
       setVistaActual('programar-cita');
     } else if (seccion === 'calendario') {
       setVistaActual('calendario');
+    } else if (seccion === 'propietarios') {
+      setVistaActual('propietarios');
     } else {
       setVistaActual(seccion);
     }
@@ -60,6 +64,13 @@ export default function App() {
             <CalendarioCitasPage
               onVolver={() => setVistaActual('dashboard')}
               onIrAProgramar={() => setVistaActual('programar-cita')}
+            />
+          ) : vistaActual === 'propietarios' ? (
+            <RegistroPropietarioPage
+              onVolver={() => setVistaActual('dashboard')}
+              onPropietarioGuardado={(nuevo) => {
+                console.log('Propietario registrado con éxito:', nuevo);
+              }}
             />
           ) : (
             <Dashboard 

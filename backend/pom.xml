@@ -24,6 +24,12 @@
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <!-- 1. Spring Web: Para crear los controladores REST y API de los módulos -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
