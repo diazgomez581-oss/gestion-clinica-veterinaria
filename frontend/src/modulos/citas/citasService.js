@@ -10,7 +10,7 @@ export const citasService = {
     return await res.json();
   },
 
-  // 2. Obtener TODAS las citas registradas en la base de datos (para el Calendario y Agenda General)
+  // 2. Obtener TODAS las citas registradas en la base de datos (para el Calendario)
   getTodasLasCitas: async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/citas`);
@@ -32,7 +32,7 @@ export const citasService = {
     return null;
   },
 
-  // 4. Obtener propietarios registrados
+  // 4. Obtener propietarios reales desde la base de datos
   getPropietarios: async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/propietarios`);
@@ -43,7 +43,7 @@ export const citasService = {
     return null;
   },
 
-  // 5. Obtener mascotas registradas
+  // 5. Obtener mascotas reales desde la base de datos
   getMascotas: async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/mascotas`);

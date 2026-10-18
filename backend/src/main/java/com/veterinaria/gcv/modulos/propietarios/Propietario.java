@@ -1,6 +1,8 @@
 package com.veterinaria.gcv.modulos.propietarios;
 
+import com.veterinaria.gcv.modulos.mascotas.Mascota;
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "propietarios")
@@ -29,11 +31,14 @@ public class Propietario {
     @Column(name = "direccion", nullable = false, columnDefinition = "TEXT")
     private String direccion;
 
+    // Relación vital para que React reciba el arreglo de pacientes del dueño
+    @OneToMany(mappedBy = "propietario", fetch = FetchType.EAGER)
+    private List<Mascota> mascotas;
+
     public Propietario() {
     }
 
-    public Propietario(Long idPropietario, String dui, String nombres, String apellidos, String telefono, String correo, String direccion) {
-        this.idPropietario = idPropietario;
+    public Propietario(String dui, String nombres, String apellidos, String telefono, String correo, String direccion) {
         this.dui = dui;
         this.nombres = nombres;
         this.apellidos = apellidos;
@@ -96,5 +101,13 @@ public class Propietario {
 
     public void setDireccion(String direccion) {
         this.direccion = direccion;
+    }
+
+    public List<Mascota> getMascotas() {
+        return mascotas;
+    }
+
+    public void setMascotas(List<Mascota> mascotas) {
+        this.mascotas = mascotas;
     }
 }

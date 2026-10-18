@@ -1,39 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { citasService } from './citasService';
 
-// Base de datos de propietarios y mascotas sincronizada con PostgreSQL
-const PROPIETARIOS_REGISTRADOS = [
-  {
-    id: 1,
-    nombre: 'Carlos Alberto Pérez Ramos',
-    dui: '05123456-7',
-    telefono: '7845-1234',
-    mascotas: [
-      { idMascota: 1, nombre: 'Max', especie: 'Canino', raza: 'Golden Retriever', exp: 'EXP-2026-001', icono: '🐶' },
-      { idMascota: 2, nombre: 'Rocky', especie: 'Canino', raza: 'Pastor Alemán', exp: 'EXP-2026-002', icono: '🐕' }
-    ]
-  },
-  {
-    id: 2,
-    nombre: 'Lucía Margarita Mendoza de Flores',
-    dui: '04876543-2',
-    telefono: '7123-4567',
-    mascotas: [
-      { idMascota: 3, nombre: 'Luna', especie: 'Felino', raza: 'Siamés', exp: 'EXP-2026-003', icono: '🐱' }
-    ]
-  },
-  {
-    id: 3,
-    nombre: 'Jonathan Josué Gómez Díaz',
-    dui: '06198234-1',
-    telefono: '7988-3321',
-    mascotas: [
-      { idMascota: 4, nombre: 'Milo', especie: 'Felino', raza: 'Común Europeo', exp: 'EXP-2026-004', icono: '🐱' }
-    ]
-  }
-];
-
-// Respaldo exacto de la tabla veterinarios de PostgreSQL
+// Datos de respaldo por si la BD tarda en responder
+const PROPIETARIOS_BASE = [];
 const VETERINARIOS_DEFAULT = [
   { idVeterinario: 1, nombre: 'Dr. Daniel Solano', consultorio: 'Consultorio 1' },
   { idVeterinario: 2, nombre: 'Dr. Carlos Rodríguez', consultorio: 'Consultorio 2' },
@@ -56,9 +25,11 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
 
   const hoyStr = obtenerFechaHoyLocal();
 
-  // Estados de carga y listas
-  const [listaPropietarios, setListaPropietarios] = useState(PROPIETARIOS_REGISTRADOS);
+  // Estados de datos de la base de datos
+  const [listaPropietarios, setListaPropietarios] = useState(PROPIETARIOS_BASE);
   const [listaVeterinarios, setListaVeterinarios] = useState(VETERINARIOS_DEFAULT);
+  
+  // Estados del Buscador y Selección
   const [terminoBusqueda, setTerminoBusqueda] = useState('');
   const [propietarioSeleccionado, setPropietarioSeleccionado] = useState(null);
   const [mascotasDisponibles, setMascotasDisponibles] = useState([]);
@@ -79,13 +50,13 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
   const [exitoMensaje, setExitoMensaje] = useState(false);
   const [guardando, setGuardando] = useState(false);
 
-  // Recuperar veterinarios y clientes desde la base de datos
+  // Sincronizar Propietarios, Mascotas y Veterinarios reales desde PostgreSQL al cargar
   useEffect(() => {
-    async function cargarCatalogos() {
-      // 1. Cargar Veterinarios reales de PostgreSQL
-      const vets = await citasService.getVeterinarios();
-      if (vets && Array.isArray(vets) && vets.length > 0) {
-        const vetsMapeados = vets.map(v => ({
+    async function cargarCatalogosDesdeBD() {
+      // 1. Cargar Veterinarios
+      const vetsBD = await citasService.getVeterinarios();
+      if (vetsBD && Array.isArray(vetsBD) && vetsBD.length > 0) {
+        const vetsMapeados = vetsBD.map(v => ({
           idVeterinario: v.idVeterinario || v.id,
           nombre: v.nombre,
           consultorio: `Consultorio ${v.idVeterinario || v.id}`
@@ -98,23 +69,30 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
         }));
       }
 
-      // 2. Cargar Propietarios y Mascotas reales si existen endpoints
+      // 2. Cargar Propietarios y Mascotas cruzadas
       const propsBD = await citasService.getPropietarios();
       const mascBD = await citasService.getMascotas();
 
       if (propsBD && Array.isArray(propsBD) && propsBD.length > 0) {
-        const combinados = propsBD.map(p => {
+        const dueñosConMascotas = propsBD.map(p => {
           const idProp = p.idPropietario || p.id;
-          const susMascotas = (mascBD || [])
-            .filter(m => (m.idPropietario || (m.propietario && m.propietario.idPropietario)) === idProp)
-            .map(m => ({
-              idMascota: m.idMascota || m.id,
-              nombre: m.nombre,
-              especie: m.especie,
-              raza: m.raza,
-              exp: m.codigoExpediente || `EXP-2026-${String(m.idMascota).padStart(3, '0')}`,
-              icono: m.especie === 'Felino' ? '🐱' : '🐶'
-            }));
+          
+          // Extraer las mascotas del dueño (ya sea de la relación anidada o filtrando de la lista de mascotas)
+          let mascotasCrudas = [];
+          if (p.mascotas && Array.isArray(p.mascotas) && p.mascotas.length > 0) {
+            mascotasCrudas = p.mascotas;
+          } else if (mascBD && Array.isArray(mascBD)) {
+            mascotasCrudas = mascBD.filter(m => (m.idPropietario || (m.propietario && m.propietario.idPropietario)) === idProp);
+          }
+
+          const susMascotas = mascotasCrudas.map(m => ({
+            idMascota: m.idMascota || m.id,
+            nombre: m.nombre,
+            especie: m.especie || 'Canino',
+            raza: m.raza || 'Estándar',
+            exp: m.codigoExpediente || `EXP-2026-${String(m.idMascota || m.id).padStart(3, '0')}`,
+            icono: m.especie === 'Felino' ? '🐱' : '🐶'
+          }));
 
           return {
             id: idProp,
@@ -124,13 +102,13 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
             mascotas: susMascotas
           };
         });
-        setListaPropietarios(combinados);
+        setListaPropietarios(dueñosConMascotas);
       }
     }
-    cargarCatalogos();
+    cargarCatalogosDesdeBD();
   }, []);
 
-  // Filtro reactivo para el autocompletado
+  // Filtro reactivo para el autocompletado del buscador
   const propietariosFiltrados = terminoBusqueda.trim() === ''
     ? []
     : listaPropietarios.filter(p =>
@@ -190,15 +168,15 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
       return;
     }
 
-    // Regla de Negocio RN-02 (Anti-traslape en memoria local)[cite: 27]
+    // Regla de Negocio RN-02 (Anti-traslape)
     if (estaHoraOcupada(formulario.hora)) {
       setErrorValidacion(`Conflicto de Agenda (RN-02): El ${formulario.veterinario} ya tiene ocupada la hora ${formulario.hora}. Selecciona otro bloque.`);
       return;
     }
 
-    // Mapeo estricto hacia la entidad Cita.java
+    // Payload exacto hacia la entidad Cita.java y base de datos
     const payloadBackend = {
-      fecha: String(formulario.fecha).trim(), // Envío exacto en formato YYYY-MM-DD
+      fecha: String(formulario.fecha).trim(), // Envío estricto en formato YYYY-MM-DD
       hora: formulario.hora.length === 5 ? `${formulario.hora}:00` : formulario.hora,
       motivo: `${formulario.tipoServicio} - ${formulario.motivo.trim()}`,
       estado: 'Programada',
@@ -211,7 +189,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
       setGuardando(true);
       const citaGuardada = await citasService.guardarCita(payloadBackend);
 
-      // Objeto formateado para actualizar el Dashboard
+      // Objeto formateado para actualizar el estado del Dashboard visualmente de inmediato
       const nuevaCitaUI = {
         id: citaGuardada.idCita || Date.now(),
         idCita: citaGuardada.idCita || Date.now(),
