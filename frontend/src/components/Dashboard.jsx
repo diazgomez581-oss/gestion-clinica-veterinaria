@@ -4,19 +4,34 @@ import { citasService } from '../modulos/citas/citasService';
 export default function Dashboard({ onIrAProgramar }) {
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('TODOS');
+  
+  // Selector dinámico de fecha para visualizar diferentes días
+  const obtenerFechaLocalStr = (fechaObj = new Date()) => {
+    const anio = fechaObj.getFullYear();
+    const mes = String(fechaObj.getMonth() + 1).padStart(2, '0');
+    const dia = String(fechaObj.getDate()).padStart(2, '0');
+    return `${anio}-${mes}-${dia}`;
+  };
+  const [fechaFiltro, setFechaFiltro] = useState(obtenerFechaLocalStr());
+
   const [citas, setCitas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [errorCarga, setErrorCarga] = useState('');
 
-  // 1. Cargar citas reales del día desde PostgreSQL al montar la pantalla
+  // 1. Cargar citas desde PostgreSQL (todas las citas y luego filtramos por fechaFiltro)
   const cargarCitasDeBD = async () => {
     try {
       setCargando(true);
       setErrorCarga('');
-      const dataBD = await citasService.getCitasHoy();
+      
+      // Obtenemos el catálogo general completo
+      const dataBD = await citasService.getTodasLasCitas();
+
+      // Filtramos en frontend por la fecha seleccionada en el selector (fechaFiltro)
+      const citasFiltradasFecha = (dataBD || []).filter(c => c.fecha === fechaFiltro);
 
       // Mapeo defensivo de los datos devueltos por Spring Boot
-      const citasFormateadas = (dataBD || []).map((c) => {
+      const citasFormateadas = citasFiltradasFecha.map((c) => {
         const horaCorta = c.hora ? String(c.hora).substring(0, 5) : '00:00';
         return {
           idCita: c.idCita,
@@ -34,7 +49,10 @@ export default function Dashboard({ onIrAProgramar }) {
         };
       });
 
+      // Ordenar por hora de menor a mayor
+      citasFormateadas.sort((a, b) => a.hora.localeCompare(b.hora));
       setCitas(citasFormateadas);
+
     } catch (err) {
       setErrorCarga('No se pudo conectar con el servidor backend (puerto 8080).');
     } finally {
@@ -44,26 +62,25 @@ export default function Dashboard({ onIrAProgramar }) {
 
   useEffect(() => {
     cargarCitasDeBD();
-  }, []);
+  }, [fechaFiltro]); // Se recarga automáticamente si el usuario cambia el día
 
-  // 2. HU GCV-6 [CIT-02]: Marcar llegada en PostgreSQL y refrescar el estado
+  // 2. Marcar llegada en PostgreSQL y refrescar el estado
   const handleCheckIn = async (idCita) => {
     try {
       await citasService.registrarCheckIn(idCita);
-      // Recarga inmediata desde la base de datos
       await cargarCitasDeBD();
     } catch (err) {
       alert(`Error al registrar check-in: ${err.message}`);
     }
   };
 
-  // 3. Métricas calculadas en tiempo real a partir de PostgreSQL
+  // 3. Métricas calculadas en tiempo real para el día seleccionado
   const totalCitasHoy = citas.length;
   const enEspera = citas.filter((c) => c.estado === 'En Sala de Espera' || c.estado === 'En espera');
   const programadas = citas.filter((c) => c.estado === 'Programada').length;
   const atendidas = citas.filter((c) => c.estado === 'Atendida').length;
 
-  // 4. Filtrado interactivo
+  // 4. Filtrado interactivo en tabla
   const citasFiltradas = citas.filter((c) => {
     const coincideEstado =
       filtroEstado === 'TODOS' ||
@@ -82,18 +99,30 @@ export default function Dashboard({ onIrAProgramar }) {
 
   return (
     <div className="dash-white-layout">
-      {/* 1. Header */}
+      {/* 1. Header con Buscador de Fecha Integrado */}
       <div className="dash-header-clean">
         <div>
           <h1 className="dash-title-clean">Dashboard General</h1>
           <p className="dash-date-clean">
-            Sincronizado con PostgreSQL · {new Date().toLocaleDateString('es-SV', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            Mostrando agenda operativa para la fecha seleccionada.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#f1f5f9', padding: '6px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#475569' }}>Día de consulta:</span>
+            <input 
+              type="date" 
+              value={fechaFiltro}
+              onChange={(e) => setFechaFiltro(e.target.value)}
+              style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: '0.9rem', fontWeight: 700, color: '#0369a1', cursor: 'pointer' }}
+            />
+          </div>
+
           <button type="button" onClick={cargarCitasDeBD} className="btn-outline-action" title="Recargar base de datos">
             🔄 Refrescar
           </button>
+          
           <button type="button" className="btn-new-appointment" onClick={onIrAProgramar}>
             <span>+</span> Nueva Cita
           </button>
@@ -110,7 +139,7 @@ export default function Dashboard({ onIrAProgramar }) {
       <section className="dash-kpi-container">
         <div className="kpi-card-white">
           <div className="kpi-info-box">
-            <span className="kpi-title-text">Citas hoy</span>
+            <span className="kpi-title-text">Citas para el día</span>
             <div className="kpi-number-text">{cargando ? '...' : totalCitasHoy}</div>
             <span className="kpi-sub-text">{programadas} programadas · {enEspera.length} en espera</span>
           </div>
@@ -128,7 +157,7 @@ export default function Dashboard({ onIrAProgramar }) {
 
         <div className="kpi-card-white">
           <div className="kpi-info-box">
-            <span className="kpi-title-text">Atendidas hoy</span>
+            <span className="kpi-title-text">Atendidas</span>
             <div className="kpi-number-text">{cargando ? '...' : atendidas}</div>
             <span className="kpi-sub-text">Consultas cerradas</span>
           </div>
@@ -139,21 +168,20 @@ export default function Dashboard({ onIrAProgramar }) {
           <div className="kpi-info-box">
             <span className="kpi-title-text">Veterinarios activos</span>
             <div className="kpi-number-text text-pink">3</div>
-            <span className="kpi-sub-text">Registrados en PostgreSQL</span>
+            <span className="kpi-sub-text">Personal médico de turno</span>
           </div>
           <div className="kpi-avatar-circle circle-pink">👨‍⚕️</div>
         </div>
       </section>
 
-      {/* 3. Panel de Dos Columnas: Citas Reales + Cola de Espera Real */}
+      {/* 3. Panel de Dos Columnas */}
       <div className="dash-grid-two">
-        {/* Tabla Citas del Día */}
+        {/* Tabla de Citas del Día */}
         <section className="clean-panel-box">
           <div className="clean-panel-header">
             <div className="panel-title-flex">
               <span>🗓️</span>
               <h2 className="panel-heading">Citas del Día</h2>
-              <span className="panel-tag-aqua">CIT-01</span>
             </div>
             <button type="button" className="btn-outline-action" onClick={onIrAProgramar}>
               + Agendar
@@ -186,13 +214,13 @@ export default function Dashboard({ onIrAProgramar }) {
                 {cargando ? (
                   <tr>
                     <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
-                      Cargando datos desde PostgreSQL...
+                      Cargando datos de la agenda...
                     </td>
                   </tr>
                 ) : citasFiltradas.length === 0 ? (
                   <tr>
                     <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: '#94a3b8' }}>
-                      No hay citas registradas en la base de datos para hoy.
+                      No hay citas registradas para la fecha seleccionada.
                     </td>
                   </tr>
                 ) : (
@@ -231,7 +259,7 @@ export default function Dashboard({ onIrAProgramar }) {
                             type="button"
                             onClick={() => handleCheckIn(c.idCita)}
                             className="btn-checkin-orange"
-                            title="Registrar check-in de llegada en PostgreSQL"
+                            title="Registrar presentación física del paciente"
                           >
                             ✓ Check-in
                           </button>
@@ -251,7 +279,6 @@ export default function Dashboard({ onIrAProgramar }) {
             <div className="panel-title-flex">
               <span>🏆</span>
               <h2 className="panel-heading">Cola de Espera</h2>
-              <span className="panel-tag-aqua">CIT-02</span>
             </div>
             <span className="panel-clock-text">
               {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -261,7 +288,7 @@ export default function Dashboard({ onIrAProgramar }) {
           <div className="queue-list-padding">
             {enEspera.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '24px', color: '#94a3b8', fontSize: '0.85rem' }}>
-                No hay pacientes en sala de espera en este momento.
+                No hay pacientes en sala de espera para la fecha seleccionada.
               </div>
             ) : (
               enEspera.map((item, idx) => (

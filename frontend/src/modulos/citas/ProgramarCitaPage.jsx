@@ -77,7 +77,6 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
         const dueñosConMascotas = propsBD.map(p => {
           const idProp = p.idPropietario || p.id;
           
-          // Extraer las mascotas del dueño (ya sea de la relación anidada o filtrando de la lista de mascotas)
           let mascotasCrudas = [];
           if (p.mascotas && Array.isArray(p.mascotas) && p.mascotas.length > 0) {
             mascotasCrudas = p.mascotas;
@@ -108,7 +107,6 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
     cargarCatalogosDesdeBD();
   }, []);
 
-  // Filtro reactivo para el autocompletado del buscador
   const propietariosFiltrados = terminoBusqueda.trim() === ''
     ? []
     : listaPropietarios.filter(p =>
@@ -133,6 +131,19 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
     const idSel = parseInt(e.target.value, 10);
     const m = mascotasDisponibles.find(item => item.idMascota === idSel);
     setMascotaSeleccionada(m);
+  };
+
+  // Validar si el bloque de hora ya pasó respecto a la hora local actual
+  const esHoraPasada = (horaEvaluar) => {
+    if (formulario.fecha !== hoyStr) return false;
+    const ahora = new Date();
+    const horaActual = ahora.getHours();
+    const minActual = ahora.getMinutes();
+
+    const [hEval, mEval] = horaEvaluar.split(':').map(Number);
+    if (hEval < horaActual) return true;
+    if (hEval === horaActual && mEval <= minActual) return true;
+    return false;
   };
 
   const estaHoraOcupada = (horaEvaluar) => {
@@ -168,15 +179,18 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
       return;
     }
 
-    // Regla de Negocio RN-02 (Anti-traslape)
-    if (estaHoraOcupada(formulario.hora)) {
-      setErrorValidacion(`Conflicto de Agenda (RN-02): El ${formulario.veterinario} ya tiene ocupada la hora ${formulario.hora}. Selecciona otro bloque.`);
+    if (esHoraPasada(formulario.hora)) {
+      setErrorValidacion('La hora seleccionada ya ha pasado. Por favor elige un horario válido para hoy.');
       return;
     }
 
-    // Payload exacto hacia la entidad Cita.java y base de datos
+    if (estaHoraOcupada(formulario.hora)) {
+      setErrorValidacion(`Conflicto de Agenda: El ${formulario.veterinario} ya tiene ocupada la hora ${formulario.hora}. Selecciona otro bloque.`);
+      return;
+    }
+
     const payloadBackend = {
-      fecha: String(formulario.fecha).trim(), // Envío estricto en formato YYYY-MM-DD
+      fecha: String(formulario.fecha).trim(),
       hora: formulario.hora.length === 5 ? `${formulario.hora}:00` : formulario.hora,
       motivo: `${formulario.tipoServicio} - ${formulario.motivo.trim()}`,
       estado: 'Programada',
@@ -189,7 +203,6 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
       setGuardando(true);
       const citaGuardada = await citasService.guardarCita(payloadBackend);
 
-      // Objeto formateado para actualizar el estado del Dashboard visualmente de inmediato
       const nuevaCitaUI = {
         id: citaGuardada.idCita || Date.now(),
         idCita: citaGuardada.idCita || Date.now(),
@@ -228,14 +241,12 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
 
   return (
     <div className="cita-page-container">
-      {/* Header */}
       <div className="cita-page-header">
         <div>
           <div className="cita-breadcrumb">
             <span onClick={onVolver} className="breadcrumb-link" style={{ cursor: 'pointer' }}>Dashboard</span> &gt; <span>Programación de Citas</span>
           </div>
           <h1 className="cita-page-title">Agendar Nueva Cita Médica</h1>
-          <p className="cita-page-sub">Historia GCV-5 [CIT-01] · Asignación de paciente y registro en PostgreSQL</p>
         </div>
 
         <button type="button" onClick={onVolver} className="btn-volver-dash">
@@ -256,20 +267,16 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
       )}
 
       <form onSubmit={handleSubmit} className="cita-form-layout">
-        {/* COLUMNA IZQUIERDA: Formulario */}
         <div className="cita-form-main">
-          {/* Tarjeta 1: Buscador de Propietario y Paciente Vinculado */}
+          
+          {/* 1. SELECCIÓN DE PACIENTE */}
           <div className="cita-card-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <h3 className="section-title-aqua" style={{ margin: 0, border: 'none', padding: 0 }}>
                 1. Selección de Propietario y Mascota
               </h3>
-              <span style={{ fontSize: '0.72rem', background: '#e0f2fe', color: '#0369a1', padding: '3px 8px', borderRadius: '6px', fontWeight: 700 }}>
-                PostgreSQL · Tablas Propietarios y Mascotas
-              </span>
             </div>
 
-            {/* BUSCADOR */}
             <div className="search-propietario-box">
               <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155' }}>
                 Buscar Propietario Registrado (Nombre o DUI) *
@@ -290,7 +297,6 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
                   className="input-search-prop"
                 />
 
-                {/* Lista Flotante de Resultados */}
                 {propietariosFiltrados.length > 0 && !propietarioSeleccionado && (
                   <div className="dropdown-prop-results" style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #cbd5e1', borderRadius: '8px', zIndex: 10, boxShadow: '0 4px 6px rgba(0,0,0,0.1)', maxHeight: '200px', overflowY: 'auto' }}>
                     {propietariosFiltrados.map(p => (
@@ -314,29 +320,17 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
               </div>
             </div>
 
-            {/* DATOS AUTO-COMPLETADOS */}
             <div className="fields-grid-2" style={{ marginTop: '16px' }}>
               <div className="input-group-vet">
                 <label>DUI del Propietario</label>
-                <input
-                  type="text"
-                  value={propietarioSeleccionado ? propietarioSeleccionado.dui : 'Pendiente de selección...'}
-                  disabled
-                  className="input-disabled-clean"
-                />
+                <input type="text" value={propietarioSeleccionado ? propietarioSeleccionado.dui : 'Pendiente de selección...'} disabled className="input-disabled-clean" />
               </div>
 
               <div className="input-group-vet">
                 <label>Teléfono de Contacto</label>
-                <input
-                  type="text"
-                  value={propietarioSeleccionado ? propietarioSeleccionado.telefono : 'Pendiente de selección...'}
-                  disabled
-                  className="input-disabled-clean"
-                />
+                <input type="text" value={propietarioSeleccionado ? propietarioSeleccionado.telefono : 'Pendiente de selección...'} disabled className="input-disabled-clean" />
               </div>
 
-              {/* SELECTOR DE MASCOTAS VINCULADAS */}
               <div className="input-group-vet">
                 <label>Mascota Vinculada a Atender *</label>
                 <select
@@ -359,18 +353,12 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
 
               <div className="input-group-vet">
                 <label>Código de Expediente Clínico</label>
-                <input
-                  type="text"
-                  value={mascotaSeleccionada ? mascotaSeleccionada.exp : '---'}
-                  disabled
-                  className="input-disabled-clean"
-                  style={{ fontWeight: 700, color: '#0369a1' }}
-                />
+                <input type="text" value={mascotaSeleccionada ? mascotaSeleccionada.exp : '---'} disabled className="input-disabled-clean" style={{ fontWeight: 700, color: '#0369a1' }} />
               </div>
             </div>
           </div>
 
-          {/* Tarjeta 2: Médico y Horarios */}
+          {/* 2. ESPECIALISTA Y HORARIO */}
           <div className="cita-card-section">
             <h3 className="section-title-aqua">2. Especialista y Horario de Atención</h3>
 
@@ -411,7 +399,6 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
               </div>
             </div>
 
-            {/* Selector de bloques horarios */}
             <div style={{ marginTop: '16px' }}>
               <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155', display: 'block', marginBottom: '8px' }}>
                 Selecciona la hora de atención (Bloques de 30 min):
@@ -420,18 +407,21 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
               <div className="time-slots-grid">
                 {BLOQUES_HORARIOS.map(slot => {
                   const ocupada = estaHoraOcupada(slot);
+                  const pasada = esHoraPasada(slot);
+                  const inhabilitada = ocupada || pasada;
                   const elegida = formulario.hora === slot;
 
                   return (
                     <button
                       key={slot}
                       type="button"
-                      disabled={ocupada}
+                      disabled={inhabilitada}
                       onClick={() => setFormulario(prev => ({ ...prev, hora: slot }))}
-                      className={`time-slot-btn ${ocupada ? 'slot-occupied' : elegida ? 'slot-selected' : 'slot-available'}`}
+                      className={`time-slot-btn ${inhabilitada ? 'slot-occupied' : elegida ? 'slot-selected' : 'slot-available'}`}
+                      style={inhabilitada ? { backgroundColor: '#f1f5f9', color: '#94a3b8', borderColor: '#e2e8f0', cursor: 'not-allowed' } : {}}
                     >
                       <span>{slot}</span>
-                      <small>{ocupada ? 'Ocupado' : elegida ? 'Elegido' : 'Libre'}</small>
+                      <small>{ocupada ? 'Ocupado' : pasada ? 'Pasada' : elegida ? 'Elegido' : 'Libre'}</small>
                     </button>
                   );
                 })}
@@ -439,7 +429,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
             </div>
           </div>
 
-          {/* Tarjeta 3: Motivo */}
+          {/* 3. MOTIVO */}
           <div className="cita-card-section">
             <h3 className="section-title-aqua">3. Motivo Clínico de Consulta</h3>
 
@@ -474,7 +464,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
           </div>
         </div>
 
-        {/* COLUMNA DERECHA: Ficha de Resumen en Vivo */}
+        {/* COLUMNA DERECHA: Resumen */}
         <div className="cita-summary-side">
           <div className="summary-card-sticky">
             <div className="summary-card-header">
