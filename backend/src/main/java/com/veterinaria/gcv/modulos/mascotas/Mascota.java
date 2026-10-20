@@ -4,6 +4,7 @@ import com.veterinaria.gcv.modulos.propietarios.Propietario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(name = "mascotas")
@@ -22,6 +23,7 @@ public class Mascota {
     private String raza;
     private String sexo;
     
+    
     @Column(name = "fecha_nacimiento")
     private LocalDate fechaNacimiento;
     
@@ -29,6 +31,8 @@ public class Mascota {
     private String edadEstimada;
     
     private String color;
+
+    
     
     @Column(name = "peso_inicial")
     private Double pesoInicial;
@@ -37,6 +41,14 @@ public class Mascota {
     @JoinColumn(name = "id_propietario", nullable = false)
     @JsonIgnore
     private Propietario propietario;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.codigoExpediente == null) {
+            // Genera un código de expediente único automáticamente (Ej: EXP-XXXXXX)
+            this.codigoExpediente = "EXP-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        }
+    }
 
     public Mascota() {}
 
