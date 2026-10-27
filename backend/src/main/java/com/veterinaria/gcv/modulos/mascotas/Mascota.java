@@ -3,6 +3,7 @@ package com.veterinaria.gcv.modulos.mascotas;
 import com.veterinaria.gcv.modulos.propietarios.Propietario;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -15,27 +16,32 @@ public class Mascota {
     @Column(name = "id_mascota")
     private Long idMascota;
 
-    @Column(name = "codigo_expediente", nullable = false, unique = true)
+    @Column(name = "codigo_expediente", nullable = false, unique = true, length = 20)
     private String codigoExpediente;
 
+    @Column(length = 100)
     private String nombre;
+    @Column(length = 50)
     private String especie;
+    @Column(length = 50)
     private String raza;
+    @Column(length = 10)
     private String sexo;
     
     
     @Column(name = "fecha_nacimiento")
     private LocalDate fechaNacimiento;
     
-    @Column(name = "edad_estimada")
+    @Column(name = "edad_estimada", length = 30)
     private String edadEstimada;
     
+    @Column(length = 50)
     private String color;
 
     
     
-    @Column(name = "peso_inicial")
-    private Double pesoInicial;
+    @Column(name = "peso_inicial", precision = 5, scale = 2)
+    private BigDecimal pesoInicial;
 
     @ManyToOne
     @JoinColumn(name = "id_propietario", nullable = false)
@@ -80,8 +86,8 @@ public class Mascota {
     public String getColor() { return color; }
     public void setColor(String color) { this.color = color; }
 
-    public Double getPesoInicial() { return pesoInicial; }
-    public void setPesoInicial(Double pesoInicial) { this.pesoInicial = pesoInicial; }
+    public BigDecimal getPesoInicial() { return pesoInicial; }
+    public void setPesoInicial(BigDecimal pesoInicial) { this.pesoInicial = pesoInicial; }
 
     public Propietario getPropietario() { return propietario; }
     public void setPropietario(Propietario propietario) { this.propietario = propietario; }
