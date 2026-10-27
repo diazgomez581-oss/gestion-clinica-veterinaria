@@ -6,11 +6,12 @@ import ProgramarCitaPage from './modulos/citas/ProgramarCitaPage';
 import CalendarioCitasPage from './modulos/citas/CalendarioCitasPage';
 import RegistroPropietarioPage from './modulos/propietarios/RegistroPropietarioPage';
 import RegistrarConsultaPage from './modulos/consultas/RegistrarConsultaPage';
+import VacunasPage from './modulos/vacunas/VacunasPage';
 import './App.css';
 
 export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  // 'dashboard' | 'programar-cita' | 'calendario' | 'propietarios'
+  // 'dashboard' | 'programar-cita' | 'calendario' | 'propietarios' | 'vacunacion'
   const [vistaActual, setVistaActual] = useState('dashboard');
   const [citaConsultaSeleccionada, setCitaConsultaSeleccionada] = useState(null);
 
@@ -85,6 +86,8 @@ export default function App() {
                 console.log('Propietario registrado con éxito:', nuevo);
               }}
             />
+          ) : vistaActual === 'vacunacion' ? (
+            <VacunasPage onVolver={() => setVistaActual('dashboard')} />
           ) : (
             <Dashboard 
               citasData={citas}
