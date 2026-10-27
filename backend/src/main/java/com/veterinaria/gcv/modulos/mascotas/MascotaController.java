@@ -21,7 +21,7 @@ public class MascotaController {
     @PostMapping
     public ResponseEntity<Mascota> registrarMascota(@RequestBody Mascota mascota) {
         // Criterio 1: Validar que venga un propietario asignado
-        if (mascota.getPropietario() == null || mascota.getPropietario().getId() == null) {
+        if (mascota.getPropietario() == null || mascota.getPropietario().getIdPropietario() == null) {
             return ResponseEntity.badRequest().build();
         }
         Mascota nuevaMascota = mascotaRepository.save(mascota);

@@ -1114,3 +1114,362 @@ body {
   cursor: not-allowed;
   border-color: #e2e8f0 !important;
 } 
+/* ========================================================================== 
+   MÓDULO CLÍNICO: REGISTRO DE CONSULTA MÉDICA (CON-01)
+   ========================================================================== */
+.consulta-page-container {
+  padding-bottom: 36px;
+}
+
+.consulta-workspace {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr) 285px;
+  gap: 20px;
+  align-items: start;
+}
+
+.consulta-waiting-panel,
+.consulta-history-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(15, 41, 66, 0.04);
+  position: sticky;
+  top: 18px;
+}
+
+.consulta-panel-heading {
+  padding: 15px 16px;
+  border-bottom: 1px solid #eef2f7;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  background: #fbfdff;
+}
+
+.consulta-panel-heading > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.consulta-panel-heading strong {
+  color: #0f2942;
+  font-size: 0.88rem;
+}
+
+.consulta-panel-heading span {
+  color: #64748b;
+  font-size: 0.72rem;
+}
+
+.consulta-patient-list,
+.consulta-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  max-height: calc(100vh - 240px);
+  overflow-y: auto;
+}
+
+.consulta-patient-card {
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 11px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.consulta-patient-card:hover {
+  border-color: #67e8f9;
+  background: #f0fdfa;
+}
+
+.consulta-patient-card.active {
+  border-color: #06b6d4;
+  background: #ecfeff;
+  box-shadow: inset 3px 0 0 #06b6d4;
+}
+
+.consulta-pet-icon {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e0f2fe;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.consulta-patient-data {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.consulta-patient-data strong {
+  color: #0f2942;
+  font-size: 0.83rem;
+}
+
+.consulta-patient-data small {
+  color: #64748b;
+  font-size: 0.7rem;
+  line-height: 1.3;
+}
+
+.consulta-main-column,
+.consulta-form-stack {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.consulta-select-prompt {
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.consulta-select-prompt h3 {
+  color: #0f2942;
+  margin: 10px 0 4px;
+}
+
+.consulta-select-prompt p {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.consulta-prompt-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ecfeff;
+  font-size: 2rem;
+}
+
+.consulta-patient-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.consulta-patient-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.consulta-pet-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #e0f2fe;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.45rem;
+}
+
+.consulta-patient-title h3 {
+  color: #0f2942;
+  font-size: 1.05rem;
+  margin-bottom: 3px;
+}
+
+.consulta-patient-title p {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.consulta-exp-badge {
+  background: #0f2942;
+  color: #ffffff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.consulta-info-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.consulta-info-strip > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.consulta-info-strip span {
+  color: #94a3b8;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.consulta-info-strip strong {
+  color: #334155;
+  font-size: 0.78rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consulta-vitals-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.consulta-actions-bar {
+  background: #ffffff;
+  border: 1px solid #dbe6ef;
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  box-shadow: 0 4px 12px rgba(15, 41, 66, 0.05);
+}
+
+.consulta-actions-bar > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.consulta-actions-bar strong {
+  color: #0f2942;
+  font-size: 0.86rem;
+}
+
+.consulta-actions-bar span {
+  color: #64748b;
+  font-size: 0.74rem;
+}
+
+.consulta-actions-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.consulta-actions-buttons .btn-confirm-save,
+.consulta-actions-buttons .btn-cancel-flat {
+  width: auto;
+  min-width: 150px;
+}
+
+.consulta-history-item {
+  padding: 11px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.consulta-history-item span {
+  color: #0891b2;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.consulta-history-item strong {
+  color: #0f2942;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.consulta-history-item p {
+  color: #64748b;
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.consulta-empty-state {
+  padding: 22px 16px;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  text-align: center;
+  line-height: 1.5;
+}
+
+@media (max-width: 1250px) {
+  .consulta-workspace {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .consulta-history-panel {
+    grid-column: 1 / -1;
+    position: static;
+  }
+
+  .consulta-history-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-height: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .consulta-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .consulta-waiting-panel,
+  .consulta-history-panel {
+    position: static;
+  }
+
+  .consulta-patient-list {
+    max-height: 260px;
+  }
+
+  .consulta-info-strip,
+  .consulta-history-list {
+    grid-template-columns: 1fr;
+  }
+
+  .consulta-actions-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .consulta-actions-buttons {
+    flex-direction: column-reverse;
+  }
+
+  .consulta-actions-buttons .btn-confirm-save,
+  .consulta-actions-buttons .btn-cancel-flat {
+    width: 100%;
+  }
+}
