@@ -5,12 +5,15 @@ import Dashboard from './components/Dashboard';
 import ProgramarCitaPage from './modulos/citas/ProgramarCitaPage';
 import CalendarioCitasPage from './modulos/citas/CalendarioCitasPage';
 import RegistroPropietarioPage from './modulos/propietarios/RegistroPropietarioPage';
+import RegistrarConsultaPage from './modulos/consultas/RegistrarConsultaPage';
+import VacunasPage from './modulos/vacunas/VacunasPage';
 import './App.css';
 
 export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  // 'dashboard' | 'programar-cita' | 'calendario' | 'propietarios'
+  // 'dashboard' | 'programar-cita' | 'calendario' | 'propietarios' | 'vacunacion'
   const [vistaActual, setVistaActual] = useState('dashboard');
+  const [citaConsultaSeleccionada, setCitaConsultaSeleccionada] = useState(null);
 
   const [citas, setCitas] = useState([
     { id: 1, hora: '08:00', fecha: new Date().toISOString().split('T')[0], mascota: 'Max', icono: '🐶', dueno: 'María Rodríguez', vet: 'Dr. Morales', veterinario: 'Dr. Morales', motivo: 'Consulta general', estado: 'Atendida', espera: null },
@@ -32,6 +35,9 @@ export default function App() {
       setVistaActual('calendario');
     } else if (seccion === 'propietarios') {
       setVistaActual('propietarios');
+    } else if (seccion === 'consultas') {
+      setCitaConsultaSeleccionada(null);
+      setVistaActual('consultas');
     } else {
       setVistaActual(seccion);
     }
@@ -65,6 +71,14 @@ export default function App() {
               onVolver={() => setVistaActual('dashboard')}
               onIrAProgramar={() => setVistaActual('programar-cita')}
             />
+          ) : vistaActual === 'consultas' ? (
+            <RegistrarConsultaPage
+              citaInicial={citaConsultaSeleccionada}
+              onVolver={() => {
+                setCitaConsultaSeleccionada(null);
+                setVistaActual('dashboard');
+              }}
+            />
           ) : vistaActual === 'propietarios' ? (
             <RegistroPropietarioPage
               onVolver={() => setVistaActual('dashboard')}
@@ -72,11 +86,17 @@ export default function App() {
                 console.log('Propietario registrado con éxito:', nuevo);
               }}
             />
+          ) : vistaActual === 'vacunacion' ? (
+            <VacunasPage onVolver={() => setVistaActual('dashboard')} />
           ) : (
             <Dashboard 
               citasData={citas}
               setCitasData={setCitas}
               onIrAProgramar={() => setVistaActual('programar-cita')}
+              onIniciarConsulta={(cita) => {
+                setCitaConsultaSeleccionada(cita);
+                setVistaActual('consultas');
+              }}
             />
           )}
         </main>

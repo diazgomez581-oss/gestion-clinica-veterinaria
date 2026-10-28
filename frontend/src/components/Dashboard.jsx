@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { citasService } from '../modulos/citas/citasService';
 
-export default function Dashboard({ onIrAProgramar }) {
+export default function Dashboard({ onIrAProgramar, onIniciarConsulta }) {
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('TODOS');
   const [citas, setCitas] = useState([]);
@@ -21,6 +21,8 @@ export default function Dashboard({ onIrAProgramar }) {
         return {
           idCita: c.idCita,
           id: c.idCita,
+          idMascota: c.idMascota,
+          idVeterinario: c.idVeterinario,
           hora: horaCorta,
           horaProgramada: horaCorta,
           fecha: c.fecha,
@@ -282,7 +284,7 @@ export default function Dashboard({ onIrAProgramar }) {
                   <div className="queue-vet-name">👤 {item.veterinario}</div>
 
                   <div className="queue-btn-group">
-                    <button type="button" className="btn-call-patient">🩺 Llamar a consulta</button>
+                    <button type="button" className="btn-call-patient" onClick={() => onIniciarConsulta?.(item)}>🩺 Llamar a consulta</button>
                     <button type="button" className="btn-patient-file">📄 Ficha</button>
                   </div>
                 </div>
