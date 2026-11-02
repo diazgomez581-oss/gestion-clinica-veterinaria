@@ -1,7 +1,8 @@
 package com.veterinaria.gcv.modulos.mascotas;
 
 import com.veterinaria.gcv.modulos.propietarios.Propietario;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+//import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -43,10 +44,12 @@ public class Mascota {
     @Column(name = "peso_inicial", precision = 5, scale = 2)
     private BigDecimal pesoInicial;
 
+    
     @ManyToOne
     @JoinColumn(name = "id_propietario", nullable = false)
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Propietario propietario;
+
 
     @PrePersist
     public void prePersist() {

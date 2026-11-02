@@ -7,6 +7,9 @@ import CalendarioCitasPage from './modulos/citas/CalendarioCitasPage';
 import RegistroPropietarioPage from './modulos/propietarios/RegistroPropietarioPage';
 import RegistrarConsultaPage from './modulos/consultas/RegistrarConsultaPage';
 import VacunasPage from './modulos/vacunas/VacunasPage';
+
+import RegistrarMascotaPage from './modulos/mascotas/RegistrarMascotaPage';
+
 import './App.css';
 
 export default function App() {
@@ -86,10 +89,15 @@ export default function App() {
                 console.log('Propietario registrado con éxito:', nuevo);
               }}
             />
-          ) : vistaActual === 'vacunacion' ? (
-            <VacunasPage onVolver={() => setVistaActual('dashboard')} />
-          ) : (
-            <Dashboard 
+          
+            ) : vistaActual === 'vacunacion' ? (
+              <VacunasPage onVolver={() => setVistaActual('dashboard')} />
+            ) : vistaActual === 'mascotas' ? (
+            <RegistrarMascotaPage
+            onVolver={() => setVistaActual('dashboard')}/>
+            ) : (
+              <Dashboard
+ 
               citasData={citas}
               setCitasData={setCitas}
               onIrAProgramar={() => setVistaActual('programar-cita')}
