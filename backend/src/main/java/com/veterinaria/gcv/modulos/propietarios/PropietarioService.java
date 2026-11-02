@@ -19,6 +19,11 @@ public class PropietarioService {
         return propietarioRepository.findAll();
     }
 
+    public Propietario buscarPorId(Long id) {
+        return propietarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el propietario con ID: " + id));
+    }
+
     public Propietario registrarPropietario(Propietario propietario) {
         // Criterio 1: Validar campos obligatorios
         if (propietario.getNombres() == null || propietario.getNombres().trim().isEmpty() ||
@@ -51,5 +56,32 @@ public class PropietarioService {
 
         // Criterio 3: Persistir y retornar con el ID autogenerado
         return propietarioRepository.save(propietario);
+    }
+
+    public Propietario actualizarPropietario(Long id, Propietario datos) {
+        Propietario existente = buscarPorId(id);
+
+        if (datos.getNombres() == null || datos.getNombres().trim().isEmpty() ||
+            datos.getApellidos() == null || datos.getApellidos().trim().isEmpty() ||
+            datos.getTelefono() == null || datos.getTelefono().trim().isEmpty() ||
+            datos.getDireccion() == null || datos.getDireccion().trim().isEmpty()) {
+            throw new IllegalArgumentException("Nombres, apellidos, teléfono y dirección son obligatorios.");
+        }
+
+        existente.setNombres(datos.getNombres().trim());
+        existente.setApellidos(datos.getApellidos().trim());
+        existente.setTelefono(datos.getTelefono().trim());
+        existente.setDireccion(datos.getDireccion().trim());
+        
+        if (datos.getCorreo() != null) {
+            existente.setCorreo(datos.getCorreo().trim());
+        }
+
+        return propietarioRepository.save(existente);
+    }
+
+    public void eliminarPropietario(Long id) {
+        Propietario propietario = buscarPorId(id);
+        propietarioRepository.delete(propietario);
     }
 }
