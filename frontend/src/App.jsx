@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import ProgramarCitaPage from './modulos/citas/ProgramarCitaPage';
 import CalendarioCitasPage from './modulos/citas/CalendarioCitasPage';
+import ConsultarPropietariosPage from './modulos/propietarios/ConsultarPropietariosPage';
 import RegistroPropietarioPage from './modulos/propietarios/RegistroPropietarioPage';
 import RegistrarConsultaPage from './modulos/consultas/RegistrarConsultaPage';
 import VacunasPage from './modulos/vacunas/VacunasPage';
@@ -11,7 +12,7 @@ import './App.css';
 
 export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  // 'dashboard' | 'programar-cita' | 'calendario' | 'propietarios' | 'vacunacion'
+  // 'dashboard' | 'programar-cita' | 'calendario' | 'propietarios' | 'registrar-propietario' | 'consultas' | 'vacunacion'
   const [vistaActual, setVistaActual] = useState('dashboard');
   const [citaConsultaSeleccionada, setCitaConsultaSeleccionada] = useState(null);
 
@@ -53,7 +54,10 @@ export default function App() {
       <div className="app-body">
         <Sidebar 
           collapsed={sidebarCollapsed}
-          seccionActiva={vistaActual === 'programar-cita' ? 'citas' : vistaActual}
+          seccionActiva={
+            vistaActual === 'programar-cita' ? 'citas' :
+            vistaActual === 'registrar-propietario' ? 'propietarios' : vistaActual
+          }
           onSelectSeccion={handleNavegacion}
           totalCitas={citas.length}
           enEspera={citas.filter(c => c.estado === 'En espera' || c.estado === 'En Sala de Espera').length}
@@ -80,8 +84,13 @@ export default function App() {
               }}
             />
           ) : vistaActual === 'propietarios' ? (
+            <ConsultarPropietariosPage
+              onIrARegistro={() => setVistaActual('registrar-propietario')}
+              onVolverDashboard={() => setVistaActual('dashboard')}
+            />
+          ) : vistaActual === 'registrar-propietario' ? (
             <RegistroPropietarioPage
-              onVolver={() => setVistaActual('dashboard')}
+              onVolver={() => setVistaActual('propietarios')}
               onPropietarioGuardado={(nuevo) => {
                 console.log('Propietario registrado con éxito:', nuevo);
               }}
