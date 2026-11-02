@@ -55,6 +55,25 @@ export const consultasService = {
       throw new Error(mensaje);
     }
 
+   
+    return await res.json();
+  },
+
+  // HIS-01: Finalizar consulta médica
+  finalizarConsulta: async (idConsulta) => {
+    const res = await fetch(
+      `${API_BASE_URL}/consultas/${idConsulta}/finalizar`,
+      { method: 'PATCH' }
+    );
+
+    if (!res.ok) {
+      const mensaje = await leerError(
+        res,
+        'No se pudo finalizar la consulta médica.'
+      );
+      throw new Error(mensaje);
+    }
+
     return await res.json();
   }
 };

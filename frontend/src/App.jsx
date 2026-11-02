@@ -19,6 +19,8 @@ export default function App() {
   const [vistaActual, setVistaActual] = useState('dashboard');
   const [citaConsultaSeleccionada, setCitaConsultaSeleccionada] = useState(null);
 
+  const [mascotaVacunacionSeleccionada, setMascotaVacunacionSeleccionada] = useState(null);
+
   const [citas, setCitas] = useState([
     { id: 1, hora: '08:00', fecha: new Date().toISOString().split('T')[0], mascota: 'Max', icono: '🐶', dueno: 'María Rodríguez', vet: 'Dr. Morales', veterinario: 'Dr. Morales', motivo: 'Consulta general', estado: 'Atendida', espera: null },
     { id: 2, hora: '09:00', fecha: new Date().toISOString().split('T')[0], mascota: 'Luna', icono: '🐱', dueno: 'Ana Martínez', vet: 'Dra. García', veterinario: 'Dra. García', motivo: 'Control rutina', estado: 'En espera', espera: '23 min esperando', alerta: true },
@@ -78,6 +80,7 @@ export default function App() {
               onVolver={() => setVistaActual('dashboard')}
               onIrAProgramar={() => setVistaActual('programar-cita')}
             />
+        
           ) : vistaActual === 'consultas' ? (
             <RegistrarConsultaPage
               citaInicial={citaConsultaSeleccionada}
@@ -85,7 +88,13 @@ export default function App() {
                 setCitaConsultaSeleccionada(null);
                 setVistaActual('dashboard');
               }}
+              onAbrirVacunacion={(idMascota) => {
+                setMascotaVacunacionSeleccionada(idMascota);
+                setVistaActual('vacunacion');
+              }}
             />
+
+            
           ) : vistaActual === 'propietarios' ? (
             <ConsultarPropietariosPage
               onIrARegistro={() => setVistaActual('registrar-propietario')}
@@ -100,7 +109,13 @@ export default function App() {
             />
           
             ) : vistaActual === 'vacunacion' ? (
-              <VacunasPage onVolver={() => setVistaActual('dashboard')} />
+              <VacunasPage
+                idMascotaInicial={mascotaVacunacionSeleccionada}
+                onVolver={() => {
+                  setMascotaVacunacionSeleccionada(null);
+                  setVistaActual('consultas');
+                }}
+              />
             ) : vistaActual === 'mascotas' ? (
             <RegistrarMascotaPage
             onVolver={() => setVistaActual('dashboard')}/>

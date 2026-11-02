@@ -51,6 +51,23 @@ public class ConsultaController {
         }
     }
 
+    
+    // HIS-01: Finalizar consulta médica
+    @PatchMapping("/{id}/finalizar")
+    public ResponseEntity<?> finalizarConsulta(@PathVariable Long id) {
+        try {
+            Consulta finalizada = consultaService.finalizarConsulta(id);
+            return ResponseEntity.ok(finalizada);
+
+        } catch (IllegalArgumentException e) {
+            return respuestaError(HttpStatus.NOT_FOUND, e.getMessage());
+
+        } catch (IllegalStateException e) {
+            return respuestaError(HttpStatus.CONFLICT, e.getMessage());
+        }
+    }
+
+
     private ResponseEntity<Map<String, String>> respuestaError(HttpStatus estado, String mensaje) {
         Map<String, String> error = new HashMap<>();
         error.put("mensaje", mensaje);
