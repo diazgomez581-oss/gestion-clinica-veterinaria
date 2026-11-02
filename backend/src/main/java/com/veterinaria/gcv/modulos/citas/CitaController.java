@@ -21,6 +21,7 @@ public class CitaController {
         this.veterinarioRepository = veterinarioRepository;
     }
 
+
     // GET /api/citas -> Devuelve TODAS las citas registradas en la BD (Para el Calendario y Agenda General)
     @GetMapping
     public List<Cita> listarTodasLasCitas() {
@@ -31,6 +32,12 @@ public class CitaController {
     @GetMapping("/hoy")
     public List<Cita> listarCitasHoy() {
         return citaRepository.findByFechaOrderByHoraAsc(LocalDate.now());
+    }
+
+    // GCV-7 [CIT-03]: Citas del día con nombres reales
+    @GetMapping("/hoy/detalle")
+    public List<CitaDashboardProjection> listarCitasHoyConDetalle() {
+        return citaRepository.obtenerCitasDashboard(LocalDate.now());
     }
 
     // GET /api/citas/veterinarios -> Devuelve los veterinarios registrados en PostgreSQL
@@ -60,12 +67,74 @@ public class CitaController {
     }
 
     // PATCH /api/citas/{id}/check-in -> HU GCV-6 [CIT-02]: Check-in de llegada
-    @PatchMapping("/{id}/check-in")
-    public ResponseEntity<?> registrarCheckIn(@PathVariable Long id) {
+   
+        @PatchMapping("/{id}/check-in")
+        public ResponseEntity<?> registrarCheckIn(@PathVariable Long id) {
+
+            return citaRepository.findById(id).map(cita -> {
+
+                if (!"Programada".equals(cita.getEstado())) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("Solo se puede registrar check-in de una cita programada.");
+                }
+
+                cita.setEstado("En Sala de Espera");
+                cita.setHoraLlegada(LocalTime.now());
+
+                return ResponseEntity.ok(citaRepository.save(cita));
+
+            }).orElseGet(() ->
+                ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No se encontró la cita.")
+            );
+        }
+
+    
+    // GCV-7 [CIT-03]: Control y actualización de estados
+    @PatchMapping("/{id}/estado")
+    public ResponseEntity<?> actualizarEstado(
+            @PathVariable Long id,
+            @RequestBody java.util.Map<String, String> datos) {
+
+        String nuevoEstado = datos.get("estado");
+
+        if (nuevoEstado == null ||
+            !java.util.List.of(
+                "Cancelada",
+                "No Asistió",
+                "En Consulta"
+            ).contains(nuevoEstado)) {
+
+            return ResponseEntity.badRequest()
+                .body("El estado solicitado no es válido.");
+        }
+
         return citaRepository.findById(id).map(cita -> {
-            cita.setEstado("En Sala de Espera");
-            cita.setHoraLlegada(LocalTime.now());
+
+            String estadoActual = cita.getEstado();
+
+            if (!"Programada".equals(estadoActual) &&
+                !"En Sala de Espera".equals(estadoActual)) {
+
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("No se puede modificar una cita en estado: " + estadoActual);
+            }
+
+            if ("En Consulta".equals(nuevoEstado) &&
+                !"En Sala de Espera".equals(estadoActual)) {
+
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("La cita debe estar en sala de espera para iniciar consulta.");
+            }
+
+            cita.setEstado(nuevoEstado);
+
             return ResponseEntity.ok(citaRepository.save(cita));
-        }).orElseGet(() -> ResponseEntity.notFound().build());
+
+        }).orElseGet(() ->
+            ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("No se encontró la cita.")
+        );
     }
+
 }

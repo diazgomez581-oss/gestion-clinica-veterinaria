@@ -4,16 +4,22 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import ProgramarCitaPage from './modulos/citas/ProgramarCitaPage';
 import CalendarioCitasPage from './modulos/citas/CalendarioCitasPage';
+import ConsultarPropietariosPage from './modulos/propietarios/ConsultarPropietariosPage';
 import RegistroPropietarioPage from './modulos/propietarios/RegistroPropietarioPage';
 import RegistrarConsultaPage from './modulos/consultas/RegistrarConsultaPage';
 import VacunasPage from './modulos/vacunas/VacunasPage';
+
+import RegistrarMascotaPage from './modulos/mascotas/RegistrarMascotaPage';
+
 import './App.css';
 
 export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  // 'dashboard' | 'programar-cita' | 'calendario' | 'propietarios' | 'vacunacion'
+  // 'dashboard' | 'programar-cita' | 'calendario' | 'propietarios' | 'registrar-propietario' | 'consultas' | 'vacunacion'
   const [vistaActual, setVistaActual] = useState('dashboard');
   const [citaConsultaSeleccionada, setCitaConsultaSeleccionada] = useState(null);
+
+  const [mascotaVacunacionSeleccionada, setMascotaVacunacionSeleccionada] = useState(null);
 
   const [citas, setCitas] = useState([
     { id: 1, hora: '08:00', fecha: new Date().toISOString().split('T')[0], mascota: 'Max', icono: '🐶', dueno: 'María Rodríguez', vet: 'Dr. Morales', veterinario: 'Dr. Morales', motivo: 'Consulta general', estado: 'Atendida', espera: null },
@@ -53,7 +59,10 @@ export default function App() {
       <div className="app-body">
         <Sidebar 
           collapsed={sidebarCollapsed}
-          seccionActiva={vistaActual === 'programar-cita' ? 'citas' : vistaActual}
+          seccionActiva={
+            vistaActual === 'programar-cita' ? 'citas' :
+            vistaActual === 'registrar-propietario' ? 'propietarios' : vistaActual
+          }
           onSelectSeccion={handleNavegacion}
           totalCitas={citas.length}
           enEspera={citas.filter(c => c.estado === 'En espera' || c.estado === 'En Sala de Espera').length}
@@ -71,6 +80,7 @@ export default function App() {
               onVolver={() => setVistaActual('dashboard')}
               onIrAProgramar={() => setVistaActual('programar-cita')}
             />
+        
           ) : vistaActual === 'consultas' ? (
             <RegistrarConsultaPage
               citaInicial={citaConsultaSeleccionada}
@@ -78,18 +88,40 @@ export default function App() {
                 setCitaConsultaSeleccionada(null);
                 setVistaActual('dashboard');
               }}
+              onAbrirVacunacion={(idMascota) => {
+                setMascotaVacunacionSeleccionada(idMascota);
+                setVistaActual('vacunacion');
+              }}
             />
+
+            
           ) : vistaActual === 'propietarios' ? (
+            <ConsultarPropietariosPage
+              onIrARegistro={() => setVistaActual('registrar-propietario')}
+              onVolverDashboard={() => setVistaActual('dashboard')}
+            />
+          ) : vistaActual === 'registrar-propietario' ? (
             <RegistroPropietarioPage
-              onVolver={() => setVistaActual('dashboard')}
+              onVolver={() => setVistaActual('propietarios')}
               onPropietarioGuardado={(nuevo) => {
                 console.log('Propietario registrado con éxito:', nuevo);
               }}
             />
-          ) : vistaActual === 'vacunacion' ? (
-            <VacunasPage onVolver={() => setVistaActual('dashboard')} />
-          ) : (
-            <Dashboard 
+          
+            ) : vistaActual === 'vacunacion' ? (
+              <VacunasPage
+                idMascotaInicial={mascotaVacunacionSeleccionada}
+                onVolver={() => {
+                  setMascotaVacunacionSeleccionada(null);
+                  setVistaActual('consultas');
+                }}
+              />
+            ) : vistaActual === 'mascotas' ? (
+            <RegistrarMascotaPage
+            onVolver={() => setVistaActual('dashboard')}/>
+            ) : (
+              <Dashboard
+ 
               citasData={citas}
               setCitasData={setCitas}
               onIrAProgramar={() => setVistaActual('programar-cita')}

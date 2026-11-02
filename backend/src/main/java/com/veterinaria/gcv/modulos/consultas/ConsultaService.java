@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 public class ConsultaService {
 
@@ -51,10 +53,10 @@ public class ConsultaService {
         Cita cita = citaRepository.findById(consulta.getIdCita())
                 .orElseThrow(() -> new IllegalArgumentException("La cita indicada no existe."));
 
-        if (!"En Sala de Espera".equalsIgnoreCase(cita.getEstado()) &&
-            !"En espera".equalsIgnoreCase(cita.getEstado())) {
+        
+        if (!"En Consulta".equalsIgnoreCase(cita.getEstado())) {
             throw new IllegalStateException(
-                    "La consulta solo puede iniciarse cuando la cita se encuentra en sala de espera.");
+                    "La consulta médica solo puede registrarse cuando la cita se encuentra en estado En Consulta.");
         }
 
         if (consultaRepository.existsByIdCita(cita.getIdCita())) {
@@ -99,6 +101,41 @@ public class ConsultaService {
 
         return consultaRepository.save(consulta);
     }
+    
+    // HIS-01: Finalizar atención médica y actualizar estado de la cita
+    @Transactional
+    public Consulta finalizarConsulta(Long idConsulta) {
+
+        Consulta consulta = consultaRepository.findById(idConsulta)
+                .orElseThrow(() ->
+                    new IllegalArgumentException("La consulta médica no existe.")
+                );
+
+        if (Boolean.TRUE.equals(consulta.getFinalizada())) {
+            throw new IllegalStateException(
+                "Esta consulta ya fue finalizada."
+            );
+        }
+
+        Cita cita = citaRepository.findById(consulta.getIdCita())
+                .orElseThrow(() ->
+                    new IllegalArgumentException("La cita asociada no existe.")
+                );
+
+        if (!"En Consulta".equals(cita.getEstado())) {
+            throw new IllegalStateException(
+                "Solo se puede finalizar una cita que esté En Consulta."
+            );
+        }
+
+        consulta.setFinalizada(true);
+        cita.setEstado("Atendida");
+
+        citaRepository.save(cita);
+
+        return consultaRepository.save(consulta);
+    }
+
 
     private void validarTextoObligatorio(String valor, String mensaje) {
         if (valor == null || valor.trim().isEmpty()) {

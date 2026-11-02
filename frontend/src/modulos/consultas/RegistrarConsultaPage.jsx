@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { consultasService } from './consultasService';
+import { vacunasService } from '../vacunas/vacunasService';
 
 const formularioInicial = {
   motivoConsulta: '',
@@ -20,7 +21,7 @@ const iconoEspecie = (especie = '') => {
   return '🐶';
 };
 
-export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) {
+export default function RegistrarConsultaPage({ citaInicial = null, onVolver, onAbrirVacunacion }) {
   const [citasEspera, setCitasEspera] = useState([]);
   const [mascotas, setMascotas] = useState([]);
   const [veterinarios, setVeterinarios] = useState([]);
@@ -31,6 +32,11 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
   const [exito, setExito] = useState(null);
+
+  const [cargandoHistorial, setCargandoHistorial] = useState(false);
+  const [mensajeFinalizacion, setMensajeFinalizacion] = useState('');
+  const [vacunasAplicadas, setVacunasAplicadas] = useState([]);
+  const [errorVacunas, setErrorVacunas] = useState('');
 
   useEffect(() => {
     const cargarBase = async () => {
@@ -45,7 +51,10 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
         ]);
 
         const enEspera = (citas || []).filter(
-          (c) => c.estado === 'En Sala de Espera' || c.estado === 'En espera'
+          (c) =>
+            c.estado === 'En Sala de Espera' ||
+            c.estado === 'En espera' ||
+            c.estado === 'En Consulta'
         );
 
         setCitasEspera(enEspera);
@@ -67,10 +76,15 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
     cargarBase();
   }, [citaInicial]);
 
+
   useEffect(() => {
+    let activo = true;
+
+    setHistorial([]);
+
     if (!citaSeleccionada?.idMascota) {
-      setHistorial([]);
-      return;
+      setCargandoHistorial(false);
+      return () => { activo = false; };
     }
 
     setFormulario((prev) => ({
@@ -78,10 +92,62 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
       motivoConsulta: prev.motivoConsulta || citaSeleccionada.motivo || ''
     }));
 
+    setCargandoHistorial(true);
+
     consultasService.getHistorialMascota(citaSeleccionada.idMascota)
-      .then(setHistorial)
-      .catch(() => setHistorial([]));
+     
+        .then((datos) => {
+          if (!activo) return;
+
+          const registros = Array.isArray(datos) ? datos : [];
+          setHistorial(registros);
+
+          const consultaActual = registros.find(
+            (consulta) =>
+              String(consulta.idCita) === String(citaSeleccionada.idCita)
+          );
+
+          if (consultaActual) {
+            setFormulario({
+              motivoConsulta: consultaActual.motivoConsulta || '',
+              anamnesis: consultaActual.anamnesis || '',
+              temperatura: consultaActual.temperatura ?? '',
+              pesoActual: consultaActual.pesoActual ?? '',
+              frecuenciaCardiaca: consultaActual.frecuenciaCardiaca ?? '',
+              examenFisico: consultaActual.examenFisico || '',
+              diagnostico: consultaActual.diagnostico || '',
+              observaciones: consultaActual.observaciones || ''
+            });
+          }
+        })
+
+      .catch(() => {
+        if (activo) {
+          setHistorial([]);
+          setError('No se pudo consultar el historial médico.');
+        }
+      })
+      .finally(() => {
+        if (activo) setCargandoHistorial(false);
+      });
+
+    return () => { activo = false; };
   }, [citaSeleccionada]);
+
+
+  // Cartilla de vacunación real, vinculada a la mascota seleccionada.
+  useEffect(() => {
+    let activo = true;
+    setVacunasAplicadas([]);
+    setErrorVacunas('');
+    if (!citaSeleccionada?.idMascota) return () => { activo = false; };
+
+    vacunasService.listarVacunas(citaSeleccionada.idMascota)
+      .then((registros) => { if (activo) setVacunasAplicadas(registros || []); })
+      .catch(() => { if (activo) setErrorVacunas('No se pudo cargar la cartilla de vacunas.'); });
+
+    return () => { activo = false; };
+  }, [citaSeleccionada?.idMascota]);
 
   const mascota = useMemo(
     () => mascotas.find((m) => m.idMascota === citaSeleccionada?.idMascota),
@@ -92,6 +158,20 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
     () => veterinarios.find((v) => v.idVeterinario === citaSeleccionada?.idVeterinario),
     [veterinarios, citaSeleccionada]
   );
+  
+  // Detectar si la cita ya tiene una consulta médica registrada
+  const consultaRegistrada =
+    historial.find(
+      (consulta) =>
+        String(consulta.idCita) === String(citaSeleccionada?.idCita)
+    ) ||
+    (
+      exito &&
+      String(exito.idCita) === String(citaSeleccionada?.idCita)
+        ? exito
+        : null
+    );
+
 
   const handleSeleccionarCita = (cita) => {
     setCitaSeleccionada(cita);
@@ -149,6 +229,53 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
     }
   };
 
+  
+  // HIS-01: Finalizar consulta médica y marcar cita como Atendida
+  const handleFinalizarConsulta = async () => {
+    if (!consultaRegistrada?.idConsulta || !citaSeleccionada) {
+      setError('Primero debe existir una consulta médica registrada.');
+      return;
+    }
+
+    const confirmar = window.confirm(
+      `¿Deseás finalizar la consulta de ${
+        mascota?.nombre || 'este paciente'
+      }? La cita pasará a Atendida.`
+    );
+
+    if (!confirmar) return;
+
+    try {
+      setGuardando(true);
+      setError('');
+
+      await consultasService.finalizarConsulta(
+        consultaRegistrada.idConsulta
+      );
+
+      // Retirar la cita de la lista de pacientes activos
+      setCitasEspera((prev) =>
+        prev.filter((c) => c.idCita !== citaSeleccionada.idCita)
+      );
+
+      setMensajeFinalizacion(
+        `La consulta de ${mascota?.nombre || 'la mascota'} fue finalizada. ` +
+        'La cita ahora está Atendida.'
+      );
+
+      setCitaSeleccionada(null);
+      setHistorial([]);
+      setFormulario(formularioInicial);
+      setExito(null);
+
+    } catch (err) {
+      setError(err.message || 'No se pudo finalizar la consulta.');
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+
   const fechaHoraLegible = (valor) => {
     if (!valor) return '—';
     return new Date(valor).toLocaleString('es-SV', {
@@ -159,6 +286,19 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
 
   return (
     <div className="cita-page-container consulta-page-container">
+      <style>{`
+        .consulta-datos-bloqueados .input-group-vet input,
+        .consulta-datos-bloqueados .input-group-vet textarea,
+        .consulta-datos-bloqueados .input-group-vet select {
+          background: #e9edf2 !important;
+          border: 1px solid #cbd5e1 !important;
+          color: #475569 !important;
+          opacity: 1 !important;
+          -webkit-text-fill-color: #475569 !important;
+          cursor: not-allowed !important;
+        }
+        .consulta-datos-bloqueados .input-group-vet label { color: #64748b; }
+      `}</style>
       <div className="cita-page-header">
         <div>
           <div className="cita-breadcrumb">
@@ -171,6 +311,11 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
       </div>
 
       {error && <div className="alert-banner-danger">⚠️ {error}</div>}
+      {mensajeFinalizacion && (
+      <div className="alert-banner-success">
+        ✓ {mensajeFinalizacion}
+      </div>
+)}
 
       {exito && (
         <div className="alert-banner-success">
@@ -183,7 +328,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
         <aside className="consulta-waiting-panel">
           <div className="consulta-panel-heading">
             <div>
-              <strong>Pacientes en espera</strong>
+              <strong>Pacientes en atención</strong>
               <span>{citasEspera.length} paciente(s)</span>
             </div>
             <span className="panel-tag-aqua">CON-01</span>
@@ -192,7 +337,9 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
           {cargando ? (
             <div className="consulta-empty-state">Cargando pacientes desde PostgreSQL...</div>
           ) : citasEspera.length === 0 ? (
-            <div className="consulta-empty-state">No hay pacientes en sala de espera.</div>
+            <div className="consulta-empty-state">
+              No hay pacientes en espera ni en consulta.
+            </div>
           ) : (
             <div className="consulta-patient-list">
               {citasEspera.map((cita) => {
@@ -210,6 +357,11 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
                     <span className="consulta-pet-icon">{iconoEspecie(pet?.especie)}</span>
                     <span className="consulta-patient-data">
                       <strong>{pet?.nombre || `Mascota #${cita.idMascota}`}</strong>
+                      {cita.estado === 'En Consulta' && (
+                        <small style={{ color: '#0284c7', fontWeight: '700' }}>
+                          🩺 En consulta
+                        </small>
+                      )}
                       <small>{pet?.codigoExpediente || 'Expediente pendiente'} · {cita.hora?.slice?.(0, 5) || cita.hora}</small>
                       <small>{vet?.nombre || `Veterinario #${cita.idVeterinario}`}</small>
                     </span>
@@ -225,10 +377,24 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
             <div className="cita-card-section consulta-select-prompt">
               <div className="consulta-prompt-icon">🩺</div>
               <h3>Selecciona un paciente</h3>
-              <p>Elige una cita en estado “En Sala de Espera” para iniciar el registro clínico.</p>
+              <p>
+                Selecciona un paciente en espera o en consulta para continuar
+                con su registro clínico.
+              </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="consulta-form-stack">
+            <form onSubmit={handleSubmit} className="consulta-form-stack">              
+            <fieldset
+              className={consultaRegistrada ? "consulta-datos-bloqueados" : ""}
+              disabled={Boolean(consultaRegistrada) || cargandoHistorial}
+              style={{
+                border: 'none',
+                padding: 0,
+                margin: 0,
+                minWidth: 0
+              }}
+            >
+
               <div className="cita-card-section">
                 <div className="consulta-patient-header">
                   <div className="consulta-patient-title">
@@ -288,6 +454,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
 
               <div className="cita-card-section">
                 <h3 className="section-title-aqua">3. Diagnóstico y Observaciones</h3>
+                
                 <div className="input-group-vet">
                   <label>Diagnóstico médico *</label>
                   <textarea name="diagnostico" rows="4" value={formulario.diagnostico} onChange={handleChange} placeholder="Registre el diagnóstico preliminar o definitivo..." />
@@ -297,19 +464,106 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
                   <textarea name="observaciones" rows="4" value={formulario.observaciones} onChange={handleChange} placeholder="Indicaciones clínicas, hallazgos o notas relevantes..." />
                 </div>
               </div>
+              </fieldset>
+              
+              {/* VAC-01: Consultar cartilla y abrir el registro existente */}
+              <div className="cita-card-section">
+                <h3 className="section-title-aqua">💉 4. Aplicación de vacunas</h3>
+                <p style={{color:'#64748b', fontSize:'13px', marginBottom:16}}>
+                  Vacunas realmente aplicadas a {mascota?.nombre || 'la mascota'}. El registro de nuevas aplicaciones se realiza en la cartilla existente.
+                </p>
+                {errorVacunas && <div className="alert-banner-danger">⚠️ {errorVacunas}</div>}
+                {vacunasAplicadas.length === 0 ? (
+                  <p style={{fontSize:13, color:'#64748b'}}>No hay vacunas registradas para esta mascota.</p>
+                ) : (
+                  <div style={{overflowX:'auto'}}>
+                    <table className="clean-table">
+                      <thead><tr><th>Fecha de aplicación</th><th>Vacuna</th><th>Lote</th><th>Veterinario</th></tr></thead>
+                      <tbody>
+                        {vacunasAplicadas.map((vacuna) => (
+                          <tr key={vacuna.idAplicacionVacuna}>
+                            <td>{vacuna.fechaAplicacion ? vacuna.fechaAplicacion.split('-').reverse().join('/') : '—'}</td>
+                            <td>{vacuna.nombreTipoVacuna}</td>
+                            <td>{vacuna.lote}</td>
+                            <td>{vacuna.veterinario?.nombre || '—'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+                <div style={{display:'flex', justifyContent:'flex-end', marginTop:16}}>
+                  <button
+                    type="button"
+                    className="btn-confirm-save"
+                    disabled={!citaSeleccionada?.idMascota || !onAbrirVacunacion || !consultaRegistrada}
+                    onClick={() => onAbrirVacunacion(citaSeleccionada.idMascota)}
+                  >
+                    💉 Abrir cartilla / Registrar vacuna
+                  </button>
+                </div>
+                <p style={{fontSize:12, color:'#94a3b8', marginTop:10}}>
+                  Fecha de aplicación y veterinario se registran en Vacunación. La programación del próximo refuerzo (VAC-02) requiere integrar su campo en el backend.
+                </p>
+              </div>
 
               <div className="consulta-actions-bar">
                 <div>
                   <strong>Registro clínico CON-01</strong>
-                  <span>Se guardará como consulta activa, vinculada a la cita y al paciente.</span>
+                  <span>
+                    {cargandoHistorial
+                      ? 'Verificando consulta registrada...'
+                      : consultaRegistrada
+                        ? 'Consulta registrada. Pendiente de finalizar atención.'
+                        : 'Se guardará la consulta médica en PostgreSQL.'}
+                  </span>
                 </div>
+
                 <div className="consulta-actions-buttons">
-                  <button type="button" className="btn-cancel-flat" onClick={onVolver}>Cancelar</button>
-                  <button type="submit" className="btn-confirm-save" disabled={guardando || !!exito}>
-                    {guardando ? 'Guardando en PostgreSQL...' : exito ? '✓ Consulta registrada' : '✓ Registrar Consulta Médica'}
+                  <button
+                    type="button"
+                    className="btn-cancel-flat"
+                    onClick={onVolver}
+                  >
+                    Volver
                   </button>
+
+                  {cargandoHistorial ? (
+                    <button
+                      type="button"
+                      className="btn-confirm-save"
+                      disabled
+                    >
+                      Verificando...
+                    </button>
+                  ) : consultaRegistrada ? (
+                    <button
+                      type="button"
+                      className="btn-confirm-save"
+                      onClick={handleFinalizarConsulta}
+                      disabled={guardando}
+                    >
+                      {guardando
+                        ? 'Finalizando...'
+                        : '✓ Finalizar consulta'}
+                    </button>
+                  ) : (
+                    <button
+                      type="submit"
+                      className="btn-confirm-save"
+                      disabled={
+                        guardando ||
+                        citaSeleccionada?.estado !== 'En Consulta'
+                      }
+                    >
+                      {guardando
+                        ? 'Guardando en PostgreSQL...'
+                        : '✓ Registrar Consulta Médica'}
+                    </button>
+                  )}
                 </div>
               </div>
+
             </form>
           )}
         </div>

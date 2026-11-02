@@ -2,9 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { citasService } from '../citas/citasService';
 import CartillaVacunas from './CartillaVacunas';
 
-export default function VacunasPage({ onVolver }) {
+export default function VacunasPage({ onVolver, idMascotaInicial = null }) {
   const [mascotas, setMascotas] = useState([]);
-  const [idMascota, setIdMascota] = useState('');
+  const [idMascota, setIdMascota] = useState(
+    idMascotaInicial ? String(idMascotaInicial) : ''
+  );
+
+  useEffect(() => {
+    setIdMascota(idMascotaInicial ? String(idMascotaInicial) : '');
+  }, [idMascotaInicial]);  
 
   useEffect(() => {
     citasService.getMascotas().then(data => setMascotas(data || []));
