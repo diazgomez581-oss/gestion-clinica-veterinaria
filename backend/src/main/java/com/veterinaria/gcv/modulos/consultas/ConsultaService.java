@@ -51,10 +51,10 @@ public class ConsultaService {
         Cita cita = citaRepository.findById(consulta.getIdCita())
                 .orElseThrow(() -> new IllegalArgumentException("La cita indicada no existe."));
 
-        if (!"En Sala de Espera".equalsIgnoreCase(cita.getEstado()) &&
-            !"En espera".equalsIgnoreCase(cita.getEstado())) {
+        
+        if (!"En Consulta".equalsIgnoreCase(cita.getEstado())) {
             throw new IllegalStateException(
-                    "La consulta solo puede iniciarse cuando la cita se encuentra en sala de espera.");
+                    "La consulta médica solo puede registrarse cuando la cita se encuentra en estado En Consulta.");
         }
 
         if (consultaRepository.existsByIdCita(cita.getIdCita())) {

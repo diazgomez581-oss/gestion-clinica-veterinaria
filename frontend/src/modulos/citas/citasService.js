@@ -3,11 +3,12 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 export const citasService = {
+
   // 1. Obtener citas del día actual (para el Dashboard)
   getCitasHoy: async () => {
-    const res = await fetch(`${API_BASE_URL}/citas/hoy`);
-    if (!res.ok) throw new Error('Error al consultar las citas del día.');
-    return await res.json();
+  const res = await fetch(`${API_BASE_URL}/citas/hoy/detalle`);
+  if (!res.ok) throw new Error('Error al consultar las citas del día.');
+  return await res.json();
   },
 
   // 2. Obtener TODAS las citas registradas en la base de datos (para el Calendario)
@@ -70,11 +71,31 @@ export const citasService = {
   },
 
   // 7. Check-in de llegada física a sala de espera (CIT-02)
+  // 7. Check-in de llegada física (CIT-02)
   registrarCheckIn: async (idCita) => {
     const res = await fetch(`${API_BASE_URL}/citas/${idCita}/check-in`, {
       method: 'PATCH'
     });
+
     if (!res.ok) throw new Error('Error al registrar el check-in.');
+    return await res.json();
+  },
+
+  // 8. Actualización de estados de citas (CIT-03)
+  actualizarEstado: async (idCita, nuevoEstado) => {
+    const res = await fetch(`${API_BASE_URL}/citas/${idCita}/estado`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ estado: nuevoEstado })
+    });
+
+    if (!res.ok) {
+      const mensaje = await res.text();
+      throw new Error(mensaje || 'No se pudo actualizar el estado de la cita.');
+    }
+
     return await res.json();
   }
 };

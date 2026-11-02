@@ -26,9 +26,9 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta }) {
           hora: horaCorta,
           horaProgramada: horaCorta,
           fecha: c.fecha,
-          mascota: c.mascota || (c.idMascota === 1 ? 'Max' : c.idMascota === 2 ? 'Rocky' : c.idMascota === 3 ? 'Luna' : `Mascota #${c.idMascota}`),
-          icono: c.idMascota === 3 ? '🐱' : '🐶',
-          dueno: c.dueno || c.propietario || (c.idMascota === 1 || c.idMascota === 2 ? 'Carlos Alberto Pérez Ramos' : 'Propietario'),
+          mascota: c.nombreMascota || `Mascota #${c.idMascota}`,
+          icono: '🐾',
+          dueno: c.nombrePropietario || 'Propietario no disponible',
           veterinario: c.veterinario || (c.idVeterinario === 1 ? 'Dr. Daniel Solano' : c.idVeterinario === 2 ? 'Dr. Carlos Rodríguez' : 'Dra. María Santos'),
           motivo: c.motivo || 'Consulta médica',
           estado: c.estado || 'Programada',
@@ -56,6 +56,44 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta }) {
       await cargarCitasDeBD();
     } catch (err) {
       alert(`Error al registrar check-in: ${err.message}`);
+    }
+  };
+
+  // GCV-7 [CIT-03]: Actualizar estado de cita
+  const handleActualizarEstado = async (idCita, nuevoEstado) => {
+
+
+    const confirmar = window.confirm(
+      `¿Estás seguro de cambiar el estado de la cita a "${nuevoEstado}"?`
+    );
+
+    if (!confirmar) return;
+
+    try {
+      await citasService.actualizarEstado(idCita, nuevoEstado);
+      await cargarCitasDeBD();
+    } catch (error) {
+      alert(`Error al actualizar la cita: ${error.message}`);
+    }
+  };
+
+  // GCV-7 [CIT-03]: Llamar al paciente e iniciar consulta
+  const handleLlamarAConsulta = async (cita) => {
+    try {
+      // Actualizar el estado en PostgreSQL
+      await citasService.actualizarEstado(cita.idCita, 'En Consulta');
+
+      // Actualizar el dashboard
+      await cargarCitasDeBD();
+
+      // Abrir el módulo de consultas médicas
+      onIniciarConsulta?.({
+        ...cita,
+        estado: 'En Consulta'
+      });
+
+    } catch (error) {
+      alert(`Error al llamar a consulta: ${error.message}`);
     }
   };
 
@@ -216,29 +254,115 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta }) {
                         <span className="vet-cell-pill">{c.veterinario}</span>
                       </td>
                       <td className="motive-cell-text">{c.motivo}</td>
+                      
                       <td>
-                        {c.estado === 'Atendida' && <span className="status-badge gray">Atendida</span>}
+                        {c.estado === 'Atendida' && (
+                          <span className="status-badge gray">Atendida</span>
+                        )}
+
                         {(c.estado === 'En Sala de Espera' || c.estado === 'En espera') && (
                           <span className="status-badge yellow">En espera</span>
                         )}
-                        {c.estado === 'Programada' && <span className="status-badge aqua">Programada</span>}
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        {c.estado === 'Atendida' && <span style={{ color: '#94a3b8' }}>—</span>}
-                        {(c.estado === 'En Sala de Espera' || c.estado === 'En espera') && (
-                          <button type="button" className="btn-file-blue">Ver ficha</button>
-                        )}
+
                         {c.estado === 'Programada' && (
-                          <button
-                            type="button"
-                            onClick={() => handleCheckIn(c.idCita)}
-                            className="btn-checkin-orange"
-                            title="Registrar check-in de llegada en PostgreSQL"
-                          >
-                            ✓ Check-in
-                          </button>
+                          <span className="status-badge aqua">Programada</span>
+                        )}
+
+                        {c.estado === 'Cancelada' && (
+                          <span className="status-badge" style={{
+                            background: '#fee2e2',
+                            color: '#b91c1c'
+                          }}>
+                            Cancelada
+                          </span>
+                        )}
+
+                        {c.estado === 'No Asistió' && (
+                          <span className="status-badge" style={{
+                            background: '#fef3c7',
+                            color: '#92400e'
+                          }}>
+                            No asistió
+                          </span>
+                        )}
+
+                        {c.estado === 'En Consulta' && (
+                          <span className="status-badge" style={{
+                            background: '#dbeafe',
+                            color: '#1d4ed8'
+                          }}>
+                            En consulta
+                          </span>
                         )}
                       </td>
+
+                     
+                                            
+                        <td className="cita-acciones-celda">
+                          <div className="cita-acciones">
+
+                            {c.estado === 'Programada' && (
+                              <button
+                                type="button"
+                                onClick={() => handleCheckIn(c.idCita)}
+                                className="btn-checkin-orange"
+                              >
+                                ✓ Check-in
+                              </button>
+                            )}
+
+                            {(c.estado === 'En Sala de Espera' ||
+                              c.estado === 'En espera') && (
+                              <button
+                                type="button"
+                                className="btn-file-blue"
+                              >
+                                Ver ficha
+                              </button>
+                            )}
+
+                            {(c.estado === 'Programada' ||
+                              c.estado === 'En Sala de Espera' ||
+                              c.estado === 'En espera') && (
+                              <details className="cita-menu">
+                                <summary className="cita-menu-trigger">
+                                  ⋯ Acciones
+                                </summary>
+
+                                <div className="cita-menu-opciones">
+                                  <button
+                                    type="button"
+                                    className="cita-menu-item"
+                                    onClick={(e) => {
+                                      e.currentTarget.closest('details').open = false;
+                                      handleActualizarEstado(c.idCita, 'No Asistió');
+                                    }}
+                                  >
+                                    ◷ No asistió
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    className="cita-menu-item cita-menu-danger"
+                                    onClick={(e) => {
+                                      e.currentTarget.closest('details').open = false;
+                                      handleActualizarEstado(c.idCita, 'Cancelada');
+                                    }}
+                                  >
+                                    ⊘ Cancelar cita
+                                  </button>
+                                </div>
+                              </details>
+                            )}
+
+                            {['Atendida', 'Cancelada', 'No Asistió', 'En Consulta'].includes(c.estado) && (
+                              <span className="cita-sin-acciones">—</span>
+                            )}
+
+                          </div>
+                        </td>
+
+
                     </tr>
                   ))
                 )}
@@ -284,7 +408,15 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta }) {
                   <div className="queue-vet-name">👤 {item.veterinario}</div>
 
                   <div className="queue-btn-group">
-                    <button type="button" className="btn-call-patient" onClick={() => onIniciarConsulta?.(item)}>🩺 Llamar a consulta</button>
+                    
+                  <button
+                    type="button"
+                    className="btn-call-patient"
+                    onClick={() => handleLlamarAConsulta(item)}
+                  >
+                    🩺 Llamar a consulta
+                  </button>
+
                     <button type="button" className="btn-patient-file">📄 Ficha</button>
                   </div>
                 </div>

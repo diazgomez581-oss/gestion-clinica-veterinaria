@@ -45,7 +45,10 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
         ]);
 
         const enEspera = (citas || []).filter(
-          (c) => c.estado === 'En Sala de Espera' || c.estado === 'En espera'
+          (c) =>
+            c.estado === 'En Sala de Espera' ||
+            c.estado === 'En espera' ||
+            c.estado === 'En Consulta'
         );
 
         setCitasEspera(enEspera);
@@ -183,7 +186,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
         <aside className="consulta-waiting-panel">
           <div className="consulta-panel-heading">
             <div>
-              <strong>Pacientes en espera</strong>
+              <strong>Pacientes en atención</strong>
               <span>{citasEspera.length} paciente(s)</span>
             </div>
             <span className="panel-tag-aqua">CON-01</span>
@@ -192,7 +195,9 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
           {cargando ? (
             <div className="consulta-empty-state">Cargando pacientes desde PostgreSQL...</div>
           ) : citasEspera.length === 0 ? (
-            <div className="consulta-empty-state">No hay pacientes en sala de espera.</div>
+            <div className="consulta-empty-state">
+              No hay pacientes en espera ni en consulta.
+            </div>
           ) : (
             <div className="consulta-patient-list">
               {citasEspera.map((cita) => {
@@ -210,6 +215,11 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
                     <span className="consulta-pet-icon">{iconoEspecie(pet?.especie)}</span>
                     <span className="consulta-patient-data">
                       <strong>{pet?.nombre || `Mascota #${cita.idMascota}`}</strong>
+                      {cita.estado === 'En Consulta' && (
+                        <small style={{ color: '#0284c7', fontWeight: '700' }}>
+                          🩺 En consulta
+                        </small>
+                      )}
                       <small>{pet?.codigoExpediente || 'Expediente pendiente'} · {cita.hora?.slice?.(0, 5) || cita.hora}</small>
                       <small>{vet?.nombre || `Veterinario #${cita.idVeterinario}`}</small>
                     </span>
@@ -225,7 +235,10 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver }) 
             <div className="cita-card-section consulta-select-prompt">
               <div className="consulta-prompt-icon">🩺</div>
               <h3>Selecciona un paciente</h3>
-              <p>Elige una cita en estado “En Sala de Espera” para iniciar el registro clínico.</p>
+              <p>
+                Selecciona un paciente en espera o en consulta para continuar
+                con su registro clínico.
+              </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="consulta-form-stack">
