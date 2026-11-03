@@ -36,3 +36,14 @@ export const obtenerPropietariosParaSelect = async () => {
         throw error;
     }
 };
+
+// Servicio para obtener mascotas filtradas por ID de propietario
+export const obtenerMascotasPorPropietario = async (propietarioId) => {
+    try {
+        const response = await axios.get(`${API_URL}/propietario/${propietarioId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error al obtener mascotas del propietario:', error);
+        throw error;
+    }
+};
