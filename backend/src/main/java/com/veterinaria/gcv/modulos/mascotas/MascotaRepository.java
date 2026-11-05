@@ -7,5 +7,5 @@ import java.util.List;
 @Repository
 public interface MascotaRepository extends JpaRepository<Mascota, Long> {
     // Buscar todas las mascotas vinculadas a un propietario específico
-    List<Mascota> findByPropietarioId(Long propietarioId);
+    List<Mascota> findByPropietario_IdPropietario(Long propietarioId);
 }
