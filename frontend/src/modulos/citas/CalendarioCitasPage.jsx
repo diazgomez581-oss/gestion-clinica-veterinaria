@@ -1,85 +1,150 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { citasService } from './citasService';
+
+const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+// No usar toISOString(): puede cambiar de día según la zona horaria.
+const fechaLocal = (fecha) =>
+  `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
+
+const normalizarFecha = (fechaInput) => {
+  if (!fechaInput) return '';
+  if (Array.isArray(fechaInput)) {
+    const [y, m, d] = fechaInput;
+    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  }
+  return String(fechaInput).substring(0, 10);
+};
+
+const inicioDeSemana = (fecha) => {
+  const resultado = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
+  const desplazamiento = (resultado.getDay() + 6) % 7; // Lunes = 0
+  resultado.setDate(resultado.getDate() - desplazamiento);
+  return resultado;
+};
+
+const etiquetaDia = (fecha) =>
+  fecha.toLocaleDateString('es-SV', { day: 'numeric', month: 'long' });
+
+const horaCita = (hora) => String(hora || '').substring(0, 5) || '—';
+
+const coloresEstado = (estado) => {
+  if (estado === 'Atendida') return { fondo: '#dcfce7', texto: '#166534', borde: '#16a34a' };
+  if (estado === 'En Sala de Espera' || estado === 'En espera') return { fondo: '#fef3c7', texto: '#92400e', borde: '#f59e0b' };
+  if (estado === 'En Consulta') return { fondo: '#dbeafe', texto: '#1d4ed8', borde: '#2563eb' };
+  if (estado === 'Cancelada') return { fondo: '#fee2e2', texto: '#b91c1c', borde: '#ef4444' };
+  if (estado === 'No Asistió') return { fondo: '#fff7ed', texto: '#9a3412', borde: '#ea580c' };
+  return { fondo: '#e0f2fe', texto: '#0369a1', borde: '#06b6d4' };
+};
 
 export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
   const [vista, setVista] = useState('mes'); // 'mes' | 'agenda'
   const [citas, setCitas] = useState([]);
+  const [mascotas, setMascotas] = useState([]);
+  const [veterinarios, setVeterinarios] = useState([]);
   const [cargando, setCargando] = useState(true);
-  const [fechaActual, setFechaActual] = useState(new Date());
+  const [error, setError] = useState('');
+  const [fechaActual, setFechaActual] = useState(() => new Date());
 
   useEffect(() => {
-    async function cargarCitasCalendario() {
+    let activo = true;
+    const cargar = async () => {
       try {
         setCargando(true);
-        const data = await citasService.getTodasLasCitas();
-        setCitas(data || []);
+        const [listaCitas, listaMascotas, listaVets] = await Promise.all([
+          citasService.getTodasLasCitas(),
+          citasService.getMascotas(),
+          citasService.getVeterinarios()
+        ]);
+        if (!activo) return;
+        setCitas(Array.isArray(listaCitas) ? listaCitas : []);
+        setMascotas(Array.isArray(listaMascotas) ? listaMascotas : []);
+        setVeterinarios(Array.isArray(listaVets) ? listaVets : []);
+        setError('');
       } catch (err) {
-        console.error('Error al cargar eventos del calendario:', err);
+        if (activo) setError(err?.message || 'No se pudieron cargar los datos del calendario.');
       } finally {
-        setCargando(false);
+        if (activo) setCargando(false);
       }
-    }
-    cargarCitasCalendario();
+    };
+    cargar();
+    return () => { activo = false; };
   }, []);
 
-  const cambiarMes = (direccion) => {
-    const nuevaFecha = new Date(fechaActual);
-    nuevaFecha.setMonth(nuevaFecha.getMonth() + direccion);
-    setFechaActual(nuevaFecha);
+  const mascotasPorId = useMemo(
+    () => new Map(mascotas.map(m => [String(m.idMascota), m])),
+    [mascotas]
+  );
+  const vetsPorId = useMemo(
+    () => new Map(veterinarios.map(v => [String(v.idVeterinario), v])),
+    [veterinarios]
+  );
+
+  const nombreMascota = (cita) =>
+    cita.nombreMascota || mascotasPorId.get(String(cita.idMascota))?.nombre || `Mascota #${cita.idMascota}`;
+
+  const nombreVeterinario = (cita) => {
+    const vet = vetsPorId.get(String(cita.idVeterinario));
+    return cita.nombreVeterinario || cita.veterinarioNombre || vet?.nombre ||
+      (vet ? `${vet.nombres || ''} ${vet.apellidos || ''}`.trim() : '') ||
+      `Veterinario #${cita.idVeterinario}`;
+  };
+
+  const citasPorFecha = useMemo(() => {
+    const agrupadas = new Map();
+    citas.forEach(cita => {
+      const fecha = normalizarFecha(cita.fecha);
+      if (!fecha) return;
+      if (!agrupadas.has(fecha)) agrupadas.set(fecha, []);
+      agrupadas.get(fecha).push(cita);
+    });
+    agrupadas.forEach(lista => lista.sort((a, b) => horaCita(a.hora).localeCompare(horaCita(b.hora))));
+    return agrupadas;
+  }, [citas]);
+
+  const cambiarPeriodo = (direccion) => {
+    setFechaActual(anterior => {
+      if (vista === 'mes') {
+        // Día 1 evita saltos inesperados al navegar desde el 29, 30 o 31.
+        return new Date(anterior.getFullYear(), anterior.getMonth() + direccion, 1);
+      }
+      const lunes = inicioDeSemana(anterior);
+      lunes.setDate(lunes.getDate() + 7 * direccion);
+      return lunes;
+    });
   };
 
   const anio = fechaActual.getFullYear();
   const mesIndex = fechaActual.getMonth();
-  const nombreMes = fechaActual.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+  const nombreMes = fechaActual.toLocaleDateString('es-SV', { month: 'long', year: 'numeric' });
 
-  // Función robusta para normalizar la fecha sin importar si llega como String o como Array [YYYY, MM, DD]
-  const normalizarFecha = (fechaInput) => {
-    if (!fechaInput) return '';
-    if (Array.isArray(fechaInput)) {
-      const [y, m, d] = fechaInput;
-      return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  const diasCalendario = useMemo(() => {
+    const primero = new Date(anio, mesIndex, 1);
+    const total = new Date(anio, mesIndex + 1, 0).getDate();
+    const vacios = (primero.getDay() + 6) % 7;
+    const resultado = Array.from({ length: vacios }, () => ({ vacio: true }));
+    for (let dia = 1; dia <= total; dia++) {
+      const fechaStr = fechaLocal(new Date(anio, mesIndex, dia));
+      resultado.push({ vacio: false, diaNum: dia, fechaStr, citasDelDia: citasPorFecha.get(fechaStr) || [] });
     }
-    return String(fechaInput).substring(0, 10);
-  };
+    return resultado;
+  }, [anio, mesIndex, citasPorFecha]);
 
-  // Construcción de la matriz mensual
-  const obtenerDiasDelMes = () => {
-    const primerDiaDelMes = new Date(anio, mesIndex, 1);
-    const ultimoDiaDelMes = new Date(anio, mesIndex + 1, 0);
-    
-    let diaInicioSemana = primerDiaDelMes.getDay();
-    diaInicioSemana = diaInicioSemana === 0 ? 6 : diaInicioSemana - 1; // Lunes = 0
+  const semana = useMemo(() => {
+    const lunes = inicioDeSemana(fechaActual);
+    return Array.from({ length: 7 }, (_, indice) => {
+      const fecha = new Date(lunes);
+      fecha.setDate(fecha.getDate() + indice);
+      const fechaStr = fechaLocal(fecha);
+      return { fecha, fechaStr, citasDelDia: citasPorFecha.get(fechaStr) || [] };
+    });
+  }, [fechaActual, citasPorFecha]);
 
-    const dias = [];
-    for (let i = 0; i < diaInicioSemana; i++) {
-      dias.push({ vacio: true });
-    }
-
-    for (let d = 1; d <= ultimoDiaDelMes.getDate(); d++) {
-      const mesStr = String(mesIndex + 1).padStart(2, '0');
-      const diaStr = String(d).padStart(2, '0');
-      const fechaStr = `${anio}-${mesStr}-${diaStr}`;
-      
-      const citasDelDia = citas.filter(c => {
-        const fechaLimpia = normalizarFecha(c.fecha);
-        return fechaLimpia === fechaStr;
-      });
-
-      dias.push({
-        vacio: false,
-        diaNum: d,
-        fechaStr: fechaStr,
-        citasDelDia
-      });
-    }
-    return dias;
-  };
-
-  const diasCalendario = obtenerDiasDelMes();
+  const tituloSemana = `${etiquetaDia(semana[0].fecha)} – ${etiquetaDia(semana[6].fecha)} de ${semana[6].fecha.getFullYear()}`;
+  const hoy = fechaLocal(new Date());
 
   return (
     <div style={estilos.container}>
-      {/* Header */}
       <div style={estilos.header}>
         <div>
           <div style={estilos.breadcrumb}>
@@ -88,130 +153,104 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
           <h1 style={estilos.title}>Calendario y Planificación de Citas</h1>
           <p style={estilos.subtitle}>Visualización mensual y control general de citas registradas en PostgreSQL</p>
         </div>
-
         <div style={estilos.headerButtons}>
-          <button onClick={onIrAProgramar} style={estilos.btnPrimary}>
-            + Agendar Cita
-          </button>
-          <button onClick={onVolver} style={estilos.btnSecondary}>
-            ← Volver al Dashboard
-          </button>
+          <button type="button" onClick={onIrAProgramar} style={estilos.btnPrimary}>+ Agendar Cita</button>
+          <button type="button" onClick={onVolver} style={estilos.btnSecondary}>← Volver al Dashboard</button>
         </div>
       </div>
 
-      {/* Toolbar */}
       <div style={estilos.toolbar}>
         <div style={estilos.viewToggle}>
-          <button 
-            onClick={() => setVista('mes')} 
-            style={vista === 'mes' ? estilos.toggleBtnActive : estilos.toggleBtn}
-          >
-            📅 Calendario Mensual
-          </button>
-          <button 
-            onClick={() => setVista('agenda')} 
-            style={vista === 'agenda' ? estilos.toggleBtnActive : estilos.toggleBtn}
-          >
-            📋 Agenda General ({citas.length})
-          </button>
+          <button type="button" onClick={() => setVista('mes')} style={vista === 'mes' ? estilos.toggleBtnActive : estilos.toggleBtn}>📅 Calendario Mensual</button>
+          <button type="button" onClick={() => setVista('agenda')} style={vista === 'agenda' ? estilos.toggleBtnActive : estilos.toggleBtn}>📋 Agenda Semanal ({citas.length})</button>
         </div>
-
-        {vista === 'mes' && (
-          <div style={estilos.navMesBox}>
-            <button onClick={() => cambiarMes(-1)} style={estilos.navBtn}>◀ Anterior</button>
-            <span style={estilos.mesLabel}>{nombreMes.toUpperCase()}</span>
-            <button onClick={() => cambiarMes(1)} style={estilos.navBtn}>Siguiente ▶</button>
-          </div>
-        )}
+        <div style={estilos.navMesBox}>
+          <button type="button" onClick={() => cambiarPeriodo(-1)} style={estilos.navBtn}>◀ Anterior</button>
+          <button type="button" onClick={() => setFechaActual(new Date())} style={estilos.navBtn}>Hoy</button>
+          <span style={estilos.mesLabel}>{vista === 'mes' ? nombreMes.toUpperCase() : tituloSemana}</span>
+          <button type="button" onClick={() => cambiarPeriodo(1)} style={estilos.navBtn}>Siguiente ▶</button>
+        </div>
       </div>
+      {error && <div style={{ ...estilos.agendaCard, marginBottom: '14px', color: '#b91c1c' }}>{error}</div>}
 
-      {/* VISTA 1: CALENDARIO MENSUAL */}
       {vista === 'mes' && (
         <div style={estilos.calendarCard}>
           <div style={estilos.weekHeaderGrid}>
-            {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map(dia => (
-              <div key={dia} style={estilos.weekHeaderCell}>{dia}</div>
-            ))}
+            {DIAS_SEMANA.map(dia => <div key={dia} style={estilos.weekHeaderCell}>{dia}</div>)}
           </div>
-
           <div style={estilos.calendarGrid}>
             {cargando ? (
               <div style={estilos.loadingState}>Sincronizando eventos con la base de datos...</div>
+            ) : diasCalendario.map((item, index) => item.vacio ? (
+              <div key={`vacio-${index}`} style={estilos.dayCellEmpty} />
             ) : (
-              diasCalendario.map((item, index) => {
-                if (item.vacio) {
-                  return <div key={`vacio-${index}`} style={estilos.dayCellEmpty} />;
-                }
-
-                const hoyStr = new Date().toISOString().split('T')[0];
-                const esHoy = item.fechaStr === hoyStr;
-
-                return (
-                  <div key={item.fechaStr} style={esHoy ? estilos.dayCellToday : estilos.dayCell}>
-                    <div style={estilos.dayNumberHeader}>
-                      <span style={esHoy ? estilos.circleToday : null}>{item.diaNum}</span>
-                      {item.citasDelDia.length > 0 && (
-                        <span style={estilos.badgeCount}>{item.citasDelDia.length} citas</span>
-                      )}
+              <div key={item.fechaStr} style={item.fechaStr === hoy ? estilos.dayCellToday : estilos.dayCell}>
+                <div style={estilos.dayNumberHeader}>
+                  <span style={item.fechaStr === hoy ? estilos.circleToday : undefined}>{item.diaNum}</span>
+                  {item.citasDelDia.length > 0 && <span style={estilos.badgeCount}>{item.citasDelDia.length} citas</span>}
+                </div>
+                <div style={estilos.citasListContainer}>
+                  {item.citasDelDia.map(cita => (
+                    <div key={cita.idCita || cita.id} style={{ ...estilos.citaCardItem, borderLeftColor: coloresEstado(cita.estado).borde, background: coloresEstado(cita.estado).fondo }} title={`${nombreMascota(cita)} · ${nombreVeterinario(cita)} · ${cita.motivo || ''}`}>
+                      <div style={estilos.citaTopRow}>
+                        <span style={estilos.citaHoraText}>{horaCita(cita.hora)}</span>
+                        <span style={{ ...estilos.dotEstado(cita.estado), background: coloresEstado(cita.estado).borde }} />
+                      </div>
+                      <div style={estilos.citaPetText}>🐾 {nombreMascota(cita)}</div>
+                      <div style={{ ...estilos.citaPetText, fontSize: '0.68rem', fontWeight: 400 }}>🩺 {nombreVeterinario(cita)}</div>
                     </div>
-                    
-                    <div style={estilos.citasListContainer}>
-                      {item.citasDelDia.map(c => (
-                        <div key={c.idCita || c.id} style={estilos.citaCardItem} title={`Hora: ${c.hora} - Motivo: ${c.motivo}`}>
-                          <div style={estilos.citaTopRow}>
-                            <span style={estilos.citaHoraText}>{String(c.hora).substring(0, 5)}</span>
-                            <span style={estilos.dotEstado(c.estado)} />
-                          </div>
-                          <div style={estilos.citaPetText}>🐾 Mascota #{c.idMascota}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })
-            )}
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
 
-      {/* VISTA 2: AGENDA GENERAL */}
       {vista === 'agenda' && (
         <div style={estilos.agendaCard}>
-          <h3 style={estilos.agendaTitle}>Listado Histórico de Citas en Base de Datos</h3>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={estilos.table}>
-              <thead>
-                <tr style={estilos.trHead}>
-                  <th style={estilos.th}>Fecha</th>
-                  <th style={estilos.th}>Hora</th>
-                  <th style={estilos.th}>ID Paciente</th>
-                  <th style={estilos.th}>Médico ID</th>
-                  <th style={estilos.th}>Motivo / Servicio</th>
-                  <th style={estilos.th}>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {citas.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" style={estilos.emptyRow}>No hay citas registradas en el sistema.</td>
-                  </tr>
-                ) : (
-                  citas.map(c => (
-                    <tr key={c.idCita || c.id} style={estilos.trRow}>
-                      <td style={estilos.td}><strong>{normalizarFecha(c.fecha)}</strong></td>
-                      <td style={estilos.td}><span style={estilos.badgeHora}>{String(c.hora).substring(0, 5)}</span></td>
-                      <td style={estilos.td}>🐾 Mascota #{c.idMascota}</td>
-                      <td style={estilos.td}>👨‍⚕️ Veterinario ID #{c.idVeterinario}</td>
-                      <td style={estilos.td}>{c.motivo}</td>
-                      <td style={estilos.td}>
-                        <span style={estilos.badgeEstado(c.estado)}>{c.estado}</span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          <div style={{ ...estilos.agendaTitle, marginBottom: '6px' }}>Agenda semanal · {tituloSemana}</div>
+          <p style={{ ...estilos.subtitle, marginBottom: '18px' }}>Citas agrupadas de lunes a domingo y ordenadas por hora.</p>
+          {cargando ? <div style={estilos.emptyRow}>Cargando citas desde PostgreSQL...</div> : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {semana.map((dia, index) => (
+                <section key={dia.fechaStr} style={{ border: '1px solid #e2e8f0', borderRadius: '10px', overflow: 'hidden' }}>
+                  <div style={{ background: dia.fechaStr === hoy ? '#ecfeff' : '#f1f5f9', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <strong style={{ color: '#0f2942', fontSize: '0.85rem' }}>{DIAS_SEMANA[index]} · {etiquetaDia(dia.fecha)}</strong>
+                    <span style={estilos.badgeCount}>{dia.citasDelDia.length} {dia.citasDelDia.length === 1 ? 'cita' : 'citas'}</span>
+                  </div>
+                  {dia.citasDelDia.length === 0 ? (
+                    <div style={{ padding: '14px 16px', color: '#94a3b8', fontSize: '0.82rem' }}>Sin citas registradas para este día.</div>
+                  ) : (
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={estilos.table}>
+                        <thead>
+                          <tr style={estilos.trHead}>
+                            <th style={estilos.th}>Hora</th>
+                            <th style={estilos.th}>Mascota</th>
+                            <th style={estilos.th}>Veterinario</th>
+                            <th style={estilos.th}>Motivo</th>
+                            <th style={estilos.th}>Estado</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {dia.citasDelDia.map(cita => (
+                            <tr key={cita.idCita || cita.id} style={estilos.trRow}>
+                              <td style={estilos.td}><span style={estilos.badgeHora}>{horaCita(cita.hora)}</span></td>
+                              <td style={{ ...estilos.td, fontWeight: 600 }}>🐾 {nombreMascota(cita)}</td>
+                              <td style={estilos.td}>🩺 {nombreVeterinario(cita)}</td>
+                              <td style={estilos.td}>{cita.motivo || '—'}</td>
+                              <td style={estilos.td}><span style={{ ...estilos.badgeEstado(cita.estado), background: coloresEstado(cita.estado).fondo, color: coloresEstado(cita.estado).texto }}>{cita.estado || 'Sin estado'}</span></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </section>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
