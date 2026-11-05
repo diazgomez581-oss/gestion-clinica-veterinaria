@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "GenerarPassword",
+            "request": "launch",
+            "mainClass": "com.veterinaria.gcv.GenerarPassword",
+            "projectName": "gcv-backend"
+        },
+        {
+            "type": "java",
             "name": "Spring Boot-GcvApplication<gcv-backend>",
             "request": "launch",
             "cwd": "${workspaceFolder}",

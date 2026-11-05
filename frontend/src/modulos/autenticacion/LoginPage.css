@@ -1,0 +1,549 @@
+
+/* =========================================
+   LOGIN - GESTIÓN CLÍNICA VETERINARIA
+========================================= */
+
+.gcv-login-screen {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 35px 20px;
+
+  background:
+    radial-gradient(
+      circle at 85% 15%,
+      rgba(0, 174, 214, 0.20),
+      transparent 35%
+    ),
+    linear-gradient(
+      135deg,
+      #06172b 0%,
+      #0c2942 55%,
+      #071b30 100%
+    );
+
+  font-family: 'Segoe UI', Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+.gcv-login-screen *,
+.gcv-login-screen *::before,
+.gcv-login-screen *::after {
+  box-sizing: border-box;
+}
+
+/* =========================================
+   CONTENEDOR PRINCIPAL
+========================================= */
+
+.gcv-login-card {
+  width: 100%;
+  max-width: 1080px;
+  min-height: 610px;
+
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+
+  background: #ffffff;
+  border-radius: 24px;
+  overflow: hidden;
+
+  box-shadow:
+    0 30px 75px rgba(0, 0, 0, 0.35);
+}
+
+/* =========================================
+   PANEL IZQUIERDO
+========================================= */
+
+.gcv-login-brand {
+  position: relative;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  padding: 35px 42px 25px;
+
+  background: linear-gradient(
+    155deg,
+    #102c47 0%,
+    #103d5b 60%,
+    #075b78 100%
+  );
+
+  color: white;
+}
+
+/* Decoración de fondo */
+
+.gcv-login-brand::before {
+  content: '';
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+
+  background: rgba(30, 194, 228, 0.09);
+
+  right: -170px;
+  bottom: 20px;
+  pointer-events: none;
+}
+
+.gcv-login-brand-label {
+  position: relative;
+  z-index: 2;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  align-self: flex-start;
+
+  padding: 12px 17px;
+
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 12px;
+
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+}
+
+.gcv-login-brand-label span {
+  font-size: 19px;
+}
+
+.gcv-login-brand-content {
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  width: 100%;
+  padding-top: 24px;
+}
+
+.gcv-login-welcome {
+  width: 100%;
+  text-align: left;
+}
+
+.gcv-login-welcome h1 {
+  margin: 0 0 15px;
+
+  color: #ffffff;
+  font-size: clamp(27px, 3vw, 37px);
+  line-height: 1.18;
+  font-weight: 800;
+  letter-spacing: -0.7px;
+}
+
+.gcv-login-welcome h1 span {
+  display: block;
+  margin-top: 4px;
+  color: #29c8ed;
+}
+
+.gcv-login-welcome p {
+  max-width: 400px;
+  margin: 0;
+
+  color: #c2deeb;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+/* =========================================
+   IMAGEN DEL PERRO Y GATO
+========================================= */
+
+.gcv-login-pets {
+  position: relative;
+  z-index: 2;
+
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  margin: 20px auto 10px;
+}
+
+.gcv-login-pets-image {
+  display: block;
+  width: min(100%, 370px);
+  height: auto;
+  object-fit: contain;
+
+  filter: drop-shadow(
+    0 16px 22px rgba(0, 0, 0, 0.20)
+  );
+
+  transition: transform 0.3s ease;
+}
+
+.gcv-login-pets-image:hover {
+  transform: scale(1.035);
+}
+
+.gcv-login-brand-footer {
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+
+  padding-top: 12px;
+
+  color: #9cc2d5;
+  font-size: 12px;
+}
+
+/* =========================================
+   PANEL DERECHO
+========================================= */
+
+.gcv-login-form-side {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 55px 50px;
+  background: #ffffff;
+}
+
+.gcv-login-form-wrap {
+  width: 100%;
+  max-width: 390px;
+}
+
+.gcv-login-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 60px;
+  height: 60px;
+
+  margin-bottom: 24px;
+
+  background: linear-gradient(
+    135deg,
+    #e0f7fd,
+    #c5f0fa
+  );
+
+  border-radius: 17px;
+  font-size: 29px;
+
+  box-shadow: 0 6px 15px rgba(0, 158, 195, 0.10);
+}
+
+.gcv-login-heading h2 {
+  margin: 0 0 10px;
+
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.7px;
+
+  color: #102c47;
+}
+
+.gcv-login-heading p {
+  margin: 0 0 34px;
+
+  color: #71859b;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* =========================================
+   CAMPOS DEL FORMULARIO
+========================================= */
+
+.gcv-login-field {
+  margin-bottom: 23px;
+}
+
+.gcv-login-field label {
+  display: block;
+  margin-bottom: 9px;
+
+  color: #18334e;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.gcv-login-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.gcv-input-icon {
+  position: absolute;
+  left: 15px;
+  z-index: 1;
+  font-size: 17px;
+  pointer-events: none;
+}
+
+.gcv-login-input-wrapper input {
+  width: 100%;
+  height: 52px;
+
+  padding: 0 80px 0 46px;
+
+  background: #ffffff;
+  border: 1.5px solid #d7e2ed;
+  border-radius: 11px;
+
+  color: #17324d;
+  font-family: inherit;
+  font-size: 14px;
+
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.gcv-login-input-wrapper input::placeholder {
+  color: #9aaabc;
+}
+
+.gcv-login-input-wrapper input:focus {
+  border-color: #0aa8ca;
+
+  box-shadow:
+    0 0 0 4px rgba(10, 168, 202, 0.10);
+}
+
+.gcv-login-input-wrapper input:disabled {
+  background: #f3f6f9;
+  cursor: not-allowed;
+}
+
+/* Mostrar / ocultar contraseña */
+
+.gcv-password-toggle {
+  position: absolute;
+  right: 12px;
+
+  border: none;
+  background: transparent;
+
+  color: #008fb5;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.gcv-password-toggle:hover {
+  color: #006f93;
+  text-decoration: underline;
+}
+
+/* =========================================
+   BOTÓN INICIAR SESIÓN
+========================================= */
+
+.gcv-login-submit {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  min-height: 54px;
+  margin-top: 32px;
+
+  border: none;
+  border-radius: 11px;
+
+  background: linear-gradient(
+    100deg,
+    #079db9 0%,
+    #0086ca 100%
+  );
+
+  color: white;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 18px rgba(0, 143, 185, 0.23);
+
+  transition: all 0.2s ease;
+}
+
+.gcv-login-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+
+  background: linear-gradient(
+    100deg,
+    #078ba9,
+    #006fac
+  );
+
+  box-shadow:
+    0 12px 22px rgba(0, 143, 185, 0.30);
+}
+
+.gcv-login-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.gcv-login-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   MENSAJES DE ERROR
+========================================= */
+
+.gcv-login-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  padding: 13px 15px;
+  margin-bottom: 22px;
+
+  background: #fff0f0;
+  border: 1px solid #ffd2d2;
+  border-radius: 10px;
+
+  color: #b42332;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* =========================================
+   PIE DE FORMULARIO
+========================================= */
+
+.gcv-login-security {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+
+  margin-top: 30px;
+
+  color: #94a3b8;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* =========================================
+   ANIMACIÓN DE CARGA
+========================================= */
+
+.gcv-login-spinner {
+  width: 17px;
+  height: 17px;
+
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  border-radius: 50%;
+
+  animation: gcv-login-spin 0.7s linear infinite;
+}
+
+@keyframes gcv-login-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 850px) {
+  .gcv-login-card {
+    max-width: 520px;
+    grid-template-columns: 1fr;
+  }
+
+  .gcv-login-brand {
+    padding: 28px 30px 22px;
+  }
+
+  .gcv-login-brand-content {
+    padding-top: 25px;
+  }
+
+  .gcv-login-welcome {
+    text-align: center;
+  }
+
+  .gcv-login-welcome h1 {
+    font-size: 30px;
+  }
+
+  .gcv-login-welcome p {
+    margin: auto;
+  }
+
+  .gcv-login-pets {
+    margin: 15px auto 10px;
+  }
+
+  .gcv-login-pets-image {
+    width: min(100%, 260px);
+  }
+
+  .gcv-login-form-side {
+    padding: 40px 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .gcv-login-screen {
+    padding: 15px;
+  }
+
+  .gcv-login-card {
+    border-radius: 17px;
+  }
+
+  .gcv-login-brand {
+    padding: 23px 22px;
+  }
+
+  .gcv-login-welcome h1 {
+    font-size: 25px;
+  }
+
+  .gcv-login-pets-image {
+    width: min(100%, 210px);
+  }
+
+  .gcv-login-form-side {
+    padding: 35px 23px;
+  }
+
+  .gcv-login-heading h2 {
+    font-size: 26px;
+  }
+
+  .gcv-login-brand-footer {
+    font-size: 10px;
+  }
+}
