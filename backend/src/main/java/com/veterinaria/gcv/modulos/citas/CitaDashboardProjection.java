@@ -1,3 +1,4 @@
+
 package com.veterinaria.gcv.modulos.citas;
 
 import java.time.LocalDate;
@@ -17,4 +18,5 @@ public interface CitaDashboardProjection {
 
     String getNombreMascota();
     String getNombrePropietario();
+    String getNombreVeterinario();
 }

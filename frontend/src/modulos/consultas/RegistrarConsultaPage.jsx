@@ -466,23 +466,71 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
               </div>
               </fieldset>
               
-              {/* VAC-01: Consultar cartilla y abrir el registro existente */}
-              <div className="cita-card-section">
-                <h3 className="section-title-aqua">💉 4. Aplicación de vacunas</h3>
-                <p style={{color:'#64748b', fontSize:'13px', marginBottom:16}}>
-                  Vacunas realmente aplicadas a {mascota?.nombre || 'la mascota'}. El registro de nuevas aplicaciones se realiza en la cartilla existente.
+              {/* VAC-01: Cartilla disponible después de registrar la consulta */}
+              <div
+                className="cita-card-section"
+                style={!consultaRegistrada ? {
+                  background: '#f1f5f9',
+                  border: '1px solid #cbd5e1'
+                } : undefined}
+              >
+                <h3
+                  className="section-title-aqua"
+                  style={!consultaRegistrada ? { color: '#64748b' } : undefined}
+                >
+                  💉 4. Aplicación de vacunas
+                </h3>
+
+                {!consultaRegistrada && (
+                  <div
+                    role="status"
+                    style={{
+                      padding: '14px 16px',
+                      background: '#e2e8f0',
+                      border: '1px solid #cbd5e1',
+                      borderRadius: 10,
+                      color: '#475569',
+                      fontSize: 13,
+                      marginBottom: 16
+                    }}
+                  >
+                    🔒 Primero completá los campos obligatorios y registrá la consulta médica.
+                    Después podrás abrir la cartilla y registrar nuevas vacunas.
+                  </div>
+                )}
+
+                <p style={{ color: '#64748b', fontSize: 13, marginBottom: 16 }}>
+                  Vacunas registradas de {mascota?.nombre || 'la mascota'}.
+                  Podés consultar el historial de vacunación en cualquier momento.
                 </p>
-                {errorVacunas && <div className="alert-banner-danger">⚠️ {errorVacunas}</div>}
+
+                {errorVacunas && (
+                  <div className="alert-banner-danger">⚠️ {errorVacunas}</div>
+                )}
+
                 {vacunasAplicadas.length === 0 ? (
-                  <p style={{fontSize:13, color:'#64748b'}}>No hay vacunas registradas para esta mascota.</p>
+                  <p style={{ fontSize: 13, color: '#64748b' }}>
+                    No hay vacunas registradas para esta mascota.
+                  </p>
                 ) : (
-                  <div style={{overflowX:'auto'}}>
+                  <div style={{ overflowX: 'auto' }}>
                     <table className="clean-table">
-                      <thead><tr><th>Fecha de aplicación</th><th>Vacuna</th><th>Lote</th><th>Veterinario</th></tr></thead>
+                      <thead>
+                        <tr>
+                          <th>Fecha de aplicación</th>
+                          <th>Vacuna</th>
+                          <th>Lote</th>
+                          <th>Veterinario</th>
+                        </tr>
+                      </thead>
                       <tbody>
                         {vacunasAplicadas.map((vacuna) => (
                           <tr key={vacuna.idAplicacionVacuna}>
-                            <td>{vacuna.fechaAplicacion ? vacuna.fechaAplicacion.split('-').reverse().join('/') : '—'}</td>
+                            <td>
+                              {vacuna.fechaAplicacion
+                                ? vacuna.fechaAplicacion.split('-').reverse().join('/')
+                                : '—'}
+                            </td>
                             <td>{vacuna.nombreTipoVacuna}</td>
                             <td>{vacuna.lote}</td>
                             <td>{vacuna.veterinario?.nombre || '—'}</td>
@@ -492,18 +540,36 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                     </table>
                   </div>
                 )}
-                <div style={{display:'flex', justifyContent:'flex-end', marginTop:16}}>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
                   <button
                     type="button"
                     className="btn-confirm-save"
-                    disabled={!citaSeleccionada?.idMascota || !onAbrirVacunacion || !consultaRegistrada}
+                    disabled={
+                      !citaSeleccionada?.idMascota ||
+                      !onAbrirVacunacion ||
+                      !consultaRegistrada ||
+                      cargandoHistorial
+                    }
                     onClick={() => onAbrirVacunacion(citaSeleccionada.idMascota)}
+                    style={!consultaRegistrada ? {
+                      background: '#cbd5e1',
+                      color: '#64748b',
+                      borderColor: '#cbd5e1',
+                      cursor: 'not-allowed',
+                      boxShadow: 'none',
+                      opacity: 1
+                    } : undefined}
                   >
-                    💉 Abrir cartilla / Registrar vacuna
+                    {consultaRegistrada
+                      ? '💉 Abrir cartilla / Registrar vacuna'
+                      : '🔒 Abrir cartilla / Registrar vacuna'}
                   </button>
                 </div>
-                <p style={{fontSize:12, color:'#94a3b8', marginTop:10}}>
-                  Fecha de aplicación y veterinario se registran en Vacunación. La programación del próximo refuerzo (VAC-02) requiere integrar su campo en el backend.
+
+                <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 10 }}>
+                  La fecha de aplicación y el veterinario se registran en Vacunación.
+                  La programación del próximo refuerzo (VAC-02) requiere integrar su campo en el backend.
                 </p>
               </div>
 
