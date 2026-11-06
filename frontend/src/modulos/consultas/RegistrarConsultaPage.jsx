@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { consultasService } from './consultasService';
 import { vacunasService } from '../vacunas/vacunasService';
+import TratamientoForm from '../tratamientos/TratamientoForm';
 import { AlertTriangle, ArrowLeft, Bird, Cat, Check, CheckCircle2, ClipboardList, Dog, LockKeyhole, Rabbit, Stethoscope, Syringe } from 'lucide-react';
 
 const formularioInicial = {
@@ -225,7 +226,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
     }
   };
 
-  
+
   const handleFinalizarConsulta = async () => {
     if (!consultaRegistrada?.idConsulta || !citaSeleccionada) {
       setError('Primero debe existir una consulta médica registrada.');
@@ -298,7 +299,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
             <span onClick={onVolver} className="breadcrumb-link">Dashboard</span> &gt; <span>Área Clínica</span> &gt; <span>Consultas Médicas</span>
           </div>
           <h1 className="cita-page-title">Registro de Consulta Médica</h1>
-          <p className="cita-page-sub">Historia GCV-8 [CON-01] · Motivo, evaluación clínica, diagnóstico y observaciones</p>
+          <p className="cita-page-sub">Historias GCV-8 [CON-01] y GCV-9 [CON-02] · Consulta, diagnóstico y prescripción médica</p>
         </div>
         <button type="button" onClick={onVolver} className="btn-volver-dash"><ArrowLeft size={16} /> Volver al Dashboard</button>
       </div>
@@ -324,7 +325,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
               <strong>Pacientes en atención</strong>
               <span>{citasEspera.length} paciente(s)</span>
             </div>
-            <span className="panel-tag-aqua">CON-01</span>
+            <span className="panel-tag-aqua">CON-01 / CON-02</span>
           </div>
 
           {cargando ? (
@@ -459,6 +460,8 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
               </div>
               </fieldset>
 
+              <TratamientoForm consulta={consultaRegistrada} />
+
               <div
                 className="cita-card-section"
                 style={!consultaRegistrada ? {
@@ -470,7 +473,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                   className="section-title-aqua"
                   style={!consultaRegistrada ? { color: '#64748b' } : undefined}
                 >
-                  <Syringe size={18} /> 4. Aplicación de vacunas
+                  <Syringe size={18} /> 5. Aplicación de vacunas
                 </h3>
 
                 {!consultaRegistrada && (
@@ -569,12 +572,12 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
 
               <div className="consulta-actions-bar">
                 <div>
-                  <strong>Registro clínico CON-01</strong>
+                  <strong>Registro clínico CON-01 / CON-02</strong>
                   <span>
                     {cargandoHistorial
                       ? 'Verificando consulta registrada...'
                       : consultaRegistrada
-                        ? 'Consulta registrada. Pendiente de finalizar atención.'
+                        ? 'Consulta registrada. Podés agregar tratamientos, vacunas o finalizar la atención.'
                         : 'Se guardará la consulta médica en PostgreSQL.'}
                   </span>
                 </div>
