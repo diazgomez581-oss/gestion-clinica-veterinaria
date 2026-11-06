@@ -46,7 +46,6 @@ public class Cita {
         this.estado = "Programada";
     }
 
-    // Getters y Setters
     public Long getIdCita() {
         return idCita;
     }

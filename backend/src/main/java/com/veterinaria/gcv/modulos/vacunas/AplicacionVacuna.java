@@ -43,7 +43,6 @@ public class AplicacionVacuna {
 
     public AplicacionVacuna() {}
 
-    // Getters y Setters (sin setter de id: el JSON no puede sobrescribir registros existentes)
     public Long getIdAplicacionVacuna() { return idAplicacionVacuna; }
 
     public String getNombreTipoVacuna() { return nombreTipoVacuna; }

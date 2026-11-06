@@ -1,7 +1,6 @@
 package com.veterinaria.gcv.modulos.mascotas;
 
 import com.veterinaria.gcv.modulos.propietarios.Propietario;
-//import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -54,14 +53,12 @@ public class Mascota {
     @PrePersist
     public void prePersist() {
         if (this.codigoExpediente == null) {
-            // Genera un código de expediente único automáticamente (Ej: EXP-XXXXXX)
             this.codigoExpediente = "EXP-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         }
     }
 
     public Mascota() {}
 
-    // Getters y Setters
     public Long getIdMascota() { return idMascota; }
     public void setIdMascota(Long idMascota) { this.idMascota = idMascota; }
 

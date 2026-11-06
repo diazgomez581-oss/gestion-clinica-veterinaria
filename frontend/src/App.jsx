@@ -25,9 +25,6 @@ const API_BASE_URL =
 
 export default function App() {
 
-  // =========================
-  // ESTADOS GENERALES
-  // =========================
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [usuarioActual, setUsuarioActual] = useState(null);
@@ -41,9 +38,6 @@ export default function App() {
     setMascotaVacunacionSeleccionada
   ] = useState(null);
 
-  // =========================
-  // CITAS
-  // =========================
 
   const [citas, setCitas] = useState([
     {
@@ -51,7 +45,6 @@ export default function App() {
       hora: '08:00',
       fecha: new Date().toISOString().split('T')[0],
       mascota: 'Max',
-      icono: '🐶',
       dueno: 'María Rodríguez',
       vet: 'Dr. Morales',
       veterinario: 'Dr. Morales',
@@ -64,7 +57,6 @@ export default function App() {
       hora: '09:00',
       fecha: new Date().toISOString().split('T')[0],
       mascota: 'Luna',
-      icono: '🐱',
       dueno: 'Ana Martínez',
       vet: 'Dra. García',
       veterinario: 'Dra. García',
@@ -78,7 +70,6 @@ export default function App() {
       hora: '10:00',
       fecha: new Date().toISOString().split('T')[0],
       mascota: 'Rocky',
-      icono: '🐩',
       dueno: 'Carlos López',
       vet: 'Dr. Morales',
       veterinario: 'Dr. Morales',
@@ -92,7 +83,6 @@ export default function App() {
       hora: '10:30',
       fecha: new Date().toISOString().split('T')[0],
       mascota: 'Pico',
-      icono: '🦜',
       dueno: 'José Pérez',
       vet: 'Dr. Santos',
       veterinario: 'Dr. Santos',
@@ -106,7 +96,6 @@ export default function App() {
       hora: '11:00',
       fecha: new Date().toISOString().split('T')[0],
       mascota: 'Miel',
-      icono: '🐱',
       dueno: 'Laura Hernández',
       vet: 'Dra. García',
       veterinario: 'Dra. García',
@@ -119,7 +108,6 @@ export default function App() {
       hora: '14:00',
       fecha: new Date().toISOString().split('T')[0],
       mascota: 'Max',
-      icono: '🐶',
       dueno: 'María Rodríguez',
       vet: 'Dr. Santos',
       veterinario: 'Dr. Santos',
@@ -129,9 +117,6 @@ export default function App() {
     }
   ]);
 
-  // =========================
-  // AUTENTICACIÓN
-  // =========================
 
   const esAdministrador = usuarioActual?.rol === 'ADMIN';
 
@@ -172,9 +157,6 @@ export default function App() {
     }
   };
 
-  // =========================
-  // GESTIÓN DE USUARIOS
-  // =========================
 
   const handleAbrirGestionUsuarios = () => {
     if (!esAdministrador) {
@@ -185,17 +167,11 @@ export default function App() {
     setVistaActual('gestion-usuarios');
   };
 
-  // =========================
-  // CITAS
-  // =========================
 
   const handleAgregarCita = (nuevaCita) => {
     setCitas(prev => [nuevaCita, ...prev]);
   };
 
-  // =========================
-  // NAVEGACIÓN
-  // =========================
 
   const handleNavegacion = (seccion) => {
 
@@ -225,9 +201,6 @@ export default function App() {
     }
   };
 
-  // =========================
-  // LOGIN
-  // =========================
 
   if (!usuarioActual) {
     return (
@@ -237,14 +210,10 @@ export default function App() {
     );
   }
 
-  // =========================
-  // SISTEMA PRINCIPAL
-  // =========================
 
   return (
     <div className="app-container">
 
-      {/* NAVBAR */}
       <Navbar
         onToggleSidebar={() =>
           setSidebarCollapsed(!sidebarCollapsed)
@@ -257,7 +226,6 @@ export default function App() {
 
       <div className="app-body">
 
-        {/* SIDEBAR */}
        <Sidebar
         collapsed={sidebarCollapsed}
         usuario={usuarioActual}
@@ -279,10 +247,8 @@ export default function App() {
         }
       />
 
-        {/* CONTENIDO PRINCIPAL */}
         <main className="content-viewport">
 
-          {/* GESTIÓN DE USUARIOS: SOLO ADMIN */}
           {vistaActual === 'gestion-usuarios' && esAdministrador ? (
 
             <GestionUsuariosPage
@@ -341,12 +307,6 @@ export default function App() {
               onVolver={() =>
                 setVistaActual('propietarios')
               }
-              onPropietarioGuardado={(nuevo) => {
-                console.log(
-                  'Propietario registrado con éxito:',
-                  nuevo
-                );
-              }}
             />
 
           ) : vistaActual === 'vacunacion' ? (

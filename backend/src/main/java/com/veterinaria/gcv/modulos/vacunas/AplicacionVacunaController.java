@@ -32,13 +32,11 @@ public class AplicacionVacunaController {
         this.veterinarioRepository = veterinarioRepository;
     }
 
-    // GET /api/mascotas/{idMascota}/vacunas -> Cartilla de vacunación de la mascota
     @GetMapping
     public List<AplicacionVacuna> listarCartilla(@PathVariable Long idMascota) {
         return aplicacionVacunaRepository.findByMascotaIdMascotaOrderByFechaAplicacionDesc(idMascota);
     }
 
-    // POST /api/mascotas/{idMascota}/vacunas -> Registra una vacuna aplicada a la mascota
     @PostMapping
     public ResponseEntity<AplicacionVacuna> registrarVacuna(@PathVariable Long idMascota,
                                                             @Valid @RequestBody AplicacionVacuna aplicacion) {
@@ -54,7 +52,6 @@ public class AplicacionVacunaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(aplicacionVacunaRepository.save(aplicacion));
     }
 
-    // Errores con el mismo formato {"mensaje": ...} que el módulo de propietarios
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> manejarValidacion(MethodArgumentNotValidException e) {
         return ResponseEntity.badRequest()

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { citasService } from './citasService';
+import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, ClipboardList, PawPrint, Plus, Stethoscope } from 'lucide-react';
 
 const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
-// No usar toISOString(): puede cambiar de día según la zona horaria.
+// Se construye la fecha local manualmente para evitar desfases por UTC.
 const fechaLocal = (fecha) =>
   `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
 
@@ -18,7 +19,7 @@ const normalizarFecha = (fechaInput) => {
 
 const inicioDeSemana = (fecha) => {
   const resultado = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
-  const desplazamiento = (resultado.getDay() + 6) % 7; // Lunes = 0
+  const desplazamiento = (resultado.getDay() + 6) % 7;
   resultado.setDate(resultado.getDate() - desplazamiento);
   return resultado;
 };
@@ -38,7 +39,7 @@ const coloresEstado = (estado) => {
 };
 
 export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
-  const [vista, setVista] = useState('mes'); // 'mes' | 'agenda'
+  const [vista, setVista] = useState('mes');
   const [citas, setCitas] = useState([]);
   const [mascotas, setMascotas] = useState([]);
   const [veterinarios, setVeterinarios] = useState([]);
@@ -105,7 +106,6 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
   const cambiarPeriodo = (direccion) => {
     setFechaActual(anterior => {
       if (vista === 'mes') {
-        // Día 1 evita saltos inesperados al navegar desde el 29, 30 o 31.
         return new Date(anterior.getFullYear(), anterior.getMonth() + direccion, 1);
       }
       const lunes = inicioDeSemana(anterior);
@@ -154,21 +154,21 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
           <p style={estilos.subtitle}>Visualización mensual y control general de citas registradas en PostgreSQL</p>
         </div>
         <div style={estilos.headerButtons}>
-          <button type="button" onClick={onIrAProgramar} style={estilos.btnPrimary}>+ Agendar Cita</button>
-          <button type="button" onClick={onVolver} style={estilos.btnSecondary}>← Volver al Dashboard</button>
+          <button type="button" onClick={onIrAProgramar} style={estilos.btnPrimary}><Plus size={16} /> Agendar Cita</button>
+          <button type="button" onClick={onVolver} style={estilos.btnSecondary}><ArrowLeft size={16} /> Volver al Dashboard</button>
         </div>
       </div>
 
       <div style={estilos.toolbar}>
         <div style={estilos.viewToggle}>
-          <button type="button" onClick={() => setVista('mes')} style={vista === 'mes' ? estilos.toggleBtnActive : estilos.toggleBtn}>📅 Calendario Mensual</button>
-          <button type="button" onClick={() => setVista('agenda')} style={vista === 'agenda' ? estilos.toggleBtnActive : estilos.toggleBtn}>📋 Agenda Semanal ({citas.length})</button>
+          <button type="button" onClick={() => setVista('mes')} style={vista === 'mes' ? estilos.toggleBtnActive : estilos.toggleBtn}><CalendarDays size={16} /> Calendario Mensual</button>
+          <button type="button" onClick={() => setVista('agenda')} style={vista === 'agenda' ? estilos.toggleBtnActive : estilos.toggleBtn}><ClipboardList size={16} /> Agenda Semanal ({citas.length})</button>
         </div>
         <div style={estilos.navMesBox}>
-          <button type="button" onClick={() => cambiarPeriodo(-1)} style={estilos.navBtn}>◀ Anterior</button>
+          <button type="button" onClick={() => cambiarPeriodo(-1)} style={estilos.navBtn}><ChevronLeft size={16} /> Anterior</button>
           <button type="button" onClick={() => setFechaActual(new Date())} style={estilos.navBtn}>Hoy</button>
           <span style={estilos.mesLabel}>{vista === 'mes' ? nombreMes.toUpperCase() : tituloSemana}</span>
-          <button type="button" onClick={() => cambiarPeriodo(1)} style={estilos.navBtn}>Siguiente ▶</button>
+          <button type="button" onClick={() => cambiarPeriodo(1)} style={estilos.navBtn}>Siguiente <ChevronRight size={16} /></button>
         </div>
       </div>
       {error && <div style={{ ...estilos.agendaCard, marginBottom: '14px', color: '#b91c1c' }}>{error}</div>}
@@ -196,8 +196,8 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
                         <span style={estilos.citaHoraText}>{horaCita(cita.hora)}</span>
                         <span style={{ ...estilos.dotEstado(cita.estado), background: coloresEstado(cita.estado).borde }} />
                       </div>
-                      <div style={estilos.citaPetText}>🐾 {nombreMascota(cita)}</div>
-                      <div style={{ ...estilos.citaPetText, fontSize: '0.68rem', fontWeight: 400 }}>🩺 {nombreVeterinario(cita)}</div>
+                      <div style={estilos.citaPetText}><PawPrint size={14} /> {nombreMascota(cita)}</div>
+                      <div style={{ ...estilos.citaPetText, fontSize: '0.68rem', fontWeight: 400 }}><Stethoscope size={13} /> {nombreVeterinario(cita)}</div>
                     </div>
                   ))}
                 </div>
@@ -237,8 +237,8 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
                           {dia.citasDelDia.map(cita => (
                             <tr key={cita.idCita || cita.id} style={estilos.trRow}>
                               <td style={estilos.td}><span style={estilos.badgeHora}>{horaCita(cita.hora)}</span></td>
-                              <td style={{ ...estilos.td, fontWeight: 600 }}>🐾 {nombreMascota(cita)}</td>
-                              <td style={estilos.td}>🩺 {nombreVeterinario(cita)}</td>
+                              <td style={{ ...estilos.td, fontWeight: 600 }}><PawPrint size={14} /> {nombreMascota(cita)}</td>
+                              <td style={estilos.td}><Stethoscope size={14} /> {nombreVeterinario(cita)}</td>
                               <td style={estilos.td}>{cita.motivo || '—'}</td>
                               <td style={estilos.td}><span style={{ ...estilos.badgeEstado(cita.estado), background: coloresEstado(cita.estado).fondo, color: coloresEstado(cita.estado).texto }}>{cita.estado || 'Sin estado'}</span></td>
                             </tr>
@@ -304,6 +304,10 @@ const estilos = {
     gap: '12px'
   },
   btnPrimary: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
     background: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)',
     color: '#fff',
     border: 'none',
@@ -315,6 +319,10 @@ const estilos = {
     boxShadow: '0 2px 6px rgba(6, 182, 212, 0.3)'
   },
   btnSecondary: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
     background: '#f1f5f9',
     color: '#334155',
     border: 'none',
@@ -340,6 +348,10 @@ const estilos = {
     gap: '4px'
   },
   toggleBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
     background: 'transparent',
     border: 'none',
     padding: '8px 16px',
@@ -350,6 +362,10 @@ const estilos = {
     cursor: 'pointer'
   },
   toggleBtnActive: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
     background: '#ffffff',
     border: 'none',
     padding: '8px 16px',
@@ -371,6 +387,10 @@ const estilos = {
     boxShadow: '0 1px 2px rgba(0,0,0,0.02)'
   },
   navBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
     background: '#f8fafc',
     border: '1px solid #e2e8f0',
     padding: '6px 10px',
@@ -489,6 +509,9 @@ const estilos = {
     background: estado === 'Atendida' ? '#10b981' : estado === 'En Sala de Espera' ? '#f59e0b' : '#06b6d4'
   }),
   citaPetText: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
     color: '#334155',
     fontWeight: 600,
     marginTop: '2px',

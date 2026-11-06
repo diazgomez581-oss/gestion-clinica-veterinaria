@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { citasService } from '../modulos/citas/citasService';
+import { AlertTriangle, Ban, CalendarDays, Check, CircleCheck, Clock3, MoreHorizontal, PawPrint, Plus, RefreshCw, Stethoscope, UserRound, X } from 'lucide-react';
 
 export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }) {
   const esRecepcionista = usuario?.rol === 'RECEPCIONISTA';
@@ -12,11 +13,9 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('TODOS');
   const [citas, setCitas] = useState([]);
-  //const [veterinarios, setVeterinarios] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [errorCarga, setErrorCarga] = useState('');
 
-  // 1. Cargar citas reales del día desde PostgreSQL al montar la pantalla
   const cargarCitasDeBD = async (silencioso = false) => {
     try {
       if (!silencioso) setCargando(true);
@@ -31,13 +30,11 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
         ? listaVeterinarios
         : [];
 
-     // setVeterinarios(vets);
 
       const vetsPorId = new Map(
         vets.map(v => [String(v.idVeterinario), v])
       );
 
-      // Mapeo defensivo de los datos devueltos por Spring Boot
       const citasFormateadas = (dataBD || []).map((c) => {
         const vet = vetsPorId.get(String(c.idVeterinario));
 
@@ -60,7 +57,6 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
           horaProgramada: horaCorta,
           fecha: c.fecha,
           mascota: c.nombreMascota || `Mascota #${c.idMascota}`,
-          icono: '🐾',
           dueno: c.nombrePropietario || 'Propietario no disponible',
          veterinario: nombreVeterinario,
           motivo: c.motivo || 'Consulta médica',
@@ -83,14 +79,12 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
     return () => clearInterval(intervalo);
   }, []);
 
-  // 2. HU GCV-6 [CIT-02]: Marcar llegada en PostgreSQL y refrescar el estado
   const handleCheckIn = async (idCita) => {
     if (!puedeGestionarLlegadas || procesando) return;
     setProcesando(idCita);
     try {
       await citasService.registrarCheckIn(idCita);
-      setAviso('✓ Check-in registrado. El veterinario asignado verá al paciente en su cola de espera.');
-      // Recarga inmediata desde la base de datos
+      setAviso('Check-in registrado. El veterinario asignado verá al paciente en su cola de espera.');
       await cargarCitasDeBD();
     } catch (err) {
       alert(`Error al registrar check-in: ${err.message}`);
@@ -99,7 +93,6 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
     }
   };
 
-  // GCV-7 [CIT-03]: Actualizar estado de cita
   const handleActualizarEstado = async (idCita, nuevoEstado) => {
 
 
@@ -117,18 +110,14 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
     }
   };
 
-  // GCV-7 [CIT-03]: Llamar al paciente e iniciar consulta
   const handleLlamarAConsulta = async (cita) => {
     if (!esMiPaciente(cita) || procesando) return;
     setProcesando(cita.idCita);
     try {
-      // Actualizar el estado en PostgreSQL
       await citasService.actualizarEstado(cita.idCita, 'En Consulta');
 
-      // Actualizar el dashboard
       await cargarCitasDeBD();
 
-      // Abrir el módulo de consultas médicas
       onIniciarConsulta?.({
         ...cita,
         estado: 'En Consulta'
@@ -141,14 +130,12 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
     }
   };
 
-  // 3. Métricas calculadas en tiempo real a partir de PostgreSQL
   const totalCitasHoy = citas.length;
   const enEspera = citas.filter((c) => c.estado === 'En Sala de Espera' || c.estado === 'En espera');
   const misPacientesEnEspera = enEspera.filter(esMiPaciente);
   const programadas = citas.filter((c) => c.estado === 'Programada').length;
   const atendidas = citas.filter((c) => c.estado === 'Atendida').length;
 
-  // 4. Filtrado interactivo
   const citasFiltradas = citas.filter((c) => {
     const coincideEstado =
       filtroEstado === 'TODOS' ||
@@ -167,7 +154,6 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
 
   return (
     <div className="dash-white-layout">
-      {/* 1. Header */}
       <div className="dash-header-clean">
         <div>
           <h1 className="dash-title-clean">Dashboard General</h1>
@@ -177,26 +163,26 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button type="button" onClick={() => cargarCitasDeBD()} className="btn-outline-action" title="Recargar base de datos">
-            🔄 Refrescar
+            <RefreshCw size={16} /> Refrescar
           </button>
           {puedeGestionarLlegadas && <button type="button" className="btn-new-appointment" onClick={onIrAProgramar}>
-            <span>+</span> Nueva Cita
+            <Plus size={16} /> Nueva Cita
           </button>}
         </div>
       </div>
 
       {errorCarga && (
         <div style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
-          ⚠️ {errorCarga}
+          <AlertTriangle size={18} /> {errorCarga}
         </div>
       )}
 
       {aviso && <div role="status" style={{ background: '#dcfce7', color: '#166534', border: '1px solid #86efac', padding: 14, borderRadius: 10, marginBottom: 16, display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-        <span>{aviso}</span><button type="button" onClick={() => setAviso('')} aria-label="Cerrar aviso">✕</button>
+        <span><CircleCheck size={18} /> {aviso}</span><button type="button" onClick={() => setAviso('')} aria-label="Cerrar aviso"><X size={16} /></button>
       </div>}
       {esVeterinario && misPacientesEnEspera.length > 0 && (
         <div role="status" style={{ background: '#dcfce7', color: '#166534', border: '1px solid #86efac', padding: 14, borderRadius: 10, marginBottom: 16 }}>
-          🟢 Tenés {misPacientesEnEspera.length} paciente(s) asignado(s) esperando atención. Podés atenderlos desde la cola de espera.
+          <CircleCheck size={18} /> Tenés {misPacientesEnEspera.length} paciente(s) asignado(s) esperando atención. Podés atenderlos desde la cola de espera.
         </div>
       )}
       {esVeterinario && idVeterinarioActual == null && (
@@ -204,7 +190,6 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
           Tu cuenta no tiene un veterinario asociado. Solicitá al administrador que revise tu asignación.
         </div>
       )}
-      {/* 2. KPIs Dinámicos */}
       <section className="dash-kpi-container">
         <div className="kpi-card-white">
           <div className="kpi-info-box">
@@ -212,7 +197,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
             <div className="kpi-number-text">{cargando ? '...' : totalCitasHoy}</div>
             <span className="kpi-sub-text">{programadas} programadas · {enEspera.length} en espera</span>
           </div>
-          <div className="kpi-avatar-circle circle-aqua">🗓️</div>
+          <div className="kpi-avatar-circle circle-aqua"><CalendarDays size={22} /></div>
         </div>
 
         <div className="kpi-card-white">
@@ -221,7 +206,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
             <div className="kpi-number-text text-aqua">{cargando ? '...' : enEspera.length}</div>
             <span className="kpi-sub-text">Esperando ser llamados</span>
           </div>
-          <div className="kpi-avatar-circle circle-amber">⏳</div>
+          <div className="kpi-avatar-circle circle-amber"><Clock3 size={22} /></div>
         </div>
 
         <div className="kpi-card-white">
@@ -230,7 +215,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
             <div className="kpi-number-text">{cargando ? '...' : atendidas}</div>
             <span className="kpi-sub-text">Consultas cerradas</span>
           </div>
-          <div className="kpi-avatar-circle circle-blue">🩺</div>
+          <div className="kpi-avatar-circle circle-blue"><Stethoscope size={22} /></div>
         </div>
 
         <div className="kpi-card-white">
@@ -239,22 +224,20 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
             <div className="kpi-number-text text-pink">3</div>
             <span className="kpi-sub-text">Registrados en PostgreSQL</span>
           </div>
-          <div className="kpi-avatar-circle circle-pink">👨‍⚕️</div>
+          <div className="kpi-avatar-circle circle-pink"><UserRound size={22} /></div>
         </div>
       </section>
 
-      {/* 3. Panel de Dos Columnas: Citas Reales + Cola de Espera Real */}
       <div className="dash-grid-two">
-        {/* Tabla Citas del Día */}
         <section className="clean-panel-box">
           <div className="clean-panel-header">
             <div className="panel-title-flex">
-              <span>🗓️</span>
+              <CalendarDays size={18} />
               <h2 className="panel-heading">Citas del Día</h2>
               <span className="panel-tag-aqua">CIT-01</span>
             </div>
             {puedeGestionarLlegadas && <button type="button" className="btn-outline-action" onClick={onIrAProgramar}>
-              + Agendar
+              <Plus size={16} /> Agendar
             </button>}
           </div>
 
@@ -301,7 +284,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                       </td>
                       <td>
                         <div className="pet-cell-flex">
-                          <span className="pet-icon-bubble">{c.icono}</span>
+                          <span className="pet-icon-bubble"><PawPrint size={18} /></span>
                           <div>
                             <strong className="pet-name-title">{c.mascota}</strong>
                             <div className="owner-subtitle">{c.dueno}</div>
@@ -366,7 +349,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                                 disabled={procesando === c.idCita}
                                 className="btn-checkin-orange"
                               >
-                                ✓ Check-in
+                                <Check size={16} /> Check-in
                               </button>
                             )}
 
@@ -380,7 +363,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                               c.estado === 'En espera') && (
                               <details className="cita-menu">
                                 <summary className="cita-menu-trigger">
-                                  ⋯ Acciones
+                                  <MoreHorizontal size={16} /> Acciones
                                 </summary>
 
                                 <div className="cita-menu-opciones">
@@ -392,7 +375,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                                       handleActualizarEstado(c.idCita, 'No Asistió');
                                     }}
                                   >
-                                    ◷ No asistió
+                                    <Clock3 size={16} /> No asistió
                                   </button>
 
                                   <button
@@ -403,7 +386,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                                       handleActualizarEstado(c.idCita, 'Cancelada');
                                     }}
                                   >
-                                    ⊘ Cancelar cita
+                                    <Ban size={16} /> Cancelar cita
                                   </button>
                                 </div>
                               </details>
@@ -425,11 +408,10 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
           </div>
         </section>
 
-        {/* Cola de Espera Médica Real */}
         <section className="clean-panel-box">
           <div className="clean-panel-header">
             <div className="panel-title-flex">
-              <span>🏆</span>
+              <Clock3 size={18} />
               <h2 className="panel-heading">Cola de Espera</h2>
               <span className="panel-tag-aqua">CIT-02</span>
             </div>
@@ -449,7 +431,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                   <div className="queue-header-row">
                     <div className="queue-title-left">
                       <span className="queue-number-bubble">{idx + 1}</span>
-                      <strong className="queue-pet-name">{item.mascota} {item.icono}</strong>
+                      <strong className="queue-pet-name">{item.mascota} <PawPrint size={15} /></strong>
                     </div>
                     {item.horaLlegada && (
                       <span className="wait-badge-normal">
@@ -459,7 +441,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                   </div>
 
                   <div className="queue-owner-desc">{item.dueno} · {item.motivo}</div>
-                  <div className="queue-vet-name">👤 {item.veterinario}</div>
+                  <div className="queue-vet-name"><UserRound size={15} /> {item.veterinario}</div>
 
                   <div className="queue-btn-group">
                     
@@ -470,7 +452,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                     disabled={procesando === item.idCita}
                     onClick={() => handleLlamarAConsulta(item)}
                   >
-                    🩺 {procesando === item.idCita ? 'Iniciando...' : 'Atender paciente'}
+                    <Stethoscope size={16} /> {procesando === item.idCita ? 'Iniciando...' : 'Atender paciente'}
                   </button>}
 
                     <span style={{ fontSize: 12, color: "#64748b" }}>{esMiPaciente(item) ? "Asignado a vos" : "Esperando al veterinario asignado"}</span>

@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import logoVet from '../assets/icono_vetues.png';
+import { LoaderCircle, LogOut, Menu, Search, User, Users } from 'lucide-react';
 
 export default function Navbar({
   onToggleSidebar,
@@ -57,7 +58,7 @@ export default function Navbar({
               : 'Minimizar menú'
           }
         >
-          ☰
+          <Menu size={22} />
         </button>
 
         <div className="brand-logo-container">
@@ -81,7 +82,7 @@ export default function Navbar({
 
       <div className="nav-center-group">
         <div className="search-bar-clean">
-          <span className="search-icon-clean">🔍</span>
+          <span className="search-icon-clean"><Search size={18} /></span>
 
           <input
             type="text"
@@ -106,7 +107,7 @@ export default function Navbar({
             aria-expanded={menuUsuarioAbierto}
             aria-label="Menú de usuario"
           >
-            👤
+            <User size={19} />
           </button>
 
           {menuUsuarioAbierto && (
@@ -127,7 +128,7 @@ export default function Navbar({
                 className="dropdown-btn-clean"
                 onClick={() => setMenuUsuarioAbierto(false)}
               >
-                👤 Perfil
+                <User size={16} /> Perfil
               </button>
 
               {usuario?.rol === 'ADMIN' && (
@@ -135,7 +136,7 @@ export default function Navbar({
                   className="dropdown-btn-clean"
                   onClick={abrirGestionUsuarios}
                 >
-                  👥 Gestionar usuarios
+                  <Users size={16} /> Gestionar usuarios
                 </button>
               )}
 
@@ -144,9 +145,11 @@ export default function Navbar({
                 onClick={handleCerrarSesion}
                 disabled={cerrandoSesion}
               >
-                {cerrandoSesion
-                  ? '⏳ Cerrando sesión...'
-                  : '🚪 Cerrar sesión'}
+                {cerrandoSesion ? (
+                  <><LoaderCircle size={16} className="lucide-spin" /> Cerrando sesión...</>
+                ) : (
+                  <><LogOut size={16} /> Cerrar sesión</>
+                )}
               </button>
             </div>
           )}

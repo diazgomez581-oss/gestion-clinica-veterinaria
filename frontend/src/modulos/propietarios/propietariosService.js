@@ -1,7 +1,6 @@
 const API_URL = 'http://localhost:8080/api/propietarios';
 
 export const propietariosService = {
-  // Obtener todos los propietarios registrados
   async listarTodos() {
     const response = await fetch(API_URL);
     if (!response.ok) {
@@ -10,7 +9,6 @@ export const propietariosService = {
     return await response.json();
   },
 
-  // Obtener un propietario por su ID
   async obtenerPorId(id) {
     const response = await fetch(`${API_URL}/${id}`);
     if (!response.ok) {
@@ -19,7 +17,6 @@ export const propietariosService = {
     return await response.json();
   },
 
-  // Registrar un nuevo propietario (Historia PRO-01 / GCV-1)
   async registrar(propietario) {
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -38,7 +35,6 @@ export const propietariosService = {
     return data;
   },
 
-  // Actualizar datos de contacto de un propietario (Historia PRO-02 / GCV-2)
   async actualizar(id, propietario) {
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'PUT',
@@ -57,7 +53,6 @@ export const propietariosService = {
     return data;
   },
 
-  // Eliminar un propietario por su ID
   async eliminar(id) {
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'DELETE',

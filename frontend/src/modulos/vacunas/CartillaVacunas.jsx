@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { vacunasService } from './vacunasService';
 import { citasService } from '../citas/citasService';
+import { AlertTriangle, Check, CheckCircle2, ClipboardList, Syringe } from 'lucide-react';
 
-// Fecha local en formato YYYY-MM-DD (toISOString usaría UTC y podría adelantar un día)
 const hoy = () => new Date().toLocaleDateString('en-CA');
 
-// YYYY-MM-DD -> DD/MM/YYYY sin pasar por Date para evitar desfases de zona horaria
 const formatearFecha = (fecha) => fecha.split('-').reverse().join('/');
 
 export default function CartillaVacunas({ idMascota }) {
@@ -21,7 +20,6 @@ export default function CartillaVacunas({ idMascota }) {
   const [exito, setExito] = useState('');
   const [guardando, setGuardando] = useState(false);
 
-  // Selector temporal de veterinario hasta que exista inicio de sesión
   useEffect(() => {
     citasService.getVeterinarios().then(vets => setVeterinarios(vets || []));
   }, []);
@@ -59,7 +57,6 @@ export default function CartillaVacunas({ idMascota }) {
       });
 
       setExito(`Vacuna "${guardada.nombreTipoVacuna}" registrada en la cartilla.`);
-      // Se conservan veterinario y fecha para registrar varias vacunas de la misma visita
       setFormulario(prev => ({ ...prev, nombreTipoVacuna: '', lote: '' }));
       await cargarCartilla();
     } catch (err) {
@@ -71,23 +68,20 @@ export default function CartillaVacunas({ idMascota }) {
 
   return (
     <>
-      {/* Banner de Éxito */}
       {exito && (
         <div className="alert-banner-success" style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' }}>
-          ✓ {exito}
+          <CheckCircle2 size={18} /> {exito}
         </div>
       )}
 
-      {/* Banner de Error */}
       {error && (
         <div className="alert-banner-danger" style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' }}>
-          ⚠️ {error}
+          <AlertTriangle size={18} /> {error}
         </div>
       )}
 
-      {/* Tarjeta 1: Registro de vacuna aplicada */}
       <form onSubmit={handleSubmit} className="cita-card-section">
-        <h3 className="section-title-aqua">💉 Registrar Vacuna Aplicada</h3>
+        <h3 className="section-title-aqua"><Syringe size={18} /> Registrar Vacuna Aplicada</h3>
 
         <div className="fields-grid-2">
           <div className="input-group-vet">
@@ -140,13 +134,12 @@ export default function CartillaVacunas({ idMascota }) {
         </div>
 
         <button type="submit" className="btn-confirm-save" disabled={guardando} style={{ marginTop: '16px' }}>
-          {guardando ? 'Guardando en BD...' : '✓ Registrar Vacuna'}
+          {guardando ? 'Guardando en BD...' : <><Check size={16} /> Registrar Vacuna</>}
         </button>
       </form>
 
-      {/* Tarjeta 2: Cartilla de vacunación (solo lectura, RN-05) */}
       <div className="cita-card-section">
-        <h3 className="section-title-aqua">📋 Cartilla de Vacunación</h3>
+        <h3 className="section-title-aqua"><ClipboardList size={18} /> Cartilla de Vacunación</h3>
 
         <table className="clean-table">
           <thead>

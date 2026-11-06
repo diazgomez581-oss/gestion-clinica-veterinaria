@@ -22,31 +22,26 @@ public class CitaController {
     }
 
 
-    // GET /api/citas -> Devuelve TODAS las citas registradas en la BD (Para el Calendario y Agenda General)
     @GetMapping
     public List<Cita> listarTodasLasCitas() {
         return citaRepository.findAll();
     }
 
-    // GET /api/citas/hoy -> Alimenta el Dashboard con las citas del día actual
     @GetMapping("/hoy")
     public List<Cita> listarCitasHoy() {
         return citaRepository.findByFechaOrderByHoraAsc(LocalDate.now());
     }
 
-    // GCV-7 [CIT-03]: Citas del día con nombres reales
     @GetMapping("/hoy/detalle")
     public List<CitaDashboardProjection> listarCitasHoyConDetalle() {
         return citaRepository.obtenerCitasDashboard(LocalDate.now());
     }
 
-    // GET /api/citas/veterinarios -> Devuelve los veterinarios registrados en PostgreSQL
     @GetMapping("/veterinarios")
     public List<Veterinario> listarVeterinarios() {
         return veterinarioRepository.findAll();
     }
 
-    // POST /api/citas -> HU GCV-5 [CIT-01]: Programar Cita con validación RN-02
     @PostMapping
     public ResponseEntity<?> programarCita(@RequestBody Cita cita) {
         boolean ocupado = citaRepository.existsByIdVeterinarioAndFechaAndHoraAndEstadoNot(
@@ -66,7 +61,6 @@ public class CitaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(guardada);
     }
 
-    // PATCH /api/citas/{id}/check-in -> HU GCV-6 [CIT-02]: Check-in de llegada
    
         @PatchMapping("/{id}/check-in")
         public ResponseEntity<?> registrarCheckIn(@PathVariable Long id) {
@@ -90,7 +84,6 @@ public class CitaController {
         }
 
     
-    // GCV-7 [CIT-03]: Control y actualización de estados
     @PatchMapping("/{id}/estado")
     public ResponseEntity<?> actualizarEstado(
             @PathVariable Long id,

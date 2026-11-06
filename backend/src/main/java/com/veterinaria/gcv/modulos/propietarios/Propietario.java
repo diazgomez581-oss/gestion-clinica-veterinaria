@@ -31,7 +31,6 @@ public class Propietario {
     @Column(name = "direccion", nullable = false, columnDefinition = "TEXT")
     private String direccion;
 
-    // Relación vital para que React reciba el arreglo de pacientes del dueño
     @OneToMany(mappedBy = "propietario", fetch = FetchType.EAGER)
     private List<Mascota> mascotas;
 

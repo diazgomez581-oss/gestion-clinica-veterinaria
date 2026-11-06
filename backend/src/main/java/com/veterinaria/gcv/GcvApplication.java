@@ -13,7 +13,6 @@ public class GcvApplication {
         SpringApplication.run(GcvApplication.class, args);
     }
 
-    // Habilita la comunicación con React en Vite (puerto 5173)
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {

@@ -1,7 +1,6 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
 export const apiClient = {
-  // Peticiones GET (Listar / Consultar)
   get: async (endpoint) => {
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`);
@@ -16,7 +15,6 @@ export const apiClient = {
     }
   },
 
-  // Peticiones POST (Crear / Registrar)
   post: async (endpoint, data) => {
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -37,7 +35,6 @@ export const apiClient = {
     }
   },
 
-  // Peticiones PUT (Actualizar)
   put: async (endpoint, data) => {
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {

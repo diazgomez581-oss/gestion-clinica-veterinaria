@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
+import { CalendarDays, ChevronDown, ChevronRight, ClipboardList, Clock3, FolderOpen, LayoutDashboard, PawPrint, Stethoscope, Syringe, User, Users } from 'lucide-react';
 
-// PERMISOS SEGÚN EL ROL
 const PERMISOS = {
   ADMIN: [
     'dashboard',
@@ -61,7 +61,6 @@ export default function Sidebar({
 
   const puede = (seccion) => permisos.includes(seccion);
 
-  // ABRIR Y CERRAR GRUPOS
   const toggle = (key) => {
     setOpenGroups(prev => ({
       ...prev,
@@ -69,10 +68,9 @@ export default function Sidebar({
     }));
   };
 
-  // ENLACES DEL SIDEBAR
   const renderLink = (
     seccion,
-    icono,
+    Icono,
     texto,
     contador,
     tipo
@@ -91,7 +89,7 @@ export default function Sidebar({
       >
 
         <span className="link-icon">
-          {icono}
+          <Icono size={18} strokeWidth={1.9} />
         </span>
 
         {!collapsed && (
@@ -116,7 +114,6 @@ export default function Sidebar({
     );
   };
 
-  // GRUPOS DEL SIDEBAR
   const renderGrupo = (
     clave,
     titulo,
@@ -137,7 +134,7 @@ export default function Sidebar({
             <span>{titulo}</span>
 
             <span className="chevron-icon">
-              {openGroups[clave] ? '▾' : '▸'}
+              {openGroups[clave] ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
             </span>
           </div>
         )}
@@ -159,16 +156,14 @@ export default function Sidebar({
       }`}
     >
 
-      {/* DASHBOARD */}
       <div className="nav-section-clean">
         {renderLink(
           'dashboard',
-          '⊞',
+          LayoutDashboard,
           'Dashboard'
         )}
       </div>
 
-      {/* PACIENTES Y CLIENTES */}
       {renderGrupo(
         'pacientes',
         'PACIENTES Y CLIENTES',
@@ -180,25 +175,24 @@ export default function Sidebar({
         <>
           {renderLink(
             'propietarios',
-            '👥',
+            Users,
             'Propietarios'
           )}
 
           {renderLink(
             'mascotas',
-            '🐾',
+            PawPrint,
             'Mascotas'
           )}
 
           {renderLink(
             'expedientes',
-            '📁',
+            FolderOpen,
             'Expedientes'
           )}
         </>
       )}
 
-      {/* RECEPCIÓN Y CITAS */}
       {renderGrupo(
         'citas',
         'RECEPCIÓN Y CITAS',
@@ -210,7 +204,7 @@ export default function Sidebar({
         <>
           {renderLink(
             'citas',
-            '🗓️',
+            CalendarDays,
             'Citas del Día',
             totalCitas,
             'aqua'
@@ -218,13 +212,13 @@ export default function Sidebar({
 
           {renderLink(
             'calendario',
-            '📅',
+            CalendarDays,
             'Calendario y Agenda'
           )}
 
           {renderLink(
             'espera',
-            '⏳',
+            Clock3,
             'Cola de Espera',
             enEspera,
             'amber'
@@ -232,7 +226,6 @@ export default function Sidebar({
         </>
       )}
 
-      {/* ÁREA CLÍNICA */}
       {renderGrupo(
         'clinica',
         'ÁREA CLÍNICA',
@@ -244,25 +237,24 @@ export default function Sidebar({
         <>
           {renderLink(
             'consultas',
-            '🩺',
+            Stethoscope,
             'Consultas Médicas'
           )}
 
           {renderLink(
             'vacunacion',
-            '💉',
+            Syringe,
             'Vacunación'
           )}
 
           {renderLink(
             'historial',
-            '📋',
+            ClipboardList,
             'Historial Clínico'
           )}
         </>
       )}
 
-      {/* ADMINISTRACIÓN: SOLO ADMIN */}
       {renderGrupo(
         'administracion',
         'ADMINISTRACIÓN',
@@ -270,7 +262,7 @@ export default function Sidebar({
         <>
           {renderLink(
             'gestion-usuarios',
-            '👤',
+            User,
             'Gestión de usuarios'
           )}
         </>

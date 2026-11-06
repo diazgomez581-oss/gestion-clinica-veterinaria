@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { citasService } from '../citas/citasService';
 import CartillaVacunas from './CartillaVacunas';
+import { ArrowLeft, PawPrint } from 'lucide-react';
 
 export default function VacunasPage({ onVolver, idMascotaInicial = null }) {
   const [mascotas, setMascotas] = useState([]);
@@ -18,7 +19,6 @@ export default function VacunasPage({ onVolver, idMascotaInicial = null }) {
 
   return (
     <div className="cita-page-container">
-      {/* Header */}
       <div className="cita-page-header">
         <div>
           <div className="cita-breadcrumb">
@@ -29,26 +29,24 @@ export default function VacunasPage({ onVolver, idMascotaInicial = null }) {
         </div>
 
         <button type="button" onClick={onVolver} className="btn-volver-dash">
-          ← Volver al Dashboard
+          <ArrowLeft size={16} /> Volver al Dashboard
         </button>
       </div>
 
-      {/* Selección de mascota */}
       <div className="cita-card-section">
         <div className="input-group-vet">
-          <label>Mascota *</label>
+          <label><PawPrint size={15} /> Mascota *</label>
           <select value={idMascota} onChange={(e) => setIdMascota(e.target.value)}>
             <option value="">-- Seleccione una mascota --</option>
             {mascotas.map(m => (
               <option key={m.idMascota} value={m.idMascota}>
-                🐾 {m.nombre} · {m.especie} ({m.codigoExpediente})
+                {m.nombre} · {m.especie} ({m.codigoExpediente})
               </option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* key reinicia formulario y mensajes al cambiar de mascota */}
       {idMascota && <CartillaVacunas key={idMascota} idMascota={idMascota} />}
     </div>
   );

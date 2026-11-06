@@ -7,6 +7,5 @@ import java.util.List;
 @Repository
 public interface AplicacionVacunaRepository extends JpaRepository<AplicacionVacuna, Long> {
 
-    // Cartilla de vacunación: aplicaciones de una mascota, de la más reciente a la más antigua
     List<AplicacionVacuna> findByMascotaIdMascotaOrderByFechaAplicacionDesc(Long idMascota);
 }

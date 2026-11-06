@@ -1,8 +1,3 @@
-
-/* =========================================
-   LOGIN - GESTIÓN CLÍNICA VETERINARIA
-========================================= */
-
 .gcv-login-screen {
   min-height: 100vh;
   width: 100%;
@@ -34,10 +29,6 @@
   box-sizing: border-box;
 }
 
-/* =========================================
-   CONTENEDOR PRINCIPAL
-========================================= */
-
 .gcv-login-card {
   width: 100%;
   max-width: 1080px;
@@ -53,10 +44,6 @@
   box-shadow:
     0 30px 75px rgba(0, 0, 0, 0.35);
 }
-
-/* =========================================
-   PANEL IZQUIERDO
-========================================= */
 
 .gcv-login-brand {
   position: relative;
@@ -77,8 +64,6 @@
 
   color: white;
 }
-
-/* Decoración de fondo */
 
 .gcv-login-brand::before {
   content: '';
@@ -161,10 +146,6 @@
   line-height: 1.75;
 }
 
-/* =========================================
-   IMAGEN DEL PERRO Y GATO
-========================================= */
-
 .gcv-login-pets {
   position: relative;
   z-index: 2;
@@ -207,10 +188,6 @@
   color: #9cc2d5;
   font-size: 12px;
 }
-
-/* =========================================
-   PANEL DERECHO
-========================================= */
 
 .gcv-login-form-side {
   display: flex;
@@ -265,10 +242,6 @@
   font-size: 14px;
   line-height: 1.6;
 }
-
-/* =========================================
-   CAMPOS DEL FORMULARIO
-========================================= */
 
 .gcv-login-field {
   margin-bottom: 23px;
@@ -332,8 +305,6 @@
   cursor: not-allowed;
 }
 
-/* Mostrar / ocultar contraseña */
-
 .gcv-password-toggle {
   position: absolute;
   right: 12px;
@@ -353,10 +324,6 @@
   color: #006f93;
   text-decoration: underline;
 }
-
-/* =========================================
-   BOTÓN INICIAR SESIÓN
-========================================= */
 
 .gcv-login-submit {
   display: flex;
@@ -412,10 +379,6 @@
   cursor: not-allowed;
 }
 
-/* =========================================
-   MENSAJES DE ERROR
-========================================= */
-
 .gcv-login-error {
   display: flex;
   align-items: flex-start;
@@ -433,10 +396,6 @@
   line-height: 1.5;
 }
 
-/* =========================================
-   PIE DE FORMULARIO
-========================================= */
-
 .gcv-login-security {
   display: flex;
   justify-content: center;
@@ -449,10 +408,6 @@
   font-size: 12px;
   text-align: center;
 }
-
-/* =========================================
-   ANIMACIÓN DE CARGA
-========================================= */
 
 .gcv-login-spinner {
   width: 17px;
@@ -470,10 +425,6 @@
     transform: rotate(360deg);
   }
 }
-
-/* =========================================
-   RESPONSIVE
-========================================= */
 
 @media (max-width: 850px) {
   .gcv-login-card {

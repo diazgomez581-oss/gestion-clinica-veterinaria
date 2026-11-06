@@ -1,17 +1,14 @@
-// frontend/src/modulos/citas/citasService.js
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 export const citasService = {
 
-  // 1. Obtener citas del día actual (para el Dashboard)
   getCitasHoy: async () => {
   const res = await fetch(`${API_BASE_URL}/citas/hoy/detalle`);
   if (!res.ok) throw new Error('Error al consultar las citas del día.');
   return await res.json();
   },
 
-  // 2. Obtener TODAS las citas registradas en la base de datos (para el Calendario)
   getTodasLasCitas: async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/citas`);
@@ -22,7 +19,6 @@ export const citasService = {
     return [];
   },
 
-  // 3. Obtener veterinarios registrados en PostgreSQL
   getVeterinarios: async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/citas/veterinarios`);
@@ -33,7 +29,6 @@ export const citasService = {
     return null;
   },
 
-  // 4. Obtener propietarios reales desde la base de datos
   getPropietarios: async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/propietarios`);
@@ -44,7 +39,6 @@ export const citasService = {
     return null;
   },
 
-  // 5. Obtener mascotas reales desde la base de datos
   getMascotas: async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/mascotas`);
@@ -55,7 +49,6 @@ export const citasService = {
     return null;
   },
 
-  // 6. Guardar nueva cita médica en PostgreSQL con validación RN-02 (CIT-01)
   guardarCita: async (datosCita) => {
     const res = await fetch(`${API_BASE_URL}/citas`, {
       method: 'POST',
@@ -70,8 +63,6 @@ export const citasService = {
     return await res.json();
   },
 
-  // 7. Check-in de llegada física a sala de espera (CIT-02)
-  // 7. Check-in de llegada física (CIT-02)
   registrarCheckIn: async (idCita) => {
     const res = await fetch(`${API_BASE_URL}/citas/${idCita}/check-in`, {
       method: 'PATCH'
@@ -81,7 +72,6 @@ export const citasService = {
     return await res.json();
   },
 
-  // 8. Actualización de estados de citas (CIT-03)
   actualizarEstado: async (idCita, nuevoEstado) => {
     const res = await fetch(`${API_BASE_URL}/citas/${idCita}/estado`, {
       method: 'PATCH',

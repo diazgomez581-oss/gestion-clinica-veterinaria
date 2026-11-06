@@ -49,7 +49,6 @@ public class AuthController {
         );
     }
 
-    // POST /api/auth/login
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @RequestBody LoginRequest datos,
@@ -82,7 +81,6 @@ public class AuthController {
                     .body(Map.of("mensaje", "Usuario o contraseña incorrectos."));
         }
 
-        // Evitar reutilizar una sesión anterior
         HttpSession anterior = request.getSession(false);
         if (anterior != null) {
             anterior.invalidate();
@@ -95,7 +93,6 @@ public class AuthController {
         return ResponseEntity.ok(convertirUsuario(usuario));
     }
 
-    // GET /api/auth/me
     @GetMapping("/me")
     public ResponseEntity<?> usuarioActual(
             HttpServletRequest request
@@ -121,7 +118,6 @@ public class AuthController {
                 });
     }
 
-    // POST /api/auth/logout
     @PostMapping("/logout")
     public ResponseEntity<?> logout(
             HttpServletRequest request

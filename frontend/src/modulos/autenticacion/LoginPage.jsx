@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import './LoginPage.css';
 import mascotasLogin from '../../assets/mascotas-login.png';
+import { AlertTriangle, LockKeyhole, LogIn, PawPrint, ShieldCheck, User } from 'lucide-react';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
@@ -47,14 +47,13 @@ export default function LoginPage({ onLogin }) {
         );
       }
 
-     const data = await response.json();
+      const data = await response.json();
 
-    if (!data?.username || !data?.rol) {
-    throw new Error('El servidor no devolvió una sesión válida.');
-    }
+      if (!data?.username || !data?.rol) {
+        throw new Error('El servidor no devolvió una sesión válida.');
+      }
 
-    onLogin(data);
-
+      onLogin(data);
     } catch (err) {
       setError(err.message || 'Error al iniciar sesión.');
     } finally {
@@ -66,11 +65,10 @@ export default function LoginPage({ onLogin }) {
     <main className="gcv-login-screen">
       <section className="gcv-login-card">
 
-        {/* PANEL IZQUIERDO */}
         <div className="gcv-login-brand">
 
           <div className="gcv-login-brand-label">
-            <span>🐾</span>
+            <PawPrint size={18} />
             CLÍNICA VETERINARIA
           </div>
 
@@ -106,13 +104,12 @@ export default function LoginPage({ onLogin }) {
 
         </div>
 
-        {/* PANEL DERECHO */}
         <div className="gcv-login-form-side">
 
           <div className="gcv-login-form-wrap">
 
             <div className="gcv-login-icon">
-              🔐
+              <LockKeyhole size={30} />
             </div>
 
             <div className="gcv-login-heading">
@@ -125,7 +122,7 @@ export default function LoginPage({ onLogin }) {
 
             {error && (
               <div className="gcv-login-error" role="alert">
-                <span>⚠️</span>
+                <AlertTriangle size={18} />
                 <span>{error}</span>
               </div>
             )}
@@ -138,7 +135,7 @@ export default function LoginPage({ onLogin }) {
                 </label>
 
                 <div className="gcv-login-input-wrapper">
-                  <span className="gcv-input-icon">👤</span>
+                  <span className="gcv-input-icon"><User size={18} /></span>
 
                   <input
                     id="gcv-usuario"
@@ -159,7 +156,7 @@ export default function LoginPage({ onLogin }) {
                 </label>
 
                 <div className="gcv-login-input-wrapper">
-                  <span className="gcv-input-icon">🔒</span>
+                  <span className="gcv-input-icon"><LockKeyhole size={18} /></span>
 
                   <input
                     id="gcv-password"
@@ -198,14 +195,14 @@ export default function LoginPage({ onLogin }) {
                     Verificando credenciales...
                   </>
                 ) : (
-                  <>🔐 Iniciar sesión</>
+                  <><LogIn size={18} /> Iniciar sesión</>
                 )}
               </button>
 
             </form>
 
             <div className="gcv-login-security">
-              <span>🛡️</span>
+              <ShieldCheck size={18} />
               Acceso exclusivo para personal autorizado
             </div>
 

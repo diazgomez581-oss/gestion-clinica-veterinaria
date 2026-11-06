@@ -71,7 +71,6 @@ public class UsuarioController {
         );
     }
 
-    // Verificar permisos de administrador
     private boolean esAdmin(HttpServletRequest request) {
 
         HttpSession sesion = request.getSession(false);
@@ -100,10 +99,6 @@ public class UsuarioController {
                 ));
     }
 
-    // =====================================
-    // LISTAR USUARIOS
-    // GET /api/usuarios
-    // =====================================
 
     @GetMapping
     public ResponseEntity<?> listar(HttpServletRequest request) {
@@ -121,10 +116,6 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarios);
     }
 
-    // =====================================
-    // REGISTRAR USUARIO
-    // POST /api/usuarios
-    // =====================================
 
     @PostMapping
     @Transactional
@@ -191,9 +182,6 @@ public class UsuarioController {
 
         Long idVeterinario = null;
 
-        // =====================================
-        // CREAR VETERINARIO AUTOMÁTICAMENTE
-        // =====================================
 
         if ("VETERINARIO".equals(rol)) {
 
@@ -207,9 +195,6 @@ public class UsuarioController {
             idVeterinario = guardado.getIdVeterinario();
         }
 
-        // =====================================
-        // CREAR CUENTA DE USUARIO
-        // =====================================
 
         Usuario usuario = new Usuario();
 
@@ -230,10 +215,6 @@ public class UsuarioController {
                 .body(convertir(guardado));
     }
 
-    // =====================================
-    // ACTIVAR O DESACTIVAR USUARIO
-    // PATCH /api/usuarios/{id}/estado
-    // =====================================
 
     @PatchMapping("/{id}/estado")
     public ResponseEntity<?> cambiarEstado(

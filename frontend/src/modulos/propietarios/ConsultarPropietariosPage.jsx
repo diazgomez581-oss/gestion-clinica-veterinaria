@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { propietariosService } from './propietariosService';
+import { AlertTriangle, ArrowLeft, CheckCircle2, Edit3, Plus, RefreshCw, Trash2, X } from 'lucide-react';
 
 export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashboard }) {
   const [propietarios, setPropietarios] = useState([]);
@@ -8,7 +9,6 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
   const [error, setError] = useState('');
   const [exito, setExito] = useState('');
 
-  // Estado para el modal de edición
   const [propietarioEditar, setPropietarioEditar] = useState(null);
   const [formEdicion, setFormEdicion] = useState({
     telefono: '',
@@ -17,11 +17,9 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
   });
   const [guardandoEdicion, setGuardandoEdicion] = useState(false);
 
-  // Estado para el modal de eliminación nativo
   const [propietarioEliminar, setPropietarioEliminar] = useState(null);
   const [eliminando, setEliminando] = useState(false);
 
-  // Formateador automático de Teléfono (####-####)
   const formatearTelefono = (valor) => {
     const soloNumeros = valor.replace(/\D/g, '').slice(0, 8);
     if (soloNumeros.length > 4) {
@@ -47,7 +45,6 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
     cargarPropietarios();
   }, []);
 
-  // Filtro dinámico en vivo
   const propietariosFiltrados = propietarios.filter((p) => {
     const texto = busqueda.toLowerCase().trim();
     const nombreCompleto = `${p.nombres || ''} ${p.apellidos || ''}`.toLowerCase();
@@ -56,7 +53,6 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
     return nombreCompleto.includes(texto) || dui.includes(texto) || tel.includes(texto);
   });
 
-  // Abrir Modal de Edición
   const handleAbrirEditar = (propietario) => {
     setPropietarioEditar(propietario);
     setFormEdicion({
@@ -72,7 +68,6 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
     setFormEdicion({ telefono: '', correo: '', direccion: '' });
   };
 
-  // Guardar Cambios de Edición (PUT)
   const handleGuardarEdicion = async (e) => {
     e.preventDefault();
     if (!formEdicion.telefono.trim() || !formEdicion.direccion.trim()) {
@@ -105,13 +100,11 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
     }
   };
 
-  // Abrir Modal de Eliminación
   const handleAbrirEliminar = (propietario) => {
     setPropietarioEliminar(propietario);
     setError('');
   };
 
-  // Confirmar la Eliminación
   const handleConfirmarEliminar = async () => {
     if (!propietarioEliminar) return;
 
@@ -139,7 +132,6 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
 
   return (
     <div style={estilos.container}>
-      {/* Header de Navegación */}
       <div style={estilos.header}>
         <div>
           <div style={estilos.breadcrumb}>
@@ -150,19 +142,17 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
 
         <div style={estilos.headerButtons}>
           <button onClick={onIrARegistro} style={estilos.btnPrimary}>
-            + Registrar Propietario
+            <Plus size={16} /> Registrar Propietario
           </button>
           <button onClick={onVolverDashboard} style={estilos.btnSecondary}>
-            ← Volver al Dashboard
+            <ArrowLeft size={16} /> Volver al Dashboard
           </button>
         </div>
       </div>
 
-      {/* Banners de Notificación */}
-      {exito && <div style={estilos.alertSuccess}>✓ {exito}</div>}
-      {error && <div style={estilos.alertDanger}>⚠️ {error}</div>}
+      {exito && <div style={estilos.alertSuccess}><CheckCircle2 size={18} /> {exito}</div>}
+      {error && <div style={estilos.alertDanger}><AlertTriangle size={18} /> {error}</div>}
 
-      {/* Tarjeta de Tabla y Buscador */}
       <div style={estilos.card}>
         <div style={estilos.toolbar}>
           <div style={{ flex: 1, maxWidth: '420px' }}>
@@ -175,7 +165,7 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
             />
           </div>
           <button onClick={cargarPropietarios} style={estilos.btnRefresh}>
-            🔄 Refrescar
+            <RefreshCw size={16} /> Refrescar
           </button>
         </div>
 
@@ -219,10 +209,10 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
                     <td style={{ ...estilos.td, textAlign: 'center' }}>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                         <button onClick={() => handleAbrirEditar(p)} style={estilos.btnActionEdit} title="Editar datos">
-                          ✏️ Editar
+                          <Edit3 size={15} /> Editar
                         </button>
                         <button onClick={() => handleAbrirEliminar(p)} style={estilos.btnActionDelete} title="Eliminar registro">
-                          🗑️
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </td>
@@ -234,7 +224,6 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
         </div>
       </div>
 
-      {/* MODAL DE EDICIÓN */}
       {propietarioEditar && (
         <div style={estilos.modalOverlay}>
           <div style={estilos.modalCard}>
@@ -242,7 +231,7 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
               <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f2942' }}>
                 Editar Propietario #{propietarioEditar.idPropietario}
               </h3>
-              <button onClick={handleCerrarEditar} style={estilos.btnCloseModal}>✕</button>
+              <button onClick={handleCerrarEditar} style={estilos.btnCloseModal} aria-label="Cerrar edición"><X size={17} /></button>
             </div>
 
             <form onSubmit={handleGuardarEdicion} style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px' }}>
@@ -312,7 +301,6 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
         </div>
       )}
 
-      {/* MODAL DE CONFIRMACIÓN DE ELIMINACIÓN */}
       {propietarioEliminar && (
         <div style={estilos.modalOverlay}>
           <div style={{ ...estilos.modalCard, maxWidth: '440px', textAlign: 'center', padding: '28px 24px' }}>
@@ -329,7 +317,7 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
               margin: '0 auto 16px auto',
               border: '1px solid #fecaca'
             }}>
-              ⚠️
+              <AlertTriangle size={26} />
             </div>
 
             <h3 style={{ margin: '0 0 8px 0', fontSize: '1.2rem', color: '#0f2942' }}>

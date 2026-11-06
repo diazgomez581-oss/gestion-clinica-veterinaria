@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { propietariosService } from './propietariosService';
+import { AlertTriangle, ArrowLeft, Check, CheckCircle2 } from 'lucide-react';
 
 export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolver }) {
   const [formulario, setFormulario] = useState({
@@ -15,7 +16,6 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
   const [exitoMensaje, setExitoMensaje] = useState(null);
   const [guardando, setGuardando] = useState(false);
 
-  // Formateador automático de DUI (########-#)
   const formatearDUI = (valor) => {
     const soloNumeros = valor.replace(/\D/g, '').slice(0, 9);
     if (soloNumeros.length > 8) {
@@ -24,7 +24,6 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
     return soloNumeros;
   };
 
-  // Formateador automático de Teléfono (####-####)
   const formatearTelefono = (valor) => {
     const soloNumeros = valor.replace(/\D/g, '').slice(0, 8);
     if (soloNumeros.length > 4) {
@@ -56,13 +55,11 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
     setErrorValidacion('');
     setExitoMensaje(null);
 
-    // Validación de campos obligatorios (Criterio 1)
     if (!formulario.nombres.trim() || !formulario.apellidos.trim()) {
       setErrorValidacion('Por favor ingresa los nombres y apellidos completos del propietario.');
       return;
     }
 
-    // Validación de formato DUI: 8 dígitos + guion + 1 dígito (Criterio 2)
     const regexDui = /^\d{8}-\d{1}$/;
     if (!regexDui.test(formulario.dui.trim())) {
       setErrorValidacion('El DUI debe tener un formato válido de 9 dígitos (ej. 05123456-7).');
@@ -79,7 +76,6 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
       return;
     }
 
-    // Payload limpio hacia la API de Spring Boot
     const payload = {
       nombres: formulario.nombres.trim(),
       apellidos: formulario.apellidos.trim(),
@@ -93,7 +89,6 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
       setGuardando(true);
       const propietarioGuardado = await propietariosService.registrar(payload);
 
-      // Confirmación con ID asignado (Criterio 3)
       setExitoMensaje({
         id: propietarioGuardado.idPropietario,
         nombre: `${propietarioGuardado.nombres} ${propietarioGuardado.apellidos}`,
@@ -104,7 +99,6 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
         onPropietarioGuardado(propietarioGuardado);
       }
 
-      // Limpiar formulario tras éxito
       setFormulario({
         nombres: '',
         apellidos: '',
@@ -129,7 +123,6 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
 
   return (
     <div className="cita-page-container">
-      {/* Header */}
       <div className="cita-page-header">
         <div>
           <div className="cita-breadcrumb">
@@ -140,14 +133,13 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
         </div>
 
         <button type="button" onClick={onVolver} className="btn-volver-dash">
-          ← Volver al Dashboard
+          <ArrowLeft size={16} /> Volver al Dashboard
         </button>
       </div>
 
-      {/* Banner de Éxito */}
       {exitoMensaje && (
         <div className="alert-banner-success" style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '14px 18px', borderRadius: '10px', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '1.2rem' }}>✓</span>
+          <CheckCircle2 size={20} />
           <div>
             <strong>¡Propietario registrado exitosamente!</strong>
             <div style={{ fontSize: '0.82rem', marginTop: '2px' }}>
@@ -157,17 +149,14 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
         </div>
       )}
 
-      {/* Banner de Error */}
       {errorValidacion && (
         <div className="alert-banner-danger" style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' }}>
-          ⚠️ {errorValidacion}
+          <AlertTriangle size={18} /> {errorValidacion}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="cita-form-layout">
-        {/* COLUMNA IZQUIERDA: Formulario */}
         <div className="cita-form-main">
-          {/* Tarjeta 1: Información de Identidad */}
           <div className="cita-card-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <h3 className="section-title-aqua" style={{ margin: 0, border: 'none', padding: 0 }}>
@@ -234,7 +223,6 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
             </div>
           </div>
 
-          {/* Tarjeta 2: Residencia y Contacto Adicional */}
           <div className="cita-card-section">
             <h3 className="section-title-aqua">2. Información de Contacto y Residencia</h3>
 
@@ -266,7 +254,6 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
           </div>
         </div>
 
-        {/* COLUMNA DERECHA: Ficha de Resumen en Vivo */}
         <div className="cita-summary-side">
           <div className="summary-card-sticky">
             <div className="summary-card-header">
@@ -311,7 +298,7 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
 
             <div className="summary-actions">
               <button type="submit" className="btn-confirm-save" disabled={guardando}>
-                {guardando ? 'Guardando en BD...' : '✓ Guardar Propietario'}
+                {guardando ? 'Guardando en BD...' : <><Check size={16} /> Guardar Propietario</>}
               </button>
               <button type="button" onClick={onVolver} className="btn-cancel-flat" disabled={guardando}>
                 Cancelar

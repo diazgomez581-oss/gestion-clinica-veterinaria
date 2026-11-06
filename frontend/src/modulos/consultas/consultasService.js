@@ -59,7 +59,6 @@ export const consultasService = {
     return await res.json();
   },
 
-  // HIS-01: Finalizar consulta médica
   finalizarConsulta: async (idConsulta) => {
     const res = await fetch(
       `${API_BASE_URL}/consultas/${idConsulta}/finalizar`,

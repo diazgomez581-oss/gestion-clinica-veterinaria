@@ -5,6 +5,7 @@ import {
   registrarMascota
 } from './mascotasService';
 import './RegistrarMascotaPage.css';
+import { ArrowLeft, Check } from 'lucide-react';
 
 const formularioInicial = {
   nombre: '',
@@ -160,7 +161,7 @@ export default function RegistrarMascotaPage({ onVolver }) {
           </p>
         </div>
         <button type="button" className="mas-back" onClick={onVolver}>
-          ← Volver al Dashboard
+          <ArrowLeft size={16} /> Volver al Dashboard
         </button>
       </div>
 
@@ -345,7 +346,7 @@ export default function RegistrarMascotaPage({ onVolver }) {
 
           <div className="mas-actions">
             <button type="submit" className="mas-save" disabled={guardando}>
-              {guardando ? 'Guardando...' : '✓ Registrar Mascota'}
+              {guardando ? 'Guardando...' : <><Check size={16} /> Registrar Mascota</>}
             </button>
             <button type="button" className="mas-cancel" onClick={onVolver}>
               Cancelar
