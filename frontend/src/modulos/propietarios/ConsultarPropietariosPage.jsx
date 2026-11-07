@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ArrowLeft, CircleCheck, Pencil, Plus, RefreshCw, Trash2, TriangleAlert, X } from 'lucide-react';
 import { propietariosService } from './propietariosService';
 
 export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashboard }) {
@@ -150,17 +151,17 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
 
         <div style={estilos.headerButtons}>
           <button onClick={onIrARegistro} style={estilos.btnPrimary}>
-            + Registrar Propietario
+            <Plus size="1em" className="icono-texto" /> Registrar Propietario
           </button>
           <button onClick={onVolverDashboard} style={estilos.btnSecondary}>
-            ← Volver al Dashboard
+            <ArrowLeft size="1em" className="icono-texto" /> Volver al Dashboard
           </button>
         </div>
       </div>
 
       {/* Banners de Notificación */}
-      {exito && <div style={estilos.alertSuccess}>✓ {exito}</div>}
-      {error && <div style={estilos.alertDanger}>⚠️ {error}</div>}
+      {exito && <div style={estilos.alertSuccess}><CircleCheck size="1em" className="icono-texto" /> {exito}</div>}
+      {error && <div style={estilos.alertDanger}><TriangleAlert size="1em" className="icono-texto" /> {error}</div>}
 
       {/* Tarjeta de Tabla y Buscador */}
       <div style={estilos.card}>
@@ -175,7 +176,7 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
             />
           </div>
           <button onClick={cargarPropietarios} style={estilos.btnRefresh}>
-            🔄 Refrescar
+            <RefreshCw size="1em" className="icono-texto" /> Refrescar
           </button>
         </div>
 
@@ -219,10 +220,10 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
                     <td style={{ ...estilos.td, textAlign: 'center' }}>
                       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                         <button onClick={() => handleAbrirEditar(p)} style={estilos.btnActionEdit} title="Editar datos">
-                          ✏️ Editar
+                          <Pencil size="1em" className="icono-texto" /> Editar
                         </button>
-                        <button onClick={() => handleAbrirEliminar(p)} style={estilos.btnActionDelete} title="Eliminar registro">
-                          🗑️
+                        <button onClick={() => handleAbrirEliminar(p)} style={estilos.btnActionDelete} title="Eliminar registro" aria-label="Eliminar registro">
+                          <Trash2 size="1em" className="icono-texto" />
                         </button>
                       </div>
                     </td>
@@ -242,7 +243,7 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
               <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0f2942' }}>
                 Editar Propietario #{propietarioEditar.idPropietario}
               </h3>
-              <button onClick={handleCerrarEditar} style={estilos.btnCloseModal}>✕</button>
+              <button onClick={handleCerrarEditar} style={estilos.btnCloseModal} aria-label="Cerrar"><X size="1em" className="icono-texto" /></button>
             </div>
 
             <form onSubmit={handleGuardarEdicion} style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px' }}>
@@ -329,7 +330,7 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
               margin: '0 auto 16px auto',
               border: '1px solid #fecaca'
             }}>
-              ⚠️
+              <TriangleAlert size="1em" />
             </div>
 
             <h3 style={{ margin: '0 0 8px 0', fontSize: '1.2rem', color: '#0f2942' }}>

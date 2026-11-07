@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Ban, CalendarDays, CircleCheck, Ellipsis, Hourglass, PawPrint, Plus, RefreshCw, Stethoscope, TriangleAlert, UserX, X } from 'lucide-react';
 import { citasService } from '../modulos/citas/citasService';
 
 export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }) {
@@ -60,7 +61,6 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
           horaProgramada: horaCorta,
           fecha: c.fecha,
           mascota: c.nombreMascota || `Mascota #${c.idMascota}`,
-          icono: '🐾',
           dueno: c.nombrePropietario || 'Propietario no disponible',
          veterinario: nombreVeterinario,
           motivo: c.motivo || 'Consulta médica',
@@ -89,7 +89,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
     setProcesando(idCita);
     try {
       await citasService.registrarCheckIn(idCita);
-      setAviso('✓ Check-in registrado. El veterinario asignado verá al paciente en su cola de espera.');
+      setAviso('Check-in registrado. El veterinario asignado verá al paciente en su cola de espera.');
       // Recarga inmediata desde la base de datos
       await cargarCitasDeBD();
     } catch (err) {
@@ -177,26 +177,26 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
           <button type="button" onClick={() => cargarCitasDeBD()} className="btn-outline-action" title="Recargar base de datos">
-            🔄 Refrescar
+            <RefreshCw size="1em" className="icono-texto" /> Refrescar
           </button>
           {puedeGestionarLlegadas && <button type="button" className="btn-new-appointment" onClick={onIrAProgramar}>
-            <span>+</span> Nueva Cita
+            <Plus size="1em" /> Nueva Cita
           </button>}
         </div>
       </div>
 
       {errorCarga && (
         <div style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
-          ⚠️ {errorCarga}
+          <TriangleAlert size="1em" className="icono-texto" /> {errorCarga}
         </div>
       )}
 
       {aviso && <div role="status" style={{ background: '#dcfce7', color: '#166534', border: '1px solid #86efac', padding: 14, borderRadius: 10, marginBottom: 16, display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-        <span>{aviso}</span><button type="button" onClick={() => setAviso('')} aria-label="Cerrar aviso">✕</button>
+        <span><CircleCheck size="1em" className="icono-texto" /> {aviso}</span><button type="button" onClick={() => setAviso('')} aria-label="Cerrar aviso"><X size="1em" /></button>
       </div>}
       {esVeterinario && misPacientesEnEspera.length > 0 && (
         <div role="status" style={{ background: '#dcfce7', color: '#166534', border: '1px solid #86efac', padding: 14, borderRadius: 10, marginBottom: 16 }}>
-          🟢 Tenés {misPacientesEnEspera.length} paciente(s) asignado(s) esperando atención. Podés atenderlos desde la cola de espera.
+          Tenés {misPacientesEnEspera.length} paciente(s) asignado(s) esperando atención. Podés atenderlos desde la cola de espera.
         </div>
       )}
       {esVeterinario && idVeterinarioActual == null && (
@@ -212,7 +212,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
             <div className="kpi-number-text">{cargando ? '...' : totalCitasHoy}</div>
             <span className="kpi-sub-text">{programadas} programadas · {enEspera.length} en espera</span>
           </div>
-          <div className="kpi-avatar-circle circle-aqua">🗓️</div>
+          <div className="kpi-avatar-circle circle-aqua"><CalendarDays size="1em" /></div>
         </div>
 
         <div className="kpi-card-white">
@@ -221,7 +221,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
             <div className="kpi-number-text text-aqua">{cargando ? '...' : enEspera.length}</div>
             <span className="kpi-sub-text">Esperando ser llamados</span>
           </div>
-          <div className="kpi-avatar-circle circle-amber">⏳</div>
+          <div className="kpi-avatar-circle circle-amber"><Hourglass size="1em" /></div>
         </div>
 
         <div className="kpi-card-white">
@@ -230,7 +230,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
             <div className="kpi-number-text">{cargando ? '...' : atendidas}</div>
             <span className="kpi-sub-text">Consultas cerradas</span>
           </div>
-          <div className="kpi-avatar-circle circle-blue">🩺</div>
+          <div className="kpi-avatar-circle circle-blue"><CircleCheck size="1em" /></div>
         </div>
 
         <div className="kpi-card-white">
@@ -239,7 +239,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
             <div className="kpi-number-text text-pink">3</div>
             <span className="kpi-sub-text">Registrados en PostgreSQL</span>
           </div>
-          <div className="kpi-avatar-circle circle-pink">👨‍⚕️</div>
+          <div className="kpi-avatar-circle circle-pink"><Stethoscope size="1em" /></div>
         </div>
       </section>
 
@@ -249,12 +249,11 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
         <section className="clean-panel-box">
           <div className="clean-panel-header">
             <div className="panel-title-flex">
-              <span>🗓️</span>
               <h2 className="panel-heading">Citas del Día</h2>
               <span className="panel-tag-aqua">CIT-01</span>
             </div>
             {puedeGestionarLlegadas && <button type="button" className="btn-outline-action" onClick={onIrAProgramar}>
-              + Agendar
+              <Plus size="1em" className="icono-texto" /> Agendar
             </button>}
           </div>
 
@@ -301,7 +300,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                       </td>
                       <td>
                         <div className="pet-cell-flex">
-                          <span className="pet-icon-bubble">{c.icono}</span>
+                          <span className="pet-icon-bubble"><PawPrint size="1em" className="icono-texto" /></span>
                           <div>
                             <strong className="pet-name-title">{c.mascota}</strong>
                             <div className="owner-subtitle">{c.dueno}</div>
@@ -366,7 +365,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                                 disabled={procesando === c.idCita}
                                 className="btn-checkin-orange"
                               >
-                                ✓ Check-in
+                                Check-in
                               </button>
                             )}
 
@@ -380,7 +379,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                               c.estado === 'En espera') && (
                               <details className="cita-menu">
                                 <summary className="cita-menu-trigger">
-                                  ⋯ Acciones
+                                  <Ellipsis size="1em" className="icono-texto" /> Acciones
                                 </summary>
 
                                 <div className="cita-menu-opciones">
@@ -392,7 +391,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                                       handleActualizarEstado(c.idCita, 'No Asistió');
                                     }}
                                   >
-                                    ◷ No asistió
+                                    <UserX size="1em" className="icono-texto" /> No asistió
                                   </button>
 
                                   <button
@@ -403,7 +402,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                                       handleActualizarEstado(c.idCita, 'Cancelada');
                                     }}
                                   >
-                                    ⊘ Cancelar cita
+                                    <Ban size="1em" className="icono-texto" /> Cancelar cita
                                   </button>
                                 </div>
                               </details>
@@ -429,7 +428,6 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
         <section className="clean-panel-box">
           <div className="clean-panel-header">
             <div className="panel-title-flex">
-              <span>🏆</span>
               <h2 className="panel-heading">Cola de Espera</h2>
               <span className="panel-tag-aqua">CIT-02</span>
             </div>
@@ -449,7 +447,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                   <div className="queue-header-row">
                     <div className="queue-title-left">
                       <span className="queue-number-bubble">{idx + 1}</span>
-                      <strong className="queue-pet-name">{item.mascota} {item.icono}</strong>
+                      <strong className="queue-pet-name">{item.mascota} <PawPrint size="1em" className="icono-texto" /></strong>
                     </div>
                     {item.horaLlegada && (
                       <span className="wait-badge-normal">
@@ -459,7 +457,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                   </div>
 
                   <div className="queue-owner-desc">{item.dueno} · {item.motivo}</div>
-                  <div className="queue-vet-name">👤 {item.veterinario}</div>
+                  <div className="queue-vet-name"><Stethoscope size="1em" className="icono-texto" /> {item.veterinario}</div>
 
                   <div className="queue-btn-group">
                     
@@ -470,7 +468,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                     disabled={procesando === item.idCita}
                     onClick={() => handleLlamarAConsulta(item)}
                   >
-                    🩺 {procesando === item.idCita ? 'Iniciando...' : 'Atender paciente'}
+                    <Stethoscope size="1em" className="icono-texto" /> {procesando === item.idCita ? 'Iniciando...' : 'Atender paciente'}
                   </button>}
 
                     <span style={{ fontSize: 12, color: "#64748b" }}>{esMiPaciente(item) ? "Asignado a vos" : "Esperando al veterinario asignado"}</span>

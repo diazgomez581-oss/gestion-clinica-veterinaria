@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, ClipboardList, PawPrint, Plus, Stethoscope } from 'lucide-react';
 import { citasService } from './citasService';
 
 const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -154,21 +155,21 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
           <p style={estilos.subtitle}>Visualización mensual y control general de citas registradas en PostgreSQL</p>
         </div>
         <div style={estilos.headerButtons}>
-          <button type="button" onClick={onIrAProgramar} style={estilos.btnPrimary}>+ Agendar Cita</button>
-          <button type="button" onClick={onVolver} style={estilos.btnSecondary}>← Volver al Dashboard</button>
+          <button type="button" onClick={onIrAProgramar} style={estilos.btnPrimary}><Plus size="1em" className="icono-texto" /> Agendar Cita</button>
+          <button type="button" onClick={onVolver} style={estilos.btnSecondary}><ArrowLeft size="1em" className="icono-texto" /> Volver al Dashboard</button>
         </div>
       </div>
 
       <div style={estilos.toolbar}>
         <div style={estilos.viewToggle}>
-          <button type="button" onClick={() => setVista('mes')} style={vista === 'mes' ? estilos.toggleBtnActive : estilos.toggleBtn}>📅 Calendario Mensual</button>
-          <button type="button" onClick={() => setVista('agenda')} style={vista === 'agenda' ? estilos.toggleBtnActive : estilos.toggleBtn}>📋 Agenda Semanal ({citas.length})</button>
+          <button type="button" onClick={() => setVista('mes')} style={vista === 'mes' ? estilos.toggleBtnActive : estilos.toggleBtn}><Calendar size="1em" className="icono-texto" /> Calendario Mensual</button>
+          <button type="button" onClick={() => setVista('agenda')} style={vista === 'agenda' ? estilos.toggleBtnActive : estilos.toggleBtn}><ClipboardList size="1em" className="icono-texto" /> Agenda Semanal ({citas.length})</button>
         </div>
         <div style={estilos.navMesBox}>
-          <button type="button" onClick={() => cambiarPeriodo(-1)} style={estilos.navBtn}>◀ Anterior</button>
+          <button type="button" onClick={() => cambiarPeriodo(-1)} style={estilos.navBtn}><ChevronLeft size="1em" className="icono-texto" /> Anterior</button>
           <button type="button" onClick={() => setFechaActual(new Date())} style={estilos.navBtn}>Hoy</button>
           <span style={estilos.mesLabel}>{vista === 'mes' ? nombreMes.toUpperCase() : tituloSemana}</span>
-          <button type="button" onClick={() => cambiarPeriodo(1)} style={estilos.navBtn}>Siguiente ▶</button>
+          <button type="button" onClick={() => cambiarPeriodo(1)} style={estilos.navBtn}>Siguiente <ChevronRight size="1em" className="icono-texto" /></button>
         </div>
       </div>
       {error && <div style={{ ...estilos.agendaCard, marginBottom: '14px', color: '#b91c1c' }}>{error}</div>}
@@ -196,8 +197,8 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
                         <span style={estilos.citaHoraText}>{horaCita(cita.hora)}</span>
                         <span style={{ ...estilos.dotEstado(cita.estado), background: coloresEstado(cita.estado).borde }} />
                       </div>
-                      <div style={estilos.citaPetText}>🐾 {nombreMascota(cita)}</div>
-                      <div style={{ ...estilos.citaPetText, fontSize: '0.68rem', fontWeight: 400 }}>🩺 {nombreVeterinario(cita)}</div>
+                      <div style={estilos.citaPetText}><PawPrint size="1em" className="icono-texto" /> {nombreMascota(cita)}</div>
+                      <div style={{ ...estilos.citaPetText, fontSize: '0.68rem', fontWeight: 400 }}><Stethoscope size="1em" className="icono-texto" /> {nombreVeterinario(cita)}</div>
                     </div>
                   ))}
                 </div>
@@ -237,8 +238,8 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
                           {dia.citasDelDia.map(cita => (
                             <tr key={cita.idCita || cita.id} style={estilos.trRow}>
                               <td style={estilos.td}><span style={estilos.badgeHora}>{horaCita(cita.hora)}</span></td>
-                              <td style={{ ...estilos.td, fontWeight: 600 }}>🐾 {nombreMascota(cita)}</td>
-                              <td style={estilos.td}>🩺 {nombreVeterinario(cita)}</td>
+                              <td style={{ ...estilos.td, fontWeight: 600 }}>{nombreMascota(cita)}</td>
+                              <td style={estilos.td}>{nombreVeterinario(cita)}</td>
                               <td style={estilos.td}>{cita.motivo || '—'}</td>
                               <td style={estilos.td}><span style={{ ...estilos.badgeEstado(cita.estado), background: coloresEstado(cita.estado).fondo, color: coloresEstado(cita.estado).texto }}>{cita.estado || 'Sin estado'}</span></td>
                             </tr>

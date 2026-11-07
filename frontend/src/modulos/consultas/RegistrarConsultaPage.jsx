@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { ArrowLeft, Bird, Cat, CircleCheck, Dog, Lock, PawPrint, Rabbit, Stethoscope, Syringe, TriangleAlert } from 'lucide-react';
 import { consultasService } from './consultasService';
 import { vacunasService } from '../vacunas/vacunasService';
 
@@ -15,10 +16,11 @@ const formularioInicial = {
 
 const iconoEspecie = (especie = '') => {
   const valor = especie.toLowerCase();
-  if (valor.includes('gato') || valor.includes('felino')) return '🐱';
-  if (valor.includes('ave') || valor.includes('pájaro')) return '🦜';
-  if (valor.includes('conejo')) return '🐰';
-  return '🐶';
+  if (valor.includes('gato') || valor.includes('felino')) return <Cat size="1em" />;
+  if (valor.includes('ave') || valor.includes('pájaro')) return <Bird size="1em" />;
+  if (valor.includes('conejo')) return <Rabbit size="1em" />;
+  if (valor.includes('perro') || valor.includes('canino')) return <Dog size="1em" />;
+  return <PawPrint size="1em" />;
 };
 
 export default function RegistrarConsultaPage({ citaInicial = null, onVolver, onAbrirVacunacion }) {
@@ -307,19 +309,19 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
           <h1 className="cita-page-title">Registro de Consulta Médica</h1>
           <p className="cita-page-sub">Historia GCV-8 [CON-01] · Motivo, evaluación clínica, diagnóstico y observaciones</p>
         </div>
-        <button type="button" onClick={onVolver} className="btn-volver-dash">← Volver al Dashboard</button>
+        <button type="button" onClick={onVolver} className="btn-volver-dash"><ArrowLeft size="1em" className="icono-texto" /> Volver al Dashboard</button>
       </div>
 
-      {error && <div className="alert-banner-danger">⚠️ {error}</div>}
+      {error && <div className="alert-banner-danger"><TriangleAlert size="1em" className="icono-texto" /> {error}</div>}
       {mensajeFinalizacion && (
       <div className="alert-banner-success">
-        ✓ {mensajeFinalizacion}
+        <CircleCheck size="1em" className="icono-texto" /> {mensajeFinalizacion}
       </div>
 )}
 
       {exito && (
         <div className="alert-banner-success">
-          <strong>✓ Consulta registrada correctamente.</strong>{' '}
+          <CircleCheck size="1em" className="icono-texto" /> <strong>Consulta registrada correctamente.</strong>{' '}
           ID #{exito.idConsulta} · {fechaHoraLegible(exito.fechaHora)} · vinculada al expediente de {mascota?.nombre || 'la mascota'}.
         </div>
       )}
@@ -359,7 +361,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                       <strong>{pet?.nombre || `Mascota #${cita.idMascota}`}</strong>
                       {cita.estado === 'En Consulta' && (
                         <small style={{ color: '#0284c7', fontWeight: '700' }}>
-                          🩺 En consulta
+                          <Stethoscope size="1em" className="icono-texto" /> En consulta
                         </small>
                       )}
                       <small>{pet?.codigoExpediente || 'Expediente pendiente'} · {cita.hora?.slice?.(0, 5) || cita.hora}</small>
@@ -375,7 +377,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
         <div className="consulta-main-column">
           {!citaSeleccionada ? (
             <div className="cita-card-section consulta-select-prompt">
-              <div className="consulta-prompt-icon">🩺</div>
+              <div className="consulta-prompt-icon"><Stethoscope size="1em" /></div>
               <h3>Selecciona un paciente</h3>
               <p>
                 Selecciona un paciente en espera o en consulta para continuar
@@ -478,7 +480,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                   className="section-title-aqua"
                   style={!consultaRegistrada ? { color: '#64748b' } : undefined}
                 >
-                  💉 4. Aplicación de vacunas
+                  4. Aplicación de vacunas
                 </h3>
 
                 {!consultaRegistrada && (
@@ -494,7 +496,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                       marginBottom: 16
                     }}
                   >
-                    🔒 Primero completá los campos obligatorios y registrá la consulta médica.
+                    Primero completá los campos obligatorios y registrá la consulta médica.
                     Después podrás abrir la cartilla y registrar nuevas vacunas.
                   </div>
                 )}
@@ -505,7 +507,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                 </p>
 
                 {errorVacunas && (
-                  <div className="alert-banner-danger">⚠️ {errorVacunas}</div>
+                  <div className="alert-banner-danger"><TriangleAlert size="1em" className="icono-texto" /> {errorVacunas}</div>
                 )}
 
                 {vacunasAplicadas.length === 0 ? (
@@ -561,9 +563,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                       opacity: 1
                     } : undefined}
                   >
-                    {consultaRegistrada
-                      ? '💉 Abrir cartilla / Registrar vacuna'
-                      : '🔒 Abrir cartilla / Registrar vacuna'}
+                    {consultaRegistrada ? <Syringe size="1em" className="icono-texto" /> : <Lock size="1em" className="icono-texto" />} Abrir cartilla / Registrar vacuna
                   </button>
                 </div>
 
@@ -611,7 +611,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                     >
                       {guardando
                         ? 'Finalizando...'
-                        : '✓ Finalizar consulta'}
+                        : 'Finalizar consulta'}
                     </button>
                   ) : (
                     <button
@@ -624,7 +624,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                     >
                       {guardando
                         ? 'Guardando en PostgreSQL...'
-                        : '✓ Registrar Consulta Médica'}
+                        : 'Registrar Consulta Médica'}
                     </button>
                   )}
                 </div>
@@ -640,7 +640,6 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
               <strong>Historial previo</strong>
               <span>{mascota ? mascota.nombre : 'Sin paciente'}</span>
             </div>
-            <span>📋</span>
           </div>
 
           {!citaSeleccionada ? (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { citasService } from '../citas/citasService';
 import CartillaVacunas from './CartillaVacunas';
 
@@ -29,7 +30,7 @@ export default function VacunasPage({ onVolver, idMascotaInicial = null }) {
         </div>
 
         <button type="button" onClick={onVolver} className="btn-volver-dash">
-          ← Volver al Dashboard
+          <ArrowLeft size="1em" className="icono-texto" /> Volver al Dashboard
         </button>
       </div>
 
@@ -41,7 +42,7 @@ export default function VacunasPage({ onVolver, idMascotaInicial = null }) {
             <option value="">-- Seleccione una mascota --</option>
             {mascotas.map(m => (
               <option key={m.idMascota} value={m.idMascota}>
-                🐾 {m.nombre} · {m.especie} ({m.codigoExpediente})
+                {m.nombre} · {m.especie} ({m.codigoExpediente})
               </option>
             ))}
           </select>

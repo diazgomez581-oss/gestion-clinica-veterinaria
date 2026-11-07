@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ArrowLeft, CircleCheck, PawPrint, TriangleAlert } from 'lucide-react';
 import { citasService } from './citasService';
 
 // Datos de respaldo por si la BD tarda en responder
@@ -90,8 +91,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
             nombre: m.nombre,
             especie: m.especie || 'Canino',
             raza: m.raza || 'Estándar',
-            exp: m.codigoExpediente || `EXP-2026-${String(m.idMascota || m.id).padStart(3, '0')}`,
-            icono: m.especie === 'Felino' ? '🐱' : '🐶'
+            exp: m.codigoExpediente || `EXP-2026-${String(m.idMascota || m.id).padStart(3, '0')}`
           }));
 
           return {
@@ -197,7 +197,6 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
         fecha: formulario.fecha,
         codigoExpediente: mascotaSeleccionada.exp,
         mascota: mascotaSeleccionada.nombre,
-        icono: mascotaSeleccionada.icono,
         dueno: propietarioSeleccionado.nombre,
         propietario: propietarioSeleccionado.nombre,
         dui: propietarioSeleccionado.dui,
@@ -239,19 +238,19 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
         </div>
 
         <button type="button" onClick={onVolver} className="btn-volver-dash">
-          ← Volver al Dashboard
+          <ArrowLeft size="1em" className="icono-texto" /> Volver al Dashboard
         </button>
       </div>
 
       {exitoMensaje && (
         <div className="alert-banner-success" style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' }}>
-          ✓ Cita médica guardada con éxito en la base de datos (Fecha: {formulario.fecha}). Redirigiendo al Dashboard...
+          <CircleCheck size="1em" className="icono-texto" /> Cita médica guardada con éxito en la base de datos (Fecha: {formulario.fecha}). Redirigiendo al Dashboard...
         </div>
       )}
 
       {errorValidacion && (
         <div className="alert-banner-danger" style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' }}>
-          ⚠️ {errorValidacion}
+          <TriangleAlert size="1em" className="icono-texto" /> {errorValidacion}
         </div>
       )}
 
@@ -305,7 +304,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
                           <span style={{ fontSize: '0.74rem', color: '#64748b', marginLeft: '8px' }}>DUI: {p.dui}</span>
                         </div>
                         <span style={{ fontSize: '0.72rem', color: '#0891b2', fontWeight: 600 }}>
-                          🐾 {p.mascotas.length} mascota(s)
+                          <PawPrint size="1em" className="icono-texto" /> {p.mascotas.length} mascota(s)
                         </span>
                       </div>
                     ))}
@@ -350,7 +349,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
                   ) : (
                     mascotasDisponibles.map(m => (
                       <option key={m.idMascota} value={m.idMascota}>
-                        {m.icono} {m.nombre} ({m.especie} - {m.raza})
+                        {m.nombre} ({m.especie} - {m.raza})
                       </option>
                     ))
                   )}
@@ -451,12 +450,12 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
                   value={formulario.tipoServicio}
                   onChange={(e) => setFormulario(prev => ({ ...prev, tipoServicio: e.target.value }))}
                 >
-                  <option value="Consulta general">🩺 Consulta general</option>
-                  <option value="Vacunación">💉 Vacunación</option>
-                  <option value="Desparasitación">💊 Desparasitación</option>
-                  <option value="Control de rutina">📋 Control de rutina</option>
-                  <option value="Seguimiento / Curación">🩹 Seguimiento / Curación</option>
-                  <option value="Cirugía menor">🏥 Cirugía menor</option>
+                  <option value="Consulta general">Consulta general</option>
+                  <option value="Vacunación">Vacunación</option>
+                  <option value="Desparasitación">Desparasitación</option>
+                  <option value="Control de rutina">Control de rutina</option>
+                  <option value="Seguimiento / Curación">Seguimiento / Curación</option>
+                  <option value="Cirugía menor">Cirugía menor</option>
                 </select>
               </div>
 
@@ -496,7 +495,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
               <span className="summary-label">Paciente</span>
               <div className="summary-val">
                 {mascotaSeleccionada ? (
-                  <span>{mascotaSeleccionada.icono} {mascotaSeleccionada.nombre} ({mascotaSeleccionada.especie})</span>
+                  <span>{mascotaSeleccionada.nombre} ({mascotaSeleccionada.especie})</span>
                 ) : (
                   <span style={{ color: '#94a3b8' }}>Selecciona una mascota</span>
                 )}
@@ -525,7 +524,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
 
             <div className="summary-actions">
               <button type="submit" className="btn-confirm-save" disabled={guardando}>
-                {guardando ? 'Guardando en BD...' : '✓ Confirmar y Agendar Cita'}
+                {guardando ? 'Guardando en BD...' : 'Confirmar y Agendar Cita'}
               </button>
               <button type="button" onClick={onVolver} className="btn-cancel-flat" disabled={guardando}>
                 Cancelar

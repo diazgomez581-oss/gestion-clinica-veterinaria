@@ -291,9 +291,11 @@
 }
 
 .gcv-input-icon {
+  display: flex;
   position: absolute;
   left: 15px;
   z-index: 1;
+  color: #64748b;
   font-size: 17px;
   pointer-events: none;
 }

@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { LogOut, Menu, Search, UserRound, UserRoundCog } from 'lucide-react';
 import logoVet from '../assets/icono_vetues.png';
 
 export default function Navbar({
@@ -56,8 +57,13 @@ export default function Navbar({
               ? 'Maximizar menú'
               : 'Minimizar menú'
           }
+          aria-label={
+            isSidebarCollapsed
+              ? 'Maximizar menú'
+              : 'Minimizar menú'
+          }
         >
-          ☰
+          <Menu size="1em" />
         </button>
 
         <div className="brand-logo-container">
@@ -81,7 +87,7 @@ export default function Navbar({
 
       <div className="nav-center-group">
         <div className="search-bar-clean">
-          <span className="search-icon-clean">🔍</span>
+          <span className="search-icon-clean"><Search size="1em" className="icono-texto" /></span>
 
           <input
             type="text"
@@ -106,7 +112,7 @@ export default function Navbar({
             aria-expanded={menuUsuarioAbierto}
             aria-label="Menú de usuario"
           >
-            👤
+            <UserRound size="1em" />
           </button>
 
           {menuUsuarioAbierto && (
@@ -127,7 +133,7 @@ export default function Navbar({
                 className="dropdown-btn-clean"
                 onClick={() => setMenuUsuarioAbierto(false)}
               >
-                👤 Perfil
+                <UserRound size="1em" /> Perfil
               </button>
 
               {usuario?.rol === 'ADMIN' && (
@@ -135,7 +141,7 @@ export default function Navbar({
                   className="dropdown-btn-clean"
                   onClick={abrirGestionUsuarios}
                 >
-                  👥 Gestionar usuarios
+                  <UserRoundCog size="1em" /> Gestionar usuarios
                 </button>
               )}
 
@@ -145,8 +151,8 @@ export default function Navbar({
                 disabled={cerrandoSesion}
               >
                 {cerrandoSesion
-                  ? '⏳ Cerrando sesión...'
-                  : '🚪 Cerrar sesión'}
+                  ? 'Cerrando sesión...'
+                  : <><LogOut size="1em" /> Cerrar sesión</>}
               </button>
             </div>
           )}

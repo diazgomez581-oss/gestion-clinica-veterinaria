@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Lock, LockKeyhole, PawPrint, ShieldCheck, TriangleAlert, UserRound } from 'lucide-react';
 import './LoginPage.css';
 import mascotasLogin from '../../assets/mascotas-login.png';
 
@@ -70,7 +71,7 @@ export default function LoginPage({ onLogin }) {
         <div className="gcv-login-brand">
 
           <div className="gcv-login-brand-label">
-            <span>🐾</span>
+            <span><PawPrint size="1em" className="icono-texto" /></span>
             CLÍNICA VETERINARIA
           </div>
 
@@ -112,7 +113,7 @@ export default function LoginPage({ onLogin }) {
           <div className="gcv-login-form-wrap">
 
             <div className="gcv-login-icon">
-              🔐
+              <LockKeyhole size="1em" />
             </div>
 
             <div className="gcv-login-heading">
@@ -125,7 +126,7 @@ export default function LoginPage({ onLogin }) {
 
             {error && (
               <div className="gcv-login-error" role="alert">
-                <span>⚠️</span>
+                <span><TriangleAlert size="1em" className="icono-texto" /></span>
                 <span>{error}</span>
               </div>
             )}
@@ -138,7 +139,7 @@ export default function LoginPage({ onLogin }) {
                 </label>
 
                 <div className="gcv-login-input-wrapper">
-                  <span className="gcv-input-icon">👤</span>
+                  <span className="gcv-input-icon"><UserRound size="1em" /></span>
 
                   <input
                     id="gcv-usuario"
@@ -159,7 +160,7 @@ export default function LoginPage({ onLogin }) {
                 </label>
 
                 <div className="gcv-login-input-wrapper">
-                  <span className="gcv-input-icon">🔒</span>
+                  <span className="gcv-input-icon"><Lock size="1em" /></span>
 
                   <input
                     id="gcv-password"
@@ -198,14 +199,14 @@ export default function LoginPage({ onLogin }) {
                     Verificando credenciales...
                   </>
                 ) : (
-                  <>🔐 Iniciar sesión</>
+                  'Iniciar sesión'
                 )}
               </button>
 
             </form>
 
             <div className="gcv-login-security">
-              <span>🛡️</span>
+              <ShieldCheck size="1em" />
               Acceso exclusivo para personal autorizado
             </div>
 

@@ -141,6 +141,7 @@
 }
 
 .gcv-usuarios-avatar {
+  display: flex;
   background: #e3f5fc;
   padding: 10px;
   border-radius: 10px;

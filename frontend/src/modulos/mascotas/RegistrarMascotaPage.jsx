@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import {
   obtenerPropietariosParaSelect,
   registrarMascota
@@ -160,7 +161,7 @@ export default function RegistrarMascotaPage({ onVolver }) {
           </p>
         </div>
         <button type="button" className="mas-back" onClick={onVolver}>
-          ← Volver al Dashboard
+          <ArrowLeft size="1em" className="icono-texto" /> Volver al Dashboard
         </button>
       </div>
 
@@ -345,7 +346,7 @@ export default function RegistrarMascotaPage({ onVolver }) {
 
           <div className="mas-actions">
             <button type="submit" className="mas-save" disabled={guardando}>
-              {guardando ? 'Guardando...' : '✓ Registrar Mascota'}
+              {guardando ? 'Guardando...' : 'Registrar Mascota'}
             </button>
             <button type="button" className="mas-cancel" onClick={onVolver}>
               Cancelar

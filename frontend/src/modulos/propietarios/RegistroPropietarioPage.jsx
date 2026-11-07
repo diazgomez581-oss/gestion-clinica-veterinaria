@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ArrowLeft, CircleCheck, TriangleAlert } from 'lucide-react';
 import { propietariosService } from './propietariosService';
 
 export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolver }) {
@@ -140,14 +141,14 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
         </div>
 
         <button type="button" onClick={onVolver} className="btn-volver-dash">
-          ← Volver al Dashboard
+          <ArrowLeft size="1em" className="icono-texto" /> Volver al Dashboard
         </button>
       </div>
 
       {/* Banner de Éxito */}
       {exitoMensaje && (
         <div className="alert-banner-success" style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '14px 18px', borderRadius: '10px', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{ fontSize: '1.2rem' }}>✓</span>
+          <span style={{ fontSize: '1.2rem' }}><CircleCheck size="1em" className="icono-texto" /></span>
           <div>
             <strong>¡Propietario registrado exitosamente!</strong>
             <div style={{ fontSize: '0.82rem', marginTop: '2px' }}>
@@ -160,7 +161,7 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
       {/* Banner de Error */}
       {errorValidacion && (
         <div className="alert-banner-danger" style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' }}>
-          ⚠️ {errorValidacion}
+          <TriangleAlert size="1em" className="icono-texto" /> {errorValidacion}
         </div>
       )}
 
@@ -311,7 +312,7 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
 
             <div className="summary-actions">
               <button type="submit" className="btn-confirm-save" disabled={guardando}>
-                {guardando ? 'Guardando en BD...' : '✓ Guardar Propietario'}
+                {guardando ? 'Guardando en BD...' : 'Guardar Propietario'}
               </button>
               <button type="button" onClick={onVolver} className="btn-cancel-flat" disabled={guardando}>
                 Cancelar

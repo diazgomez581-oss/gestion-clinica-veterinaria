@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { CircleCheck, TriangleAlert } from 'lucide-react';
 import { vacunasService } from './vacunasService';
 import { citasService } from '../citas/citasService';
 
@@ -74,20 +75,20 @@ export default function CartillaVacunas({ idMascota }) {
       {/* Banner de Éxito */}
       {exito && (
         <div className="alert-banner-success" style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' }}>
-          ✓ {exito}
+          <CircleCheck size="1em" className="icono-texto" /> {exito}
         </div>
       )}
 
       {/* Banner de Error */}
       {error && (
         <div className="alert-banner-danger" style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' }}>
-          ⚠️ {error}
+          <TriangleAlert size="1em" className="icono-texto" /> {error}
         </div>
       )}
 
       {/* Tarjeta 1: Registro de vacuna aplicada */}
       <form onSubmit={handleSubmit} className="cita-card-section">
-        <h3 className="section-title-aqua">💉 Registrar Vacuna Aplicada</h3>
+        <h3 className="section-title-aqua">Registrar Vacuna Aplicada</h3>
 
         <div className="fields-grid-2">
           <div className="input-group-vet">
@@ -140,13 +141,13 @@ export default function CartillaVacunas({ idMascota }) {
         </div>
 
         <button type="submit" className="btn-confirm-save" disabled={guardando} style={{ marginTop: '16px' }}>
-          {guardando ? 'Guardando en BD...' : '✓ Registrar Vacuna'}
+          {guardando ? 'Guardando en BD...' : 'Registrar Vacuna'}
         </button>
       </form>
 
       {/* Tarjeta 2: Cartilla de vacunación (solo lectura, RN-05) */}
       <div className="cita-card-section">
-        <h3 className="section-title-aqua">📋 Cartilla de Vacunación</h3>
+        <h3 className="section-title-aqua">Cartilla de Vacunación</h3>
 
         <table className="clean-table">
           <thead>

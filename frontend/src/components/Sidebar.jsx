@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Calendar, CalendarDays, ChevronDown, ChevronRight, ClipboardList, FolderOpen, Hourglass, LayoutDashboard, PawPrint, Stethoscope, Syringe, UserRoundCog, Users } from 'lucide-react';
 
 // PERMISOS SEGÚN EL ROL
 const PERMISOS = {
@@ -88,6 +89,7 @@ export default function Sidebar({
           seccionActiva === seccion ? 'active' : ''
         }`}
         title={texto}
+        aria-label={texto}
       >
 
         <span className="link-icon">
@@ -137,7 +139,7 @@ export default function Sidebar({
             <span>{titulo}</span>
 
             <span className="chevron-icon">
-              {openGroups[clave] ? '▾' : '▸'}
+              {openGroups[clave] ? <ChevronDown size="1em" /> : <ChevronRight size="1em" />}
             </span>
           </div>
         )}
@@ -163,7 +165,7 @@ export default function Sidebar({
       <div className="nav-section-clean">
         {renderLink(
           'dashboard',
-          '⊞',
+          <LayoutDashboard size="1em" />,
           'Dashboard'
         )}
       </div>
@@ -180,19 +182,19 @@ export default function Sidebar({
         <>
           {renderLink(
             'propietarios',
-            '👥',
+            <Users size="1em" />,
             'Propietarios'
           )}
 
           {renderLink(
             'mascotas',
-            '🐾',
+            <PawPrint size="1em" />,
             'Mascotas'
           )}
 
           {renderLink(
             'expedientes',
-            '📁',
+            <FolderOpen size="1em" />,
             'Expedientes'
           )}
         </>
@@ -210,7 +212,7 @@ export default function Sidebar({
         <>
           {renderLink(
             'citas',
-            '🗓️',
+            <CalendarDays size="1em" />,
             'Citas del Día',
             totalCitas,
             'aqua'
@@ -218,13 +220,13 @@ export default function Sidebar({
 
           {renderLink(
             'calendario',
-            '📅',
+            <Calendar size="1em" />,
             'Calendario y Agenda'
           )}
 
           {renderLink(
             'espera',
-            '⏳',
+            <Hourglass size="1em" />,
             'Cola de Espera',
             enEspera,
             'amber'
@@ -244,19 +246,19 @@ export default function Sidebar({
         <>
           {renderLink(
             'consultas',
-            '🩺',
+            <Stethoscope size="1em" />,
             'Consultas Médicas'
           )}
 
           {renderLink(
             'vacunacion',
-            '💉',
+            <Syringe size="1em" />,
             'Vacunación'
           )}
 
           {renderLink(
             'historial',
-            '📋',
+            <ClipboardList size="1em" />,
             'Historial Clínico'
           )}
         </>
@@ -270,7 +272,7 @@ export default function Sidebar({
         <>
           {renderLink(
             'gestion-usuarios',
-            '👤',
+            <UserRoundCog size="1em" />,
             'Gestión de usuarios'
           )}
         </>

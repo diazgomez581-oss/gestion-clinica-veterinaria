@@ -1,5 +1,6 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { ArrowLeft, CircleCheck, Plus, TriangleAlert, UserRound, X } from 'lucide-react';
 import './GestionUsuariosPage.css';
 
 const API_BASE_URL =
@@ -161,7 +162,7 @@ export default function GestionUsuariosPage({ onVolver }) {
             className="gcv-usuarios-btn-secondary"
             onClick={onVolver}
           >
-            ← Volver
+            <ArrowLeft size="1em" className="icono-texto" /> Volver
           </button>
 
           <button
@@ -172,20 +173,20 @@ export default function GestionUsuariosPage({ onVolver }) {
               setMostrarFormulario(true);
             }}
           >
-            + Nuevo usuario
+            <Plus size="1em" className="icono-texto" /> Nuevo usuario
           </button>
         </div>
       </div>
 
       {error && (
         <div className="gcv-usuarios-alert error" role="alert">
-          ⚠️ {error}
+          <TriangleAlert size="1em" className="icono-texto" /> {error}
         </div>
       )}
 
       {mensaje && (
         <div className="gcv-usuarios-alert success" role="status">
-          ✓ {mensaje}
+          <CircleCheck size="1em" className="icono-texto" /> {mensaje}
         </div>
       )}
 
@@ -254,7 +255,7 @@ export default function GestionUsuariosPage({ onVolver }) {
                   <tr key={usuario.idUsuario}>
                     <td>
                       <div className="gcv-usuarios-persona">
-                        <span className="gcv-usuarios-avatar">👤</span>
+                        <span className="gcv-usuarios-avatar"><UserRound size="1em" /></span>
                         <strong>{usuario.nombre}</strong>
                       </div>
                     </td>
@@ -317,7 +318,7 @@ export default function GestionUsuariosPage({ onVolver }) {
                 disabled={guardando}
                 aria-label="Cerrar formulario"
               >
-                ✕
+                <X size="1em" />
               </button>
             </div>
 
@@ -365,7 +366,7 @@ export default function GestionUsuariosPage({ onVolver }) {
 
               {formulario.rol === 'VETERINARIO' && (
                 <p className="gcv-usuarios-info">
-                    🩺 Este trabajador se registrará automáticamente
+                    Este trabajador se registrará automáticamente
                     como veterinario y podrá ser asignado a las
                     consultas y citas de la clínica.
                 </p>
