@@ -168,9 +168,9 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
       return;
     }
 
-    // Regla de Negocio RN-02 (Anti-traslape)
+    // Evita que el veterinario tenga dos citas a la misma hora
     if (estaHoraOcupada(formulario.hora)) {
-      setErrorValidacion(`Conflicto de Agenda (RN-02): El ${formulario.veterinario} ya tiene ocupada la hora ${formulario.hora}. Selecciona otro bloque.`);
+      setErrorValidacion(`Conflicto de Agenda: El ${formulario.veterinario} ya tiene ocupada la hora ${formulario.hora}. Selecciona otro bloque.`);
       return;
     }
 
@@ -234,7 +234,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
             <span onClick={onVolver} className="breadcrumb-link" style={{ cursor: 'pointer' }}>Dashboard</span> &gt; <span>Programación de Citas</span>
           </div>
           <h1 className="cita-page-title">Agendar Nueva Cita Médica</h1>
-          <p className="cita-page-sub">Historia GCV-5 [CIT-01] · Asignación de paciente y registro en PostgreSQL</p>
+          <p className="cita-page-sub">Asignación de paciente y programación de la cita</p>
         </div>
 
         <button type="button" onClick={onVolver} className="btn-volver-dash">
@@ -244,7 +244,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
 
       {exitoMensaje && (
         <div className="alert-banner-success" style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' }}>
-          <CircleCheck size="1em" className="icono-texto" /> Cita médica guardada con éxito en la base de datos (Fecha: {formulario.fecha}). Redirigiendo al Dashboard...
+          <CircleCheck size="1em" className="icono-texto" /> Cita médica guardada con éxito (Fecha: {formulario.fecha}). Redirigiendo al Dashboard...
         </div>
       )}
 
@@ -263,9 +263,6 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
               <h3 className="section-title-aqua" style={{ margin: 0, border: 'none', padding: 0 }}>
                 1. Selección de Propietario y Mascota
               </h3>
-              <span style={{ fontSize: '0.72rem', background: '#e0f2fe', color: '#0369a1', padding: '3px 8px', borderRadius: '6px', fontWeight: 700 }}>
-                PostgreSQL · Tablas Propietarios y Mascotas
-              </span>
             </div>
 
             {/* BUSCADOR */}
@@ -524,7 +521,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
 
             <div className="summary-actions">
               <button type="submit" className="btn-confirm-save" disabled={guardando}>
-                {guardando ? 'Guardando en BD...' : 'Confirmar y Agendar Cita'}
+                {guardando ? 'Guardando...' : 'Confirmar y Agendar Cita'}
               </button>
               <button type="button" onClick={onVolver} className="btn-cancel-flat" disabled={guardando}>
                 Cancelar

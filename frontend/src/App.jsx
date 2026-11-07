@@ -13,6 +13,7 @@ import RegistroPropietarioPage from './modulos/propietarios/RegistroPropietarioP
 
 import RegistrarConsultaPage from './modulos/consultas/RegistrarConsultaPage';
 import VacunasPage from './modulos/vacunas/VacunasPage';
+import ProximasVacunasPage from './modulos/vacunas/ProximasVacunasPage';
 
 import RegistrarMascotaPage from './modulos/mascotas/RegistrarMascotaPage';
 import LoginPage from './modulos/autenticacion/LoginPage';
@@ -341,6 +342,12 @@ export default function App() {
                   nuevo
                 );
               }}
+            />
+
+          ) : vistaActual === 'proximas-vacunas' ? (
+
+            <ProximasVacunasPage
+              onVolver={() => setVistaActual('dashboard')}
             />
 
           ) : vistaActual === 'vacunacion' ? (

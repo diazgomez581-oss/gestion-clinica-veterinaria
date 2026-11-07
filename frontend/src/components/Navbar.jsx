@@ -123,7 +123,7 @@ export default function Navbar({
                 </span>
 
                 <span className="user-role-text">
-                  {rolUsuario} · TOO115
+                  {rolUsuario}
                 </span>
               </div>
 

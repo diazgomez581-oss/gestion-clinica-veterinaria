@@ -156,7 +156,7 @@ export default function RegistrarMascotaPage({ onVolver }) {
           </div>
           <h1>Registrar Nueva Mascota</h1>
           <p>
-            Historia GCV-3 [MAS-01] · Registro de paciente
+            Registro de paciente
             y apertura de expediente clínico.
           </p>
         </div>
@@ -197,7 +197,7 @@ export default function RegistrarMascotaPage({ onVolver }) {
               </select>
               <small>
                 La mascota debe estar asociada a un propietario
-                previamente registrado en PostgreSQL.
+                previamente registrado.
               </small>
             </div>
 

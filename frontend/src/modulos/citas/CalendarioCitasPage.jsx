@@ -152,7 +152,7 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
             <span onClick={onVolver} style={estilos.breadcrumbLink}>Dashboard</span> &gt; <span>Calendario y Agenda</span>
           </div>
           <h1 style={estilos.title}>Calendario y Planificación de Citas</h1>
-          <p style={estilos.subtitle}>Visualización mensual y control general de citas registradas en PostgreSQL</p>
+          <p style={estilos.subtitle}>Visualización mensual y control general de citas</p>
         </div>
         <div style={estilos.headerButtons}>
           <button type="button" onClick={onIrAProgramar} style={estilos.btnPrimary}><Plus size="1em" className="icono-texto" /> Agendar Cita</button>
@@ -181,7 +181,7 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
           </div>
           <div style={estilos.calendarGrid}>
             {cargando ? (
-              <div style={estilos.loadingState}>Sincronizando eventos con la base de datos...</div>
+              <div style={estilos.loadingState}>Cargando citas...</div>
             ) : diasCalendario.map((item, index) => item.vacio ? (
               <div key={`vacio-${index}`} style={estilos.dayCellEmpty} />
             ) : (
@@ -212,7 +212,7 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
         <div style={estilos.agendaCard}>
           <div style={{ ...estilos.agendaTitle, marginBottom: '6px' }}>Agenda semanal · {tituloSemana}</div>
           <p style={{ ...estilos.subtitle, marginBottom: '18px' }}>Citas agrupadas de lunes a domingo y ordenadas por hora.</p>
-          {cargando ? <div style={estilos.emptyRow}>Cargando citas desde PostgreSQL...</div> : (
+          {cargando ? <div style={estilos.emptyRow}>Cargando citas...</div> : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {semana.map((dia, index) => (
                 <section key={dia.fechaStr} style={{ border: '1px solid #e2e8f0', borderRadius: '10px', overflow: 'hidden' }}>

@@ -38,7 +38,7 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
       const data = await propietariosService.listarTodos();
       setPropietarios(data || []);
     } catch (err) {
-      setError(err.message || 'Error al conectar con la base de datos PostgreSQL.');
+      setError(err.message || 'Error al conectar con el servidor.');
     } finally {
       setCargando(false);
     }
@@ -127,7 +127,7 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
         cargarPropietarios();
         setTimeout(() => setExito(''), 3000);
       } else {
-        setError('La función de eliminación no está habilitada en el backend.');
+        setError('La función de eliminación no está habilitada.');
         setPropietarioEliminar(null);
       }
     } catch (err) {
@@ -196,7 +196,7 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
             <tbody>
               {cargando ? (
                 <tr>
-                  <td colSpan="7" style={estilos.emptyRow}>Cargando registros desde PostgreSQL...</td>
+                  <td colSpan="7" style={estilos.emptyRow}>Cargando registros...</td>
                 </tr>
               ) : propietariosFiltrados.length === 0 ? (
                 <tr>
@@ -338,7 +338,7 @@ export default function ConsultarPropietariosPage({ onIrARegistro, onVolverDashb
             </h3>
 
             <p style={{ margin: '0 0 20px 0', fontSize: '0.88rem', color: '#64748b', lineHeight: '1.4' }}>
-              ¿Estás seguro de que deseas eliminar a <strong>{propietarioEliminar.nombres} {propietarioEliminar.apellidos}</strong> (DUI: {propietarioEliminar.dui})? Esta acción removerá el registro de la base de datos.
+              ¿Estás seguro de que deseas eliminar a <strong>{propietarioEliminar.nombres} {propietarioEliminar.apellidos}</strong> (DUI: {propietarioEliminar.dui})? Esta acción eliminará el registro.
             </p>
 
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>

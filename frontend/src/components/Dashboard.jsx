@@ -71,7 +71,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
 
       setCitas(citasFormateadas);
     } catch (err) {
-      setErrorCarga('No se pudo conectar con el servidor backend (puerto 8080).');
+      setErrorCarga('No se pudo conectar con el servidor.');
     } finally {
       if (!silencioso) setCargando(false);
     }
@@ -83,7 +83,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
     return () => clearInterval(intervalo);
   }, []);
 
-  // 2. HU GCV-6 [CIT-02]: Marcar llegada en PostgreSQL y refrescar el estado
+  // 2. Marcar llegada y refrescar el estado
   const handleCheckIn = async (idCita) => {
     if (!puedeGestionarLlegadas || procesando) return;
     setProcesando(idCita);
@@ -99,7 +99,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
     }
   };
 
-  // GCV-7 [CIT-03]: Actualizar estado de cita
+  // Actualizar estado de cita
   const handleActualizarEstado = async (idCita, nuevoEstado) => {
 
 
@@ -117,7 +117,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
     }
   };
 
-  // GCV-7 [CIT-03]: Llamar al paciente e iniciar consulta
+  // Llamar al paciente e iniciar consulta
   const handleLlamarAConsulta = async (cita) => {
     if (!esMiPaciente(cita) || procesando) return;
     setProcesando(cita.idCita);
@@ -172,11 +172,11 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
         <div>
           <h1 className="dash-title-clean">Dashboard General</h1>
           <p className="dash-date-clean">
-            Sincronizado con PostgreSQL · {new Date().toLocaleDateString('es-SV', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            {new Date().toLocaleDateString('es-SV', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button type="button" onClick={() => cargarCitasDeBD()} className="btn-outline-action" title="Recargar base de datos">
+          <button type="button" onClick={() => cargarCitasDeBD()} className="btn-outline-action" title="Recargar citas">
             <RefreshCw size="1em" className="icono-texto" /> Refrescar
           </button>
           {puedeGestionarLlegadas && <button type="button" className="btn-new-appointment" onClick={onIrAProgramar}>
@@ -237,7 +237,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
           <div className="kpi-info-box">
             <span className="kpi-title-text">Veterinarios activos</span>
             <div className="kpi-number-text text-pink">3</div>
-            <span className="kpi-sub-text">Registrados en PostgreSQL</span>
+            <span className="kpi-sub-text">Registrados en la clínica</span>
           </div>
           <div className="kpi-avatar-circle circle-pink"><Stethoscope size="1em" /></div>
         </div>
@@ -250,7 +250,6 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
           <div className="clean-panel-header">
             <div className="panel-title-flex">
               <h2 className="panel-heading">Citas del Día</h2>
-              <span className="panel-tag-aqua">CIT-01</span>
             </div>
             {puedeGestionarLlegadas && <button type="button" className="btn-outline-action" onClick={onIrAProgramar}>
               <Plus size="1em" className="icono-texto" /> Agendar
@@ -283,13 +282,13 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                 {cargando ? (
                   <tr>
                     <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
-                      Cargando datos desde PostgreSQL...
+                      Cargando citas...
                     </td>
                   </tr>
                 ) : citasFiltradas.length === 0 ? (
                   <tr>
                     <td colSpan="6" style={{ textAlign: 'center', padding: '24px', color: '#94a3b8' }}>
-                      No hay citas registradas en la base de datos para hoy.
+                      No hay citas registradas para hoy.
                     </td>
                   </tr>
                 ) : (
@@ -429,7 +428,6 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
           <div className="clean-panel-header">
             <div className="panel-title-flex">
               <h2 className="panel-heading">Cola de Espera</h2>
-              <span className="panel-tag-aqua">CIT-02</span>
             </div>
             <span className="panel-clock-text">
               {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

@@ -471,15 +471,6 @@ body {
   margin: 0;
 }
 
-.panel-tag-aqua {
-  font-size: 0.68rem;
-  background: #f1f5f9;
-  color: #0891b2;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-weight: 600;
-}
-
 .btn-outline-action {
   background: #ffffff;
   border: 1px solid #06b6d4;
@@ -755,7 +746,7 @@ body {
 }
 
 /* ==========================================================================
-   VISTA DEDICADA: PROGRAMAR CITA (CIT-01)
+   VISTA DEDICADA: PROGRAMAR CITA
    ========================================================================== */
 .cita-page-container {
   padding: 24px 32px;
@@ -1062,7 +1053,7 @@ body {
 }
 
 /* ==========================================================================
-   BUSCADOR DE PROPIETARIOS Y AUTO-COMPLETADO (CIT-01)
+   BUSCADOR DE PROPIETARIOS Y AUTO-COMPLETADO
    ========================================================================== */
 .search-propietario-box {
   background: #f8fafc;
@@ -1118,7 +1109,7 @@ body {
   border-color: #e2e8f0 !important;
 } 
 /* ========================================================================== 
-   MÓDULO CLÍNICO: REGISTRO DE CONSULTA MÉDICA (CON-01)
+   MÓDULO CLÍNICO: REGISTRO DE CONSULTA MÉDICA
    ========================================================================== */
 .consulta-page-container {
   padding-bottom: 36px;
@@ -1481,7 +1472,7 @@ body {
 
 
 /* =========================================
-   CIT-03: Menú profesional de acciones
+   Menú profesional de acciones
    ========================================= */
 
 .cita-acciones-celda {

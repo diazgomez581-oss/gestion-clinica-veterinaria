@@ -19,7 +19,7 @@ export const propietariosService = {
     return await response.json();
   },
 
-  // Registrar un nuevo propietario (Historia PRO-01 / GCV-1)
+  // Registrar un nuevo propietario
   async registrar(propietario) {
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -38,7 +38,7 @@ export const propietariosService = {
     return data;
   },
 
-  // Actualizar datos de contacto de un propietario (Historia PRO-02 / GCV-2)
+  // Actualizar datos de contacto de un propietario
   async actualizar(id, propietario) {
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'PUT',

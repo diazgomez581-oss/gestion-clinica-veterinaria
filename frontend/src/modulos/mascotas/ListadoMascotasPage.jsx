@@ -15,7 +15,7 @@ export default function ListadoMascotasPage({ onVerExpediente }) {
             .catch(err => console.error("Error al cargar propietarios", err));
     }, []);
 
-    // Criterio 1: Al seleccionar un propietario, se cargan sus mascotas automáticamente
+    // Al seleccionar un propietario, se cargan sus mascotas automáticamente
     const handleSelectPropietario = async (e) => {
         const id = e.target.value;
         setPropietarioSeleccionado(id);
@@ -38,9 +38,9 @@ export default function ListadoMascotasPage({ onVerExpediente }) {
 
     return (
         <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
-            <h2>MAS-02: Consulta de Mascotas por Propietario</h2>
+            <h2>Consulta de Mascotas por Propietario</h2>
 
-            {/* Criterio 1: Desplegable para seleccionar Propietario */}
+            {/* Desplegable para seleccionar Propietario */}
             <div style={{ marginBottom: '20px' }}>
                 <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '8px' }}>
                     Seleccione un Propietario:
@@ -59,7 +59,7 @@ export default function ListadoMascotasPage({ onVerExpediente }) {
                 </select>
             </div>
 
-            {/* Criterio 2: Listado con información básica */}
+            {/* Listado con información básica */}
             {cargando && <p>Cargando mascotas...</p>}
 
             {!cargando && propietarioSeleccionado && mascotas.length === 0 && (
@@ -87,7 +87,7 @@ export default function ListadoMascotasPage({ onVerExpediente }) {
                                 <td style={{ padding: '10px' }}>{mascota.raza || 'N/A'}</td>
                                 <td style={{ padding: '10px' }}>{mascota.sexo}</td>
                                 <td style={{ padding: '10px', textAlign: 'center' }}>
-                                    {/* Criterio 3: Acceso directo al perfil o expediente individual */}
+                                    {/* Acceso directo al perfil o expediente individual */}
                                     <button 
                                         onClick={() => onVerExpediente ? onVerExpediente(mascota) : alert(`Accediendo al expediente de ${mascota.nombre}`)}
                                         style={{ 

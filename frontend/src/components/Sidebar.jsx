@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Calendar, CalendarDays, ChevronDown, ChevronRight, ClipboardList, FolderOpen, Hourglass, LayoutDashboard, PawPrint, Stethoscope, Syringe, UserRoundCog, Users } from 'lucide-react';
+import { Calendar, CalendarClock, CalendarDays, ChevronDown, ChevronRight, ClipboardList, FolderOpen, Hourglass, LayoutDashboard, PawPrint, Stethoscope, Syringe, UserRoundCog, Users } from 'lucide-react';
 
 // PERMISOS SEGÚN EL ROL
 const PERMISOS = {
@@ -14,6 +14,7 @@ const PERMISOS = {
     'espera',
     'consultas',
     'vacunacion',
+    'proximas-vacunas',
     'historial',
     'gestion-usuarios'
   ],
@@ -25,7 +26,8 @@ const PERMISOS = {
     'expedientes',
     'citas',
     'calendario',
-    'espera'
+    'espera',
+    'proximas-vacunas'
   ],
 
   VETERINARIO: [
@@ -36,6 +38,7 @@ const PERMISOS = {
     'espera',
     'consultas',
     'vacunacion',
+    'proximas-vacunas',
     'historial'
   ]
 };
@@ -241,6 +244,7 @@ export default function Sidebar({
         [
           'consultas',
           'vacunacion',
+          'proximas-vacunas',
           'historial'
         ],
         <>
@@ -254,6 +258,12 @@ export default function Sidebar({
             'vacunacion',
             <Syringe size="1em" />,
             'Vacunación'
+          )}
+
+          {renderLink(
+            'proximas-vacunas',
+            <CalendarClock size="1em" />,
+            'Próximas vacunas'
           )}
 
           {renderLink(

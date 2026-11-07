@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { CircleCheck, TriangleAlert } from 'lucide-react';
-import { vacunasService } from './vacunasService';
+import { formatearFecha, vacunasService } from './vacunasService';
 import { citasService } from '../citas/citasService';
 
 // Fecha local en formato YYYY-MM-DD (toISOString usaría UTC y podría adelantar un día)
 const hoy = () => new Date().toLocaleDateString('en-CA');
 
-// YYYY-MM-DD -> DD/MM/YYYY sin pasar por Date para evitar desfases de zona horaria
-const formatearFecha = (fecha) => fecha.split('-').reverse().join('/');
+// Día siguiente a una fecha YYYY-MM-DD, también en hora local
+const diaSiguiente = (fecha) => {
+  const siguiente = new Date(`${fecha}T00:00:00`);
+  siguiente.setDate(siguiente.getDate() + 1);
+  return siguiente.toLocaleDateString('en-CA');
+};
 
 export default function CartillaVacunas({ idMascota }) {
   const [vacunas, setVacunas] = useState([]);
@@ -16,13 +20,13 @@ export default function CartillaVacunas({ idMascota }) {
     nombreTipoVacuna: '',
     lote: '',
     idVeterinario: '',
-    fechaAplicacion: hoy()
+    fechaAplicacion: hoy(),
+    proximaDosis: ''
   });
   const [error, setError] = useState('');
   const [exito, setExito] = useState('');
   const [guardando, setGuardando] = useState(false);
 
-  // Selector temporal de veterinario hasta que exista inicio de sesión
   useEffect(() => {
     citasService.getVeterinarios().then(vets => setVeterinarios(vets || []));
   }, []);
@@ -56,12 +60,13 @@ export default function CartillaVacunas({ idMascota }) {
         nombreTipoVacuna: formulario.nombreTipoVacuna.trim(),
         lote: formulario.lote.trim(),
         fechaAplicacion: formulario.fechaAplicacion,
+        proximaDosis: formulario.proximaDosis || null,
         veterinario: { idVeterinario: Number(formulario.idVeterinario) }
       });
 
       setExito(`Vacuna "${guardada.nombreTipoVacuna}" registrada en la cartilla.`);
       // Se conservan veterinario y fecha para registrar varias vacunas de la misma visita
-      setFormulario(prev => ({ ...prev, nombreTipoVacuna: '', lote: '' }));
+      setFormulario(prev => ({ ...prev, nombreTipoVacuna: '', lote: '', proximaDosis: '' }));
       await cargarCartilla();
     } catch (err) {
       setError(err.message || 'Error al registrar la vacuna en el servidor.');
@@ -138,14 +143,28 @@ export default function CartillaVacunas({ idMascota }) {
               required
             />
           </div>
+
+          <div className="input-group-vet">
+            <label>Próxima dosis</label>
+            <input
+              type="date"
+              name="proximaDosis"
+              min={formulario.fechaAplicacion ? diaSiguiente(formulario.fechaAplicacion) : undefined}
+              value={formulario.proximaDosis}
+              onChange={handleChange}
+            />
+            <small style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '3px' }}>
+              Opcional. Déjala vacía si la vacuna no lleva refuerzo.
+            </small>
+          </div>
         </div>
 
         <button type="submit" className="btn-confirm-save" disabled={guardando} style={{ marginTop: '16px' }}>
-          {guardando ? 'Guardando en BD...' : 'Registrar Vacuna'}
+          {guardando ? 'Guardando...' : 'Registrar Vacuna'}
         </button>
       </form>
 
-      {/* Tarjeta 2: Cartilla de vacunación (solo lectura, RN-05) */}
+      {/* Tarjeta 2: Cartilla de vacunación (solo lectura) */}
       <div className="cita-card-section">
         <h3 className="section-title-aqua">Cartilla de Vacunación</h3>
 
@@ -156,12 +175,13 @@ export default function CartillaVacunas({ idMascota }) {
               <th>Vacuna</th>
               <th>Lote</th>
               <th>Veterinario</th>
+              <th>Próxima dosis</th>
             </tr>
           </thead>
           <tbody>
             {vacunas.length === 0 ? (
               <tr>
-                <td colSpan="4" style={{ textAlign: 'center', color: '#64748b' }}>
+                <td colSpan="5" style={{ textAlign: 'center', color: '#64748b' }}>
                   Esta mascota aún no tiene vacunas registradas.
                 </td>
               </tr>
@@ -172,6 +192,7 @@ export default function CartillaVacunas({ idMascota }) {
                   <td className="motive-cell-text">{vacuna.nombreTipoVacuna}</td>
                   <td>{vacuna.lote}</td>
                   <td><span className="vet-cell-pill">{vacuna.veterinario.nombre}</span></td>
+                  <td>{vacuna.proximaDosis ? formatearFecha(vacuna.proximaDosis) : '—'}</td>
                 </tr>
               ))
             )}

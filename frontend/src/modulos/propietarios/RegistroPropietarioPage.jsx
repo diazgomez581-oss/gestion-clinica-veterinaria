@@ -57,13 +57,13 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
     setErrorValidacion('');
     setExitoMensaje(null);
 
-    // Validación de campos obligatorios (Criterio 1)
+    // Validación de campos obligatorios
     if (!formulario.nombres.trim() || !formulario.apellidos.trim()) {
       setErrorValidacion('Por favor ingresa los nombres y apellidos completos del propietario.');
       return;
     }
 
-    // Validación de formato DUI: 8 dígitos + guion + 1 dígito (Criterio 2)
+    // Validación de formato DUI: 8 dígitos + guion + 1 dígito
     const regexDui = /^\d{8}-\d{1}$/;
     if (!regexDui.test(formulario.dui.trim())) {
       setErrorValidacion('El DUI debe tener un formato válido de 9 dígitos (ej. 05123456-7).');
@@ -94,7 +94,7 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
       setGuardando(true);
       const propietarioGuardado = await propietariosService.registrar(payload);
 
-      // Confirmación con ID asignado (Criterio 3)
+      // Confirmación con ID asignado
       setExitoMensaje({
         id: propietarioGuardado.idPropietario,
         nombre: `${propietarioGuardado.nombres} ${propietarioGuardado.apellidos}`,
@@ -137,7 +137,7 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
             <span onClick={onVolver} className="breadcrumb-link" style={{ cursor: 'pointer' }}>Dashboard</span> &gt; <span>Gestión de Propietarios</span>
           </div>
           <h1 className="cita-page-title">Registrar Nuevo Propietario</h1>
-          <p className="cita-page-sub">Historia GCV-1 [PRO-01] · Alta de cliente responsable y sincronización con PostgreSQL</p>
+          <p className="cita-page-sub">Alta de cliente responsable</p>
         </div>
 
         <button type="button" onClick={onVolver} className="btn-volver-dash">
@@ -174,9 +174,6 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
               <h3 className="section-title-aqua" style={{ margin: 0, border: 'none', padding: 0 }}>
                 1. Datos de Identidad Legal
               </h3>
-              <span style={{ fontSize: '0.72rem', background: '#e0f2fe', color: '#0369a1', padding: '3px 8px', borderRadius: '6px', fontWeight: 700 }}>
-                PostgreSQL · Tabla Propietarios (DUI Único)
-              </span>
             </div>
 
             <div className="fields-grid-2">
@@ -216,7 +213,7 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
                   required
                 />
                 <small style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '3px' }}>
-                  Restricción única: no se admiten DUIs duplicados en la base de datos.
+                  No se admiten DUIs duplicados.
                 </small>
               </div>
 
@@ -312,7 +309,7 @@ export default function RegistroPropietarioPage({ onPropietarioGuardado, onVolve
 
             <div className="summary-actions">
               <button type="submit" className="btn-confirm-save" disabled={guardando}>
-                {guardando ? 'Guardando en BD...' : 'Guardar Propietario'}
+                {guardando ? 'Guardando...' : 'Guardar Propietario'}
               </button>
               <button type="button" onClick={onVolver} className="btn-cancel-flat" disabled={guardando}>
                 Cancelar

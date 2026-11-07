@@ -26,7 +26,7 @@ export default function VacunasPage({ onVolver, idMascotaInicial = null }) {
             <span onClick={onVolver} className="breadcrumb-link" style={{ cursor: 'pointer' }}>Dashboard</span> &gt; <span>Vacunación</span>
           </div>
           <h1 className="cita-page-title">Cartilla de Vacunación</h1>
-          <p className="cita-page-sub">Historia GCV-10 [VAC-01] · Registro de vacunas aplicadas a una mascota</p>
+          <p className="cita-page-sub">Registro de vacunas aplicadas a una mascota</p>
         </div>
 
         <button type="button" onClick={onVolver} className="btn-volver-dash">

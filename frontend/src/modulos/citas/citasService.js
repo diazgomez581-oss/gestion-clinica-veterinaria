@@ -55,7 +55,7 @@ export const citasService = {
     return null;
   },
 
-  // 6. Guardar nueva cita médica en PostgreSQL con validación RN-02 (CIT-01)
+  // 6. Guardar nueva cita médica; el backend rechaza horarios ocupados
   guardarCita: async (datosCita) => {
     const res = await fetch(`${API_BASE_URL}/citas`, {
       method: 'POST',
@@ -65,13 +65,12 @@ export const citasService = {
 
     if (!res.ok) {
       const errorMsg = await res.text();
-      throw new Error(errorMsg || 'No se pudo guardar la cita en la base de datos.');
+      throw new Error(errorMsg || 'No se pudo guardar la cita.');
     }
     return await res.json();
   },
 
-  // 7. Check-in de llegada física a sala de espera (CIT-02)
-  // 7. Check-in de llegada física (CIT-02)
+  // 7. Check-in de llegada física a sala de espera
   registrarCheckIn: async (idCita) => {
     const res = await fetch(`${API_BASE_URL}/citas/${idCita}/check-in`, {
       method: 'PATCH'
@@ -81,7 +80,7 @@ export const citasService = {
     return await res.json();
   },
 
-  // 8. Actualización de estados de citas (CIT-03)
+  // 8. Actualización de estados de citas
   actualizarEstado: async (idCita, nuevoEstado) => {
     const res = await fetch(`${API_BASE_URL}/citas/${idCita}/estado`, {
       method: 'PATCH',
