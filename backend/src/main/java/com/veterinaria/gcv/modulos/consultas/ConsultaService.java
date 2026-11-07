@@ -102,7 +102,7 @@ public class ConsultaService {
         return consultaRepository.save(consulta);
     }
     
-    // HIS-01: Finalizar atención médica y actualizar estado de la cita
+    // Finalizar atención médica y actualizar estado de la cita
     @Transactional
     public Consulta finalizarConsulta(Long idConsulta) {
 

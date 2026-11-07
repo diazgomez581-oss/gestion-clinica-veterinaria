@@ -25,7 +25,7 @@ public class ConsultaController {
         return ResponseEntity.ok(consultaService.listarTodas());
     }
 
-    // GET /api/consultas/mascota/{idMascota} -> historial clínico previo para CON-01
+    // GET /api/consultas/mascota/{idMascota} -> historial clínico previo
     @GetMapping("/mascota/{idMascota}")
     public ResponseEntity<?> historialPorMascota(@PathVariable Long idMascota) {
         try {
@@ -35,7 +35,7 @@ public class ConsultaController {
         }
     }
 
-    // POST /api/consultas -> HU GCV-8 [CON-01]: Registro de consulta médica y diagnóstico
+    // POST /api/consultas -> Registro de consulta médica y diagnóstico
     @PostMapping
     public ResponseEntity<?> registrarConsulta(@RequestBody Consulta consulta) {
         try {
@@ -52,7 +52,7 @@ public class ConsultaController {
     }
 
     
-    // HIS-01: Finalizar consulta médica
+    // Finalizar consulta médica
     @PatchMapping("/{id}/finalizar")
     public ResponseEntity<?> finalizarConsulta(@PathVariable Long id) {
         try {

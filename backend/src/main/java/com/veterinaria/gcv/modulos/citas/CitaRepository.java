@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface CitaRepository extends JpaRepository<Cita, Long> {
 
-    // RN-02: Verifica si el veterinario tiene una cita
+    // Verifica si el veterinario tiene una cita
     // en la misma fecha y hora, excluyendo canceladas.
     boolean existsByIdVeterinarioAndFechaAndHoraAndEstadoNot(
         Long idVeterinario,
@@ -25,7 +25,7 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
     // Listado de citas del día, ordenadas por hora
     List<Cita> findByFechaOrderByHoraAsc(LocalDate fecha);
 
-    // GCV-7 [CIT-03]: Citas con información completa
+    // Citas con información completa
     // de mascota, propietario y veterinario.
     @Query(value = """
         SELECT

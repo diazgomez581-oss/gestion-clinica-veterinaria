@@ -25,7 +25,7 @@ public class PropietarioService {
     }
 
     public Propietario registrarPropietario(Propietario propietario) {
-        // Criterio 1: Validar campos obligatorios
+        // Validar campos obligatorios
         if (propietario.getNombres() == null || propietario.getNombres().trim().isEmpty() ||
             propietario.getApellidos() == null || propietario.getApellidos().trim().isEmpty() ||
             propietario.getTelefono() == null || propietario.getTelefono().trim().isEmpty() ||
@@ -33,14 +33,14 @@ public class PropietarioService {
             throw new IllegalArgumentException("Nombres, apellidos, teléfono y dirección son obligatorios.");
         }
 
-        // Criterio 2: Validar formato de DUI (8 dígitos, guion y 1 dígito)
+        // Validar formato de DUI (8 dígitos, guion y 1 dígito)
         if (propietario.getDui() == null || !DUI_PATTERN.matcher(propietario.getDui().trim()).matches()) {
             throw new IllegalArgumentException("El formato del DUI debe ser válido (ej. 12345678-9).");
         }
 
         String duiLimpio = propietario.getDui().trim();
 
-        // Criterio 2: Validar que el DUI sea único en la base de datos
+        // Validar que el DUI sea único en la base de datos
         if (propietarioRepository.existsByDui(duiLimpio)) {
             throw new IllegalStateException("Ya existe un propietario registrado con el DUI: " + duiLimpio);
         }
@@ -54,7 +54,7 @@ public class PropietarioService {
             propietario.setCorreo(propietario.getCorreo().trim());
         }
 
-        // Criterio 3: Persistir y retornar con el ID autogenerado
+        // Persistir y retornar con el ID autogenerado
         return propietarioRepository.save(propietario);
     }
 

@@ -34,7 +34,7 @@ public class CitaController {
         return citaRepository.findByFechaOrderByHoraAsc(LocalDate.now());
     }
 
-    // GCV-7 [CIT-03]: Citas del día con nombres reales
+    // Citas del día con nombres reales
     @GetMapping("/hoy/detalle")
     public List<CitaDashboardProjection> listarCitasHoyConDetalle() {
         return citaRepository.obtenerCitasDashboard(LocalDate.now());
@@ -46,7 +46,7 @@ public class CitaController {
         return veterinarioRepository.findAll();
     }
 
-    // POST /api/citas -> HU GCV-5 [CIT-01]: Programar Cita con validación RN-02
+    // POST /api/citas -> Programar cita validando que el veterinario esté libre
     @PostMapping
     public ResponseEntity<?> programarCita(@RequestBody Cita cita) {
         boolean ocupado = citaRepository.existsByIdVeterinarioAndFechaAndHoraAndEstadoNot(
@@ -58,7 +58,7 @@ public class CitaController {
 
         if (ocupado) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body("Conflicto de Agenda (RN-02): El médico ya cuenta con una cita en esa fecha y hora.");
+                .body("Conflicto de Agenda: El médico ya cuenta con una cita en esa fecha y hora.");
         }
 
         cita.setEstado("Programada");
@@ -66,7 +66,7 @@ public class CitaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(guardada);
     }
 
-    // PATCH /api/citas/{id}/check-in -> HU GCV-6 [CIT-02]: Check-in de llegada
+    // PATCH /api/citas/{id}/check-in -> Check-in de llegada
    
         @PatchMapping("/{id}/check-in")
         public ResponseEntity<?> registrarCheckIn(@PathVariable Long id) {
@@ -90,7 +90,7 @@ public class CitaController {
         }
 
     
-    // GCV-7 [CIT-03]: Control y actualización de estados
+    // Control y actualización de estados
     @PatchMapping("/{id}/estado")
     public ResponseEntity<?> actualizarEstado(
             @PathVariable Long id,
