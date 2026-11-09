@@ -94,4 +94,26 @@ public class Mascota {
 
     public Propietario getPropietario() { return propietario; }
     public void setPropietario(Propietario propietario) { this.propietario = propietario; }
+
+    @JsonProperty("idPropietario")
+    public Long getIdPropietario() {
+        return propietario != null
+            ? propietario.getIdPropietario()
+            : null;
+    }
+
+    @JsonProperty("nombrePropietario")
+    public String getNombrePropietario() {
+        if (propietario == null) {
+            return null;
+        }
+
+        String nombres = propietario.getNombres();
+        String apellidos = propietario.getApellidos();
+
+        return (
+            (nombres != null ? nombres : "") + " " +
+            (apellidos != null ? apellidos : "")
+        ).trim();
+    }
 }

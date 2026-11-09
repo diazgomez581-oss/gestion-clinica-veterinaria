@@ -1,0 +1,281 @@
+
+.lm-page {
+  width: 100%;
+  padding: 24px 30px;
+  background: #f5f8fc;
+  min-height: 100%;
+  color: #102e4b;
+}
+
+.lm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.lm-breadcrumb {
+  font-size: 12px;
+  color: #078cad;
+  margin-bottom: 12px;
+}
+
+.lm-header h1 {
+  margin: 0 0 7px;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.lm-header p,
+.lm-panel-header p {
+  margin: 0;
+  color: #7086a0;
+  font-size: 13px;
+}
+
+.lm-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 19px;
+  color: white;
+  background: #05a4bd;
+  border: none;
+  border-radius: 9px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.lm-btn-primary:hover {
+  background: #078ba5;
+}
+
+.lm-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 23px;
+}
+
+.lm-stat-card {
+  background: #fff;
+  border: 1px solid #dbe5f1;
+  border-radius: 12px;
+  padding: 19px 22px;
+}
+
+.lm-stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #70839b;
+  font-size: 13px;
+}
+
+.lm-stat-top svg {
+  color: #079eba;
+}
+
+.lm-stat-card strong {
+  display: block;
+  font-size: 30px;
+  margin: 7px 0;
+  color: #123454;
+}
+
+.lm-stat-card small {
+  color: #079cba;
+  font-size: 12px;
+}
+
+.lm-panel {
+  background: white;
+  border: 1px solid #dbe5f1;
+  border-radius: 13px;
+  overflow: hidden;
+}
+
+.lm-panel-header {
+  padding: 23px 24px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lm-panel-header h2 {
+  margin: 0 0 7px;
+  font-size: 18px;
+}
+
+.lm-refresh {
+  border: 0;
+  background: transparent;
+  color: #53718d;
+  cursor: pointer;
+  padding: 9px;
+  border-radius: 8px;
+}
+
+.lm-refresh:hover {
+  background: #e8f6fa;
+}
+
+.lm-search {
+  margin: 0 24px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #d7e3ee;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 0 15px;
+  color: #7892ac;
+}
+
+.lm-search input {
+  width: 100%;
+  padding: 15px 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font: inherit;
+  font-size: 14px;
+  color: #173752;
+}
+
+.lm-table-container {
+  overflow-x: auto;
+}
+
+.lm-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.lm-table th {
+  color: #7288a0;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 15px 22px;
+  border-bottom: 1px solid #dfe8f2;
+  background: #f8fafc;
+}
+
+.lm-table td {
+  padding: 14px 22px;
+  border-bottom: 1px solid #edf1f5;
+  color: #2a4660;
+  font-size: 13px;
+}
+
+.lm-table tbody tr:hover {
+  background: #f5fafe;
+}
+
+.lm-paciente {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lm-avatar {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #e8f6fa;
+  color: #0497b5;
+}
+
+.lm-paciente strong,
+.lm-paciente small {
+  display: block;
+}
+
+.lm-paciente small {
+  color: #8496a9;
+  margin-top: 4px;
+}
+
+.lm-expediente {
+  color: #476d8c;
+  font-weight: 600;
+}
+
+.lm-action {
+  border: 0;
+  background: transparent;
+  color: #009cbd;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 7px;
+}
+
+.lm-action:hover:not(:disabled) {
+  background: #e6f7fb;
+}
+
+.lm-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.lm-empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: #8596a8;
+}
+
+.lm-empty svg {
+  color: #079eba;
+}
+
+.lm-empty h3 {
+  color: #143552;
+  margin-bottom: 8px;
+}
+
+.lm-error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #b42318;
+  padding: 15px 24px;
+  background: #fff4f2;
+}
+
+.lm-error button {
+  margin-left: auto;
+  cursor: pointer;
+}
+
+.lm-footer {
+  padding: 16px 24px;
+  color: #8295aa;
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .lm-page {
+    padding: 18px;
+  }
+
+  .lm-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .lm-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .lm-table {
+    min-width: 750px;
+  }
+}

@@ -16,6 +16,7 @@ import VacunasPage from './modulos/vacunas/VacunasPage';
 import ProximasVacunasPage from './modulos/vacunas/ProximasVacunasPage';
 
 import RegistrarMascotaPage from './modulos/mascotas/RegistrarMascotaPage';
+import ListadoMascotasPage from './modulos/mascotas/ListadoMascotasPage';
 import LoginPage from './modulos/autenticacion/LoginPage';
 import GestionUsuariosPage from './modulos/usuarios/GestionUsuariosPage';
 
@@ -360,16 +361,24 @@ export default function App() {
               }}
             />
 
-          ) : vistaActual === 'mascotas' ? (
+         ) : vistaActual === 'mascotas' ? (
 
-            <RegistrarMascotaPage
-              onVolver={() =>
-                setVistaActual('dashboard')
-              }
-            />
+          <ListadoMascotasPage
+            onAgregarMascota={() =>
+              setVistaActual('registrar-mascota')
+            }
+          />
 
-          ) : (
+        ) : vistaActual === 'registrar-mascota' ? (
 
+          <RegistrarMascotaPage
+            onVolver={() =>
+              setVistaActual('mascotas')
+            }
+          />
+
+        ) : (
+          
            <Dashboard
             usuario={usuarioActual}
             citasData={citas}
