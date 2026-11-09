@@ -13,6 +13,8 @@ import RegistroPropietarioPage from './modulos/propietarios/RegistroPropietarioP
 
 import RegistrarConsultaPage from './modulos/consultas/RegistrarConsultaPage';
 import VacunasPage from './modulos/vacunas/VacunasPage';
+import ProximasVacunasPage from './modulos/vacunas/ProximasVacunasPage';
+import HistorialClinicoPage from './modulos/historial/HistorialClinicoPage';
 
 import RegistrarMascotaPage from './modulos/mascotas/RegistrarMascotaPage';
 import LoginPage from './modulos/autenticacion/LoginPage';
@@ -25,6 +27,9 @@ const API_BASE_URL =
 
 export default function App() {
 
+  // =========================
+  // ESTADOS GENERALES
+  // =========================
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [usuarioActual, setUsuarioActual] = useState(null);
@@ -38,6 +43,9 @@ export default function App() {
     setMascotaVacunacionSeleccionada
   ] = useState(null);
 
+  // =========================
+  // CITAS
+  // =========================
 
   const [citas, setCitas] = useState([
     {
@@ -117,6 +125,9 @@ export default function App() {
     }
   ]);
 
+  // =========================
+  // AUTENTICACIÓN
+  // =========================
 
   const esAdministrador = usuarioActual?.rol === 'ADMIN';
 
@@ -157,6 +168,9 @@ export default function App() {
     }
   };
 
+  // =========================
+  // GESTIÓN DE USUARIOS
+  // =========================
 
   const handleAbrirGestionUsuarios = () => {
     if (!esAdministrador) {
@@ -167,11 +181,17 @@ export default function App() {
     setVistaActual('gestion-usuarios');
   };
 
+  // =========================
+  // CITAS
+  // =========================
 
   const handleAgregarCita = (nuevaCita) => {
     setCitas(prev => [nuevaCita, ...prev]);
   };
 
+  // =========================
+  // NAVEGACIÓN
+  // =========================
 
   const handleNavegacion = (seccion) => {
 
@@ -201,6 +221,9 @@ export default function App() {
     }
   };
 
+  // =========================
+  // LOGIN
+  // =========================
 
   if (!usuarioActual) {
     return (
@@ -210,10 +233,14 @@ export default function App() {
     );
   }
 
+  // =========================
+  // SISTEMA PRINCIPAL
+  // =========================
 
   return (
     <div className="app-container">
 
+      {/* NAVBAR */}
       <Navbar
         onToggleSidebar={() =>
           setSidebarCollapsed(!sidebarCollapsed)
@@ -226,6 +253,7 @@ export default function App() {
 
       <div className="app-body">
 
+        {/* SIDEBAR */}
        <Sidebar
         collapsed={sidebarCollapsed}
         usuario={usuarioActual}
@@ -247,8 +275,10 @@ export default function App() {
         }
       />
 
+        {/* CONTENIDO PRINCIPAL */}
         <main className="content-viewport">
 
+          {/* GESTIÓN DE USUARIOS: SOLO ADMIN */}
           {vistaActual === 'gestion-usuarios' && esAdministrador ? (
 
             <GestionUsuariosPage
@@ -307,6 +337,18 @@ export default function App() {
               onVolver={() =>
                 setVistaActual('propietarios')
               }
+              onPropietarioGuardado={(nuevo) => {
+                console.log(
+                  'Propietario registrado con éxito:',
+                  nuevo
+                );
+              }}
+            />
+
+          ) : vistaActual === 'proximas-vacunas' ? (
+
+            <ProximasVacunasPage
+              onVolver={() => setVistaActual('dashboard')}
             />
 
           ) : vistaActual === 'vacunacion' ? (
@@ -317,6 +359,12 @@ export default function App() {
                 setMascotaVacunacionSeleccionada(null);
                 setVistaActual('consultas');
               }}
+            />
+
+          ) : vistaActual === 'historial' ? (
+
+            <HistorialClinicoPage
+              onVolver={() => setVistaActual('dashboard')}
             />
 
           ) : vistaActual === 'mascotas' ? (

@@ -31,6 +31,9 @@ public class AplicacionVacuna {
     @Column(name = "fecha_aplicacion", nullable = false)
     private LocalDate fechaAplicacion;
 
+    @Column(name = "proxima_dosis")
+    private LocalDate proximaDosis;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_mascota", nullable = false)
     @JsonIgnore
@@ -43,6 +46,14 @@ public class AplicacionVacuna {
 
     public AplicacionVacuna() {}
 
+    // Replica en Java el CHECK de la tabla para responder 400 en lugar de un error SQL
+    @JsonIgnore
+    @AssertTrue(message = "La próxima dosis debe ser posterior a la fecha de aplicación.")
+    public boolean isProximaDosisPosterior() {
+        return proximaDosis == null || fechaAplicacion == null || proximaDosis.isAfter(fechaAplicacion);
+    }
+
+    // Getters y Setters (sin setter de id: el JSON no puede sobrescribir registros existentes)
     public Long getIdAplicacionVacuna() { return idAplicacionVacuna; }
 
     public String getNombreTipoVacuna() { return nombreTipoVacuna; }
@@ -53,6 +64,9 @@ public class AplicacionVacuna {
 
     public LocalDate getFechaAplicacion() { return fechaAplicacion; }
     public void setFechaAplicacion(LocalDate fechaAplicacion) { this.fechaAplicacion = fechaAplicacion; }
+
+    public LocalDate getProximaDosis() { return proximaDosis; }
+    public void setProximaDosis(LocalDate proximaDosis) { this.proximaDosis = proximaDosis; }
 
     public void setMascota(Mascota mascota) { this.mascota = mascota; }
 
