@@ -1,74 +1,178 @@
+
 const API_URL = 'http://localhost:8080/api/propietarios';
 
+// Leer respuestas del servidor de forma segura.
+// Algunas operaciones, como DELETE, pueden devolver una respuesta vacía.
+const leerRespuesta = async (response) => {
+  const texto = await response.text();
+
+  if (!texto) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(texto);
+  } catch {
+    return texto;
+  }
+};
+
+// Obtener el mensaje de error enviado por Spring Boot.
+const obtenerMensajeError = (data, mensajePredeterminado) => {
+  if (data && typeof data === 'object') {
+    return (
+      data.mensaje ||
+      data.message ||
+      data.error ||
+      mensajePredeterminado
+    );
+  }
+
+  return mensajePredeterminado;
+};
+
 export const propietariosService = {
-  // Obtener todos los propietarios registrados
+
+  // ========================================
+  // 1. LISTAR TODOS LOS PROPIETARIOS
+  // ========================================
   async listarTodos() {
-    const response = await fetch(API_URL);
+    const response = await fetch(API_URL, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
     if (!response.ok) {
-      throw new Error('Error al cargar la lista de propietarios.');
+      const data = await leerRespuesta(response);
+
+      throw new Error(
+        obtenerMensajeError(
+          data,
+          'Error al cargar la lista de propietarios.'
+        )
+      );
     }
-    return await response.json();
+
+    const data = await leerRespuesta(response);
+    return data ?? [];
   },
 
-  // Obtener un propietario por su ID
+  // ========================================
+  // 2. OBTENER PROPIETARIO POR ID
+  // ========================================
   async obtenerPorId(id) {
-    const response = await fetch(`${API_URL}/${id}`);
-    if (!response.ok) {
-      throw new Error('No se encontró el propietario solicitado.');
+    if (id === undefined || id === null || id === '') {
+      throw new Error('Debes indicar el ID del propietario.');
     }
-    return await response.json();
+
+    const response = await fetch(`${API_URL}/${id}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    const data = await leerRespuesta(response);
+
+    if (!response.ok) {
+      throw new Error(
+        obtenerMensajeError(
+          data,
+          'No se encontró el propietario solicitado.'
+        )
+      );
+    }
+
+    return data;
   },
 
-  // Registrar un nuevo propietario
+  // ========================================
+  // 3. REGISTRAR NUEVO PROPIETARIO
+  // ========================================
   async registrar(propietario) {
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify(propietario),
     });
 
-    const data = await response.json();
+    const data = await leerRespuesta(response);
 
     if (!response.ok) {
-      throw new Error(data.mensaje || 'Error al registrar el propietario.');
+      throw new Error(
+        obtenerMensajeError(
+          data,
+          'Error al registrar el propietario.'
+        )
+      );
     }
 
     return data;
   },
 
-  // Actualizar datos de contacto de un propietario
+  // ========================================
+  // 4. ACTUALIZAR DATOS DEL PROPIETARIO
+  // ========================================
   async actualizar(id, propietario) {
+    if (id === undefined || id === null || id === '') {
+      throw new Error('Debes indicar el ID del propietario.');
+    }
+
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify(propietario),
     });
 
-    const data = await response.json();
+    const data = await leerRespuesta(response);
 
     if (!response.ok) {
-      throw new Error(data.mensaje || 'Error al actualizar los datos del propietario.');
+      throw new Error(
+        obtenerMensajeError(
+          data,
+          'Error al actualizar los datos del propietario.'
+        )
+      );
     }
 
     return data;
   },
 
-  // Eliminar un propietario por su ID
+  // ========================================
+  // 5. ELIMINAR PROPIETARIO
+  // ========================================
   async eliminar(id) {
+    if (id === undefined || id === null || id === '') {
+      throw new Error('Debes indicar el ID del propietario.');
+    }
+
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+      },
     });
 
-    const data = await response.json();
+    const data = await leerRespuesta(response);
 
     if (!response.ok) {
-      throw new Error(data.mensaje || 'Error al eliminar el propietario.');
+      throw new Error(
+        obtenerMensajeError(
+          data,
+          'No se pudo eliminar el propietario. Verifica si tiene mascotas asociadas.'
+        )
+      );
     }
 
     return data;
   },
+
 };
