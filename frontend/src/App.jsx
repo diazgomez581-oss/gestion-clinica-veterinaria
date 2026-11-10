@@ -14,6 +14,7 @@ import RegistroPropietarioPage from './modulos/propietarios/RegistroPropietarioP
 import RegistrarConsultaPage from './modulos/consultas/RegistrarConsultaPage';
 import VacunasPage from './modulos/vacunas/VacunasPage';
 import ProximasVacunasPage from './modulos/vacunas/ProximasVacunasPage';
+import HistorialClinicoPage from './modulos/historial/HistorialClinicoPage';
 
 import RegistrarMascotaPage from './modulos/mascotas/RegistrarMascotaPage';
 import ListadoMascotasPage from './modulos/mascotas/ListadoMascotasPage';
@@ -360,8 +361,11 @@ export default function App() {
                 setVistaActual('consultas');
               }}
             />
-
-         ) : vistaActual === 'mascotas' ? (
+            ) : vistaActual === 'historial' ? (
+              <HistorialClinicoPage
+                onVolver={() => setVistaActual('dashboard')}
+              />
+            ) : vistaActual === 'mascotas' ? (
 
           <ListadoMascotasPage
             onAgregarMascota={() =>
