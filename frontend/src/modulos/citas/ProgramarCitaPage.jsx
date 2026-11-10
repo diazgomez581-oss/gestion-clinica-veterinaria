@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, CircleCheck, PawPrint, TriangleAlert } from 'lucide-react';
 import { citasService } from './citasService';
-
 // Datos de respaldo por si la BD tarda en responder
 const PROPIETARIOS_BASE = [];
 const VETERINARIOS_DEFAULT = [
@@ -10,9 +9,21 @@ const VETERINARIOS_DEFAULT = [
   { idVeterinario: 3, nombre: 'Dra. María Santos', consultorio: 'Consultorio 3' }
 ];
 
+// Bloques de 30 minutos. El bloque de 21:00 termina a las 21:30.
+const generarBloques = (inicio, fin) => {
+  const aMinutos = hora => {
+    const [h, m] = hora.split(':').map(Number);
+    return h * 60 + m;
+  };
+  const resultado = [];
+  for (let n = aMinutos(inicio); n <= aMinutos(fin); n += 30) {
+    resultado.push(`${String(Math.floor(n / 60)).padStart(2, '0')}:${String(n % 60).padStart(2, '0')}`);
+  }
+  return resultado;
+};
 const BLOQUES_HORARIOS = [
-  '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
-  '11:00', '11:30', '14:00', '14:30', '15:00', '15:30'
+  ...generarBloques('08:00', '11:30'),
+  ...generarBloques('14:00', '21:00')
 ];
 
 export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExistentes = [] }) {
@@ -41,7 +52,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
     idVeterinario: 1,
     veterinario: VETERINARIOS_DEFAULT[0].nombre,
     fecha: hoyStr,
-    hora: '09:00',
+    hora: '',
     tipoServicio: 'Consulta general',
     motivo: '',
     notas: ''
@@ -50,6 +61,56 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
   const [errorValidacion, setErrorValidacion] = useState('');
   const [exitoMensaje, setExitoMensaje] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  const [disponibilidad, setDisponibilidad] = useState({ horariosVeterinario: [], horariosMascota: [] });
+  const [estadoHorarios, setEstadoHorarios] = useState('cargando');
+  const [errorHorarios, setErrorHorarios] = useState('');
+
+  // Refresca horarios al cambiar veterinario, fecha o mascota.
+  // La base de datos es la fuente de verdad; no usamos solo citasExistentes.
+  useEffect(() => {
+    if (!formulario.fecha || !formulario.idVeterinario) {
+      setEstadoHorarios('error');
+      setErrorHorarios('Selecciona una fecha y un veterinario.');
+      return;
+    }
+
+    const controller = new AbortController();
+    setEstadoHorarios('cargando');
+    setErrorHorarios('');
+    setDisponibilidad({ horariosVeterinario: [], horariosMascota: [] });
+
+    citasService.getDisponibilidad(
+      formulario.fecha,
+      formulario.idVeterinario,
+      mascotaSeleccionada?.idMascota,
+      controller.signal
+    )
+      .then(datos => {
+        if (controller.signal.aborted) return;
+        setDisponibilidad({
+          horariosVeterinario: (datos.horariosVeterinario || []).map(h => String(h).slice(0, 5)),
+          horariosMascota: (datos.horariosMascota || []).map(h => String(h).slice(0, 5))
+        });
+        setEstadoHorarios('listo');
+        setFormulario(prev => {
+          const ocupada = [...(datos.horariosVeterinario || []), ...(datos.horariosMascota || [])]
+            .some(h => String(h).slice(0, 5) === prev.hora);
+          return ocupada ? { ...prev, hora: '' } : prev;
+        });
+      })
+      .catch(err => {
+        if (controller.signal.aborted) return;
+        setEstadoHorarios('error');
+        setErrorHorarios(err.message || 'No se pudieron consultar los horarios.');
+      });
+
+    return () => controller.abort();
+  }, [formulario.fecha, formulario.idVeterinario, mascotaSeleccionada?.idMascota]);
+
+  const horaYaPaso = (hora) => {
+    if (!formulario.fecha) return true;
+    return new Date(`${formulario.fecha}T${hora}:00`).getTime() <= Date.now();
+  };
 
   // Sincronizar Propietarios, Mascotas y Veterinarios reales desde PostgreSQL al cargar
   useEffect(() => {
@@ -120,6 +181,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
     setPropietarioSeleccionado(prop);
     setTerminoBusqueda(prop.nombre);
     setMascotasDisponibles(prop.mascotas || []);
+    setFormulario(prev => ({ ...prev, hora: '' }));
 
     if (prop.mascotas && prop.mascotas.length > 0) {
       setMascotaSeleccionada(prop.mascotas[0]);
@@ -133,16 +195,12 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
     const idSel = parseInt(e.target.value, 10);
     const m = mascotasDisponibles.find(item => item.idMascota === idSel);
     setMascotaSeleccionada(m);
+    setFormulario(prev => ({ ...prev, hora: '' }));
   };
 
-  const estaHoraOcupada = (horaEvaluar) => {
-    return citasExistentes.some(c =>
-      c.estado !== 'Cancelada' &&
-      (c.fecha === formulario.fecha || !c.fecha) &&
-      (c.idVeterinario === formulario.idVeterinario || c.veterinario === formulario.veterinario || c.vet === formulario.veterinario) &&
-      (c.hora === horaEvaluar || c.horaProgramada === horaEvaluar)
-    );
-  };
+  const estaHoraOcupada = (horaEvaluar) =>
+    disponibilidad.horariosVeterinario.includes(horaEvaluar) ||
+    disponibilidad.horariosMascota.includes(horaEvaluar);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -153,8 +211,8 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
       return;
     }
 
-    if (!mascotaSeleccionada) {
-      setErrorValidacion('El propietario seleccionado debe tener al menos una mascota vinculada.');
+    if (!mascotaSeleccionada || !mascotasDisponibles.some(m => Number(m.idMascota) === Number(mascotaSeleccionada.idMascota))) {
+      setErrorValidacion('Selecciona una mascota vinculada al propietario.');
       return;
     }
 
@@ -168,9 +226,33 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
       return;
     }
 
-    // Evita que el veterinario tenga dos citas a la misma hora
-    if (estaHoraOcupada(formulario.hora)) {
-      setErrorValidacion(`Conflicto de Agenda: El ${formulario.veterinario} ya tiene ocupada la hora ${formulario.hora}. Selecciona otro bloque.`);
+    if (formulario.fecha < obtenerFechaHoyLocal()) {
+      setErrorValidacion('No se permiten fechas pasadas.');
+      return;
+    }
+
+    if (!formulario.hora || !BLOQUES_HORARIOS.includes(formulario.hora)) {
+      setErrorValidacion('Selecciona un horario válido.');
+      return;
+    }
+
+    if (horaYaPaso(formulario.hora)) {
+      setErrorValidacion('No puedes programar una cita en una hora pasada.');
+      return;
+    }
+
+    if (estadoHorarios !== 'listo') {
+      setErrorValidacion('Espera a que se consulte la disponibilidad antes de guardar.');
+      return;
+    }
+
+    if (disponibilidad.horariosVeterinario.includes(formulario.hora)) {
+      setErrorValidacion(`El ${formulario.veterinario} ya tiene una cita a las ${formulario.hora}.`);
+      return;
+    }
+
+    if (disponibilidad.horariosMascota.includes(formulario.hora)) {
+      setErrorValidacion(`La mascota ya tiene otra cita a las ${formulario.hora}.`);
       return;
     }
 
@@ -220,6 +302,23 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
       }, 1200);
     } catch (err) {
       setErrorValidacion(err.message || 'Error al conectar con el servidor.');
+      // Otro usuario pudo reservar ese bloque mientras se confirmaba la cita.
+      setEstadoHorarios('cargando');
+      try {
+        const datos = await citasService.getDisponibilidad(
+          formulario.fecha,
+          formulario.idVeterinario,
+          mascotaSeleccionada?.idMascota
+        );
+        setDisponibilidad({
+          horariosVeterinario: (datos.horariosVeterinario || []).map(h => String(h).slice(0, 5)),
+          horariosMascota: (datos.horariosMascota || []).map(h => String(h).slice(0, 5))
+        });
+        setEstadoHorarios('listo');
+      } catch {
+        setEstadoHorarios('error');
+        setErrorHorarios('No se pudieron actualizar los horarios.');
+      }
     } finally {
       setGuardando(false);
     }
@@ -382,7 +481,8 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
                     setFormulario(prev => ({
                       ...prev,
                       idVeterinario: idSel,
-                      veterinario: vSel ? vSel.nombre : ''
+                      veterinario: vSel ? vSel.nombre : '',
+                      hora: ''
                     }));
                   }}
                 >
@@ -401,7 +501,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
                   name="fecha"
                   value={formulario.fecha}
                   min={hoyStr}
-                  onChange={(e) => setFormulario(prev => ({ ...prev, fecha: e.target.value }))}
+                  onChange={(e) => setFormulario(prev => ({ ...prev, fecha: e.target.value, hora: '' }))}
                   required
                 />
               </div>
@@ -413,21 +513,30 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
                 Selecciona la hora de atención (Bloques de 30 min):
               </label>
 
+              {estadoHorarios === 'cargando' && (
+                <p style={{ color: '#64748b', fontSize: '0.8rem' }}>Consultando horarios en PostgreSQL...</p>
+              )}
+              {estadoHorarios === 'error' && (
+                <p role="alert" style={{ color: '#b91c1c', fontSize: '0.8rem' }}>{errorHorarios}</p>
+              )}
               <div className="time-slots-grid">
                 {BLOQUES_HORARIOS.map(slot => {
                   const ocupada = estaHoraOcupada(slot);
                   const elegida = formulario.hora === slot;
+                  const pasada = horaYaPaso(slot);
+                  const sinDisponibilidad = estadoHorarios !== 'listo';
+                  const bloqueada = ocupada || pasada || sinDisponibilidad;
 
                   return (
                     <button
                       key={slot}
                       type="button"
-                      disabled={ocupada}
+                      disabled={bloqueada}
                       onClick={() => setFormulario(prev => ({ ...prev, hora: slot }))}
-                      className={`time-slot-btn ${ocupada ? 'slot-occupied' : elegida ? 'slot-selected' : 'slot-available'}`}
+                      className={`time-slot-btn ${bloqueada ? 'slot-occupied' : elegida ? 'slot-selected' : 'slot-available'}`}
                     >
                       <span>{slot}</span>
-                      <small>{ocupada ? 'Ocupado' : elegida ? 'Elegido' : 'Libre'}</small>
+                      <small>{sinDisponibilidad ? 'Consultando' : pasada ? 'Pasado' : ocupada ? 'Ocupado' : elegida ? 'Elegido' : 'Libre'}</small>
                     </button>
                   );
                 })}
@@ -509,7 +618,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
 
             <div className="summary-item">
               <span className="summary-label">Fecha y Hora</span>
-              <div className="summary-val">{formulario.fecha} a las <strong>{formulario.hora}</strong></div>
+              <div className="summary-val">{formulario.fecha} a las <strong>{formulario.hora || 'Sin seleccionar'}</strong></div>
             </div>
 
             <div className="summary-item">
@@ -520,7 +629,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, citasExist
             <hr className="summary-divider" />
 
             <div className="summary-actions">
-              <button type="submit" className="btn-confirm-save" disabled={guardando}>
+              <button type="submit" className="btn-confirm-save" disabled={guardando || estadoHorarios !== 'listo' || !formulario.hora}>
                 {guardando ? 'Guardando...' : 'Confirmar y Agendar Cita'}
               </button>
               <button type="button" onClick={onVolver} className="btn-cancel-flat" disabled={guardando}>
