@@ -31,10 +31,11 @@ export default function App() {
   // =========================
   // ESTADOS GENERALES
   // =========================
-
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [usuarioActual, setUsuarioActual] = useState(null);
   const [vistaActual, setVistaActual] = useState('dashboard');
+  const vacunacionDesdeConsulta = vistaActual === 'vacunacion-consulta';
+  const [mensajeVacunacion, setMensajeVacunacion] = useState('');
 
   const [citaConsultaSeleccionada, setCitaConsultaSeleccionada] =
     useState(null);
@@ -137,6 +138,7 @@ export default function App() {
     setVistaActual('dashboard');
     setCitaConsultaSeleccionada(null);
     setMascotaVacunacionSeleccionada(null);
+    setMensajeVacunacion('');
     setSidebarCollapsed(false);
   };
 
@@ -158,6 +160,7 @@ export default function App() {
       setVistaActual('dashboard');
       setCitaConsultaSeleccionada(null);
       setMascotaVacunacionSeleccionada(null);
+      setMensajeVacunacion('');
       setSidebarCollapsed(false);
 
     } catch (error) {
@@ -215,7 +218,16 @@ export default function App() {
 
     } else if (seccion === 'consultas') {
       setCitaConsultaSeleccionada(null);
+      setMensajeVacunacion('');
       setVistaActual('consultas');
+
+    } else if (seccion === 'vacunacion') {
+      // La entrada directa es de consulta de cartilla (solo lectura).
+      // Para aplicar vacunas hay que llegar desde una consulta activa.
+      setCitaConsultaSeleccionada(null);
+      setMascotaVacunacionSeleccionada(null);
+      setMensajeVacunacion('');
+      setVistaActual('vacunacion');
 
     } else {
       setVistaActual(seccion);
@@ -311,13 +323,21 @@ export default function App() {
 
             <RegistrarConsultaPage
               citaInicial={citaConsultaSeleccionada}
+              mensajeVacunacion={mensajeVacunacion}
               onVolver={() => {
                 setCitaConsultaSeleccionada(null);
+                setMensajeVacunacion('');
                 setVistaActual('dashboard');
               }}
-              onAbrirVacunacion={(idMascota) => {
-                setMascotaVacunacionSeleccionada(idMascota);
-                setVistaActual('vacunacion');
+              onAbrirVacunacion={(cita) => {
+                if (cita?.idCita == null || cita?.idMascota == null || cita.estado !== 'En Consulta') {
+                  window.alert('Seleccioná una cita activa para abrir su cartilla de vacunación.');
+                  return;
+                }
+
+                setCitaConsultaSeleccionada(cita);
+                setMensajeVacunacion('');
+                setVistaActual('vacunacion-consulta');
               }}
             />
 
@@ -352,16 +372,26 @@ export default function App() {
               onVolver={() => setVistaActual('dashboard')}
             />
 
-          ) : vistaActual === 'vacunacion' ? (
+          ) : (vistaActual === 'vacunacion' || vacunacionDesdeConsulta) ? (
 
             <VacunasPage
-              idMascotaInicial={mascotaVacunacionSeleccionada}
-              onVolver={() => {
-                setMascotaVacunacionSeleccionada(null);
+              idMascotaInicial={
+                vacunacionDesdeConsulta ? citaConsultaSeleccionada?.idMascota : null
+              }
+              citaActiva={vacunacionDesdeConsulta ? citaConsultaSeleccionada : null}
+              usuarioActual={usuarioActual}
+              onVacunaRegistrada={(vacuna) => {
+                setMensajeVacunacion(
+                  `Vacuna «${vacuna.nombreTipoVacuna}» registrada correctamente. ` +
+                  'Ya podés finalizar la consulta.'
+                );
                 setVistaActual('consultas');
               }}
+              onVolver={() => {
+                setVistaActual(vacunacionDesdeConsulta ? 'consultas' : 'dashboard');
+              }}
             />
-            ) : vistaActual === 'historial' ? (
+          ) : vistaActual === 'historial' ? (
               <HistorialClinicoPage
                 onVolver={() => setVistaActual('dashboard')}
               />
@@ -397,6 +427,7 @@ export default function App() {
               }
 
               setCitaConsultaSeleccionada(cita);
+              setMensajeVacunacion('');
               setVistaActual('consultas');
             }}
           />

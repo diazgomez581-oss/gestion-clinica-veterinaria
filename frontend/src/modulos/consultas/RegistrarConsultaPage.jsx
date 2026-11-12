@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, Bird, Cat, CircleCheck, Dog, Lock, PawPrint, Rabbit, Stethoscope, Syringe, TriangleAlert } from 'lucide-react';
 import { consultasService } from './consultasService';
 import { vacunasService } from '../vacunas/vacunasService';
 
@@ -14,16 +13,15 @@ const formularioInicial = {
   observaciones: ''
 };
 
-const iconoEspecie = (especie = '') => {
+const IconoEspecie = ({ especie = '', size = 22 }) => {
   const valor = especie.toLowerCase();
-  if (valor.includes('gato') || valor.includes('felino')) return <Cat size="1em" />;
-  if (valor.includes('ave') || valor.includes('pájaro')) return <Bird size="1em" />;
-  if (valor.includes('conejo')) return <Rabbit size="1em" />;
-  if (valor.includes('perro') || valor.includes('canino')) return <Dog size="1em" />;
-  return <PawPrint size="1em" />;
+  if (valor.includes('gato') || valor.includes('felino')) return '🐱';
+  if (valor.includes('ave') || valor.includes('pájaro')) return '🦜';
+  if (valor.includes('conejo')) return '🐰';
+  return '🐶';
 };
 
-export default function RegistrarConsultaPage({ citaInicial = null, onVolver, onAbrirVacunacion }) {
+export default function RegistrarConsultaPage({ citaInicial = null, onVolver, onAbrirVacunacion, mensajeVacunacion = '' }) {
   const [citasEspera, setCitasEspera] = useState([]);
   const [mascotas, setMascotas] = useState([]);
   const [veterinarios, setVeterinarios] = useState([]);
@@ -65,7 +63,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
 
         if (citaInicial?.idCita || citaInicial?.id) {
           const id = citaInicial.idCita || citaInicial.id;
-          const real = enEspera.find((c) => c.idCita === id);
+          const real = enEspera.find((c) => String(c.idCita) === String(id));
           if (real) setCitaSeleccionada(real);
         }
       } catch (err) {
@@ -77,7 +75,6 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
 
     cargarBase();
   }, [citaInicial]);
-
 
   useEffect(() => {
     let activo = true;
@@ -136,8 +133,6 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
     return () => { activo = false; };
   }, [citaSeleccionada]);
 
-
-  // Cartilla de vacunación real, vinculada a la mascota seleccionada.
   useEffect(() => {
     let activo = true;
     setVacunasAplicadas([]);
@@ -161,7 +156,6 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
     [veterinarios, citaSeleccionada]
   );
   
-  // Detectar si la cita ya tiene una consulta médica registrada
   const consultaRegistrada =
     historial.find(
       (consulta) =>
@@ -173,7 +167,6 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
         ? exito
         : null
     );
-
 
   const handleSeleccionarCita = (cita) => {
     setCitaSeleccionada(cita);
@@ -232,7 +225,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
   };
 
   
-  // Finalizar consulta médica y marcar cita como Atendida
+  // HIS-01: Finalizar consulta médica y marcar cita como Atendida
   const handleFinalizarConsulta = async () => {
     if (!consultaRegistrada?.idConsulta || !citaSeleccionada) {
       setError('Primero debe existir una consulta médica registrada.');
@@ -255,7 +248,6 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
         consultaRegistrada.idConsulta
       );
 
-      // Retirar la cita de la lista de pacientes activos
       setCitasEspera((prev) =>
         prev.filter((c) => c.idCita !== citaSeleccionada.idCita)
       );
@@ -276,7 +268,6 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
       setGuardando(false);
     }
   };
-
 
   const fechaHoraLegible = (valor) => {
     if (!valor) return '—';
@@ -307,21 +298,24 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
             <span onClick={onVolver} className="breadcrumb-link">Dashboard</span> &gt; <span>Área Clínica</span> &gt; <span>Consultas Médicas</span>
           </div>
           <h1 className="cita-page-title">Registro de Consulta Médica</h1>
-          <p className="cita-page-sub">Motivo, evaluación clínica, diagnóstico y observaciones</p>
+          <p className="cita-page-sub">Historia GCV-8 [CON-01] · Motivo, evaluación clínica, diagnóstico y observaciones</p>
         </div>
-        <button type="button" onClick={onVolver} className="btn-volver-dash"><ArrowLeft size="1em" className="icono-texto" /> Volver al Dashboard</button>
+        <button type="button" onClick={onVolver} className="btn-volver-dash">← Volver al Dashboard</button>
       </div>
 
-      {error && <div className="alert-banner-danger"><TriangleAlert size="1em" className="icono-texto" /> {error}</div>}
+      {mensajeVacunacion && (
+        <div className="alert-banner-success">✓ {mensajeVacunacion}</div>
+      )}
+      {error && <div className="alert-banner-danger">⚠️ {error}</div>}
       {mensajeFinalizacion && (
       <div className="alert-banner-success">
-        <CircleCheck size="1em" className="icono-texto" /> {mensajeFinalizacion}
+        ✓ {mensajeFinalizacion}
       </div>
 )}
 
       {exito && (
         <div className="alert-banner-success">
-          <CircleCheck size="1em" className="icono-texto" /> <strong>Consulta registrada correctamente.</strong>{' '}
+          <strong>✓ Consulta registrada correctamente.</strong>{' '}
           ID #{exito.idConsulta} · {fechaHoraLegible(exito.fechaHora)} · vinculada al expediente de {mascota?.nombre || 'la mascota'}.
         </div>
       )}
@@ -333,6 +327,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
               <strong>Pacientes en atención</strong>
               <span>{citasEspera.length} paciente(s)</span>
             </div>
+            <span className="panel-tag-aqua">CON-01</span>
           </div>
 
           {cargando ? (
@@ -355,12 +350,12 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                     className={`consulta-patient-card ${activa ? 'active' : ''}`}
                     onClick={() => handleSeleccionarCita(cita)}
                   >
-                    <span className="consulta-pet-icon">{iconoEspecie(pet?.especie)}</span>
+                    <span className="consulta-pet-icon"><IconoEspecie especie={pet?.especie} /></span>
                     <span className="consulta-patient-data">
                       <strong>{pet?.nombre || `Mascota #${cita.idMascota}`}</strong>
                       {cita.estado === 'En Consulta' && (
                         <small style={{ color: '#0284c7', fontWeight: '700' }}>
-                          <Stethoscope size="1em" className="icono-texto" /> En consulta
+                          🩺 En consulta
                         </small>
                       )}
                       <small>{pet?.codigoExpediente || 'Expediente pendiente'} · {cita.hora?.slice?.(0, 5) || cita.hora}</small>
@@ -376,7 +371,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
         <div className="consulta-main-column">
           {!citaSeleccionada ? (
             <div className="cita-card-section consulta-select-prompt">
-              <div className="consulta-prompt-icon"><Stethoscope size="1em" /></div>
+              <div className="consulta-prompt-icon">🩺</div>
               <h3>Selecciona un paciente</h3>
               <p>
                 Selecciona un paciente en espera o en consulta para continuar
@@ -384,22 +379,22 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="consulta-form-stack">              
-            <fieldset
-              className={consultaRegistrada ? "consulta-datos-bloqueados" : ""}
-              disabled={Boolean(consultaRegistrada) || cargandoHistorial}
-              style={{
-                border: 'none',
-                padding: 0,
-                margin: 0,
-                minWidth: 0
-              }}
-            >
+            <form onSubmit={handleSubmit} className="consulta-form-stack">
+              <fieldset
+                className={consultaRegistrada ? 'consulta-datos-bloqueados' : ''}
+                disabled={Boolean(consultaRegistrada) || cargandoHistorial}
+                style={{
+                  border: 'none',
+                  padding: 0,
+                  margin: 0,
+                  minWidth: 0
+                }}
+              >
 
               <div className="cita-card-section">
                 <div className="consulta-patient-header">
                   <div className="consulta-patient-title">
-                    <span className="consulta-pet-avatar">{iconoEspecie(mascota?.especie)}</span>
+                    <span className="consulta-pet-avatar"><IconoEspecie especie={mascota?.especie} size={26} /></span>
                     <div>
                       <h3>{mascota?.nombre || `Mascota #${citaSeleccionada.idMascota}`}</h3>
                       <p>{mascota?.especie || 'Especie'} · {mascota?.raza || 'Raza no especificada'} · {mascota?.sexo || 'Sexo no especificado'}</p>
@@ -467,7 +462,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
               </div>
               </fieldset>
               
-              {/* Cartilla disponible después de registrar la consulta */}
+              {/* VAC-01: Cartilla disponible después de registrar la consulta */}
               <div
                 className="cita-card-section"
                 style={!consultaRegistrada ? {
@@ -479,7 +474,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                   className="section-title-aqua"
                   style={!consultaRegistrada ? { color: '#64748b' } : undefined}
                 >
-                  4. Aplicación de vacunas
+                  💉 4. Aplicación de vacunas
                 </h3>
 
                 {!consultaRegistrada && (
@@ -495,7 +490,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                       marginBottom: 16
                     }}
                   >
-                    Primero completá los campos obligatorios y registrá la consulta médica.
+                    🔒 Primero completá los campos obligatorios y registrá la consulta médica.
                     Después podrás abrir la cartilla y registrar nuevas vacunas.
                   </div>
                 )}
@@ -506,7 +501,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                 </p>
 
                 {errorVacunas && (
-                  <div className="alert-banner-danger"><TriangleAlert size="1em" className="icono-texto" /> {errorVacunas}</div>
+                  <div className="alert-banner-danger">⚠️ {errorVacunas}</div>
                 )}
 
                 {vacunasAplicadas.length === 0 ? (
@@ -547,12 +542,17 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                     type="button"
                     className="btn-confirm-save"
                     disabled={
-                      !citaSeleccionada?.idMascota ||
+                      (citaSeleccionada?.idCita ?? citaSeleccionada?.id) == null ||
+                      citaSeleccionada?.idMascota == null ||
                       !onAbrirVacunacion ||
                       !consultaRegistrada ||
+                      citaSeleccionada?.estado !== 'En Consulta' ||
                       cargandoHistorial
                     }
-                    onClick={() => onAbrirVacunacion(citaSeleccionada.idMascota)}
+                    onClick={() => onAbrirVacunacion({
+                      ...citaSeleccionada,
+                      idCita: citaSeleccionada.idCita ?? citaSeleccionada.id
+                    })}
                     style={!consultaRegistrada ? {
                       background: '#cbd5e1',
                       color: '#64748b',
@@ -562,7 +562,9 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                       opacity: 1
                     } : undefined}
                   >
-                    {consultaRegistrada ? <Syringe size="1em" className="icono-texto" /> : <Lock size="1em" className="icono-texto" />} Abrir cartilla / Registrar vacuna
+                    {consultaRegistrada
+                      ? '💉 Abrir cartilla / Registrar vacuna'
+                      : '🔒 Abrir cartilla / Registrar vacuna'}
                   </button>
                 </div>
 
@@ -573,13 +575,13 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
 
               <div className="consulta-actions-bar">
                 <div>
-                  <strong>Registro clínico</strong>
+                  <strong>Registro clínico CON-01</strong>
                   <span>
                     {cargandoHistorial
                       ? 'Verificando consulta registrada...'
                       : consultaRegistrada
                         ? 'Consulta registrada. Pendiente de finalizar atención.'
-                        : 'Se guardará la consulta médica.'}
+                        : 'Se guardará la consulta médica en PostgreSQL.'}
                   </span>
                 </div>
 
@@ -609,7 +611,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                     >
                       {guardando
                         ? 'Finalizando...'
-                        : 'Finalizar consulta'}
+                        : '✓ Finalizar consulta'}
                     </button>
                   ) : (
                     <button
@@ -621,8 +623,8 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                       }
                     >
                       {guardando
-                        ? 'Guardando...'
-                        : 'Registrar Consulta Médica'}
+                        ? 'Guardando en PostgreSQL...'
+                        : '✓ Registrar Consulta Médica'}
                     </button>
                   )}
                 </div>
@@ -638,6 +640,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
               <strong>Historial previo</strong>
               <span>{mascota ? mascota.nombre : 'Sin paciente'}</span>
             </div>
+            <span>📋</span>
           </div>
 
           {!citaSeleccionada ? (

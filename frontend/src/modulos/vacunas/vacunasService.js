@@ -1,38 +1,43 @@
-// frontend/src/modulos/vacunas/vacunasService.js
+const API_BASE_URL = (
+  import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
+).replace(/\/+$/, '');
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+// YYYY-MM-DD → DD/MM/YYYY sin convertir la fecha a otra zona horaria.
+export const formatearFecha = (fecha) =>
+  fecha ? fecha.split('-').reverse().join('/') : '—';
 
-// YYYY-MM-DD -> DD/MM/YYYY sin pasar por Date para evitar desfases de zona horaria
-export const formatearFecha = (fecha) => fecha.split('-').reverse().join('/');
+async function procesarRespuesta(res, mensajePredeterminado) {
+  if (!res.ok) {
+    const error = await res.json().catch(() => null);
+    throw new Error(error?.mensaje || error?.detail || mensajePredeterminado);
+  }
+
+  const texto = await res.text();
+  return texto.trim() ? JSON.parse(texto) : null;
+}
 
 export const vacunasService = {
-  // 1. Obtener la cartilla de vacunación de una mascota
-  listarVacunas: async (idMascota) => {
+  async listarVacunas(idMascota) {
     const res = await fetch(`${API_BASE_URL}/mascotas/${idMascota}/vacunas`);
-    if (!res.ok) throw new Error('Error al consultar la cartilla de vacunación.');
-    return await res.json();
+    return procesarRespuesta(res, 'Error al consultar la cartilla de vacunación.');
   },
 
-  // 2. Registrar una vacuna aplicada; el id de la mascota viaja en la ruta
-  registrarVacuna: async (idMascota, datosVacuna) => {
+  async registrarVacuna(idMascota, datosVacuna) {
     const res = await fetch(`${API_BASE_URL}/mascotas/${idMascota}/vacunas`, {
       method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(datosVacuna)
+      body: JSON.stringify(datosVacuna),
     });
 
-    const data = await res.json();
-    if (!res.ok) {
-      // Devuelve el mensaje de validación enviado por Spring Boot
-      throw new Error(data.mensaje || 'No se pudo registrar la vacuna.');
-    }
-    return data;
+    return procesarRespuesta(res, 'No se pudo registrar la vacuna.');
   },
 
-  // 3. Obtener las vacunas con refuerzo pendiente en los próximos días
-  listarProximas: async (dias) => {
-    const res = await fetch(`${API_BASE_URL}/vacunas/proximas?dias=${dias}`);
-    if (!res.ok) throw new Error('Error al consultar las próximas vacunas.');
-    return await res.json();
-  }
+  async listarProximas(dias) {
+    const res = await fetch(
+      `${API_BASE_URL}/vacunas/proximas?dias=${encodeURIComponent(dias)}`
+    );
+
+    return procesarRespuesta(res, 'Error al consultar las próximas vacunas.');
+  },
 };
