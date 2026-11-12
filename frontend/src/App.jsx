@@ -141,7 +141,11 @@ export default function App() {
     setMensajeVacunacion('');
     setSidebarCollapsed(false);
   };
+  const [refuerzoParaCita, setRefuerzoParaCita] = useState(null);
 
+  const puedeAgendarRefuerzo = ['ADMIN', 'RECEPCIONISTA'].includes(
+    usuarioActual?.rol?.toUpperCase()
+  );
   const handleCerrarSesion = async () => {
     try {
       const response = await fetch(
@@ -235,6 +239,33 @@ export default function App() {
   };
 
   // =========================
+  // AGENDAR REFUERZO
+  // =========================
+  const handleAgendarRefuerzo = (vacuna) => {
+    if (!puedeAgendarRefuerzo) return;
+
+    if (
+      vacuna?.idAplicacionVacuna == null ||
+      vacuna?.idMascota == null ||
+      vacuna?.idPropietario == null ||
+      !vacuna?.proximaDosis
+    ) {
+      window.alert(
+        'Faltan los identificadores del refuerzo, mascota o propietario. ' +
+        'Revisá que el backend devuelva esos datos.'
+      );
+      return;
+    }
+
+    if (vacuna.idCitaAgendada != null) {
+      window.alert('Este refuerzo ya tiene una cita agendada.');
+      return;
+    }
+
+    setRefuerzoParaCita(vacuna);
+    setVistaActual('programar-cita-refuerzo');
+  };
+  // =========================
   // LOGIN
   // =========================
 
@@ -297,15 +328,30 @@ export default function App() {
             <GestionUsuariosPage
               onVolver={() => setVistaActual('dashboard')}
             />
-
-          ) : vistaActual === 'programar-cita' ? (
+          
+          // DASHBOARD
+          ) : (
+            vistaActual === 'programar-cita' ||
+            vistaActual === 'programar-cita-refuerzo'
+          ) ? (
 
             <ProgramarCitaPage
+              key={vistaActual}
               citasExistentes={citas}
-              onCitaGuardada={handleAgregarCita}
-              onVolver={() =>
-                setVistaActual('dashboard')
+              refuerzoInicial={
+                vistaActual === 'programar-cita-refuerzo'
+                  ? refuerzoParaCita
+                  : null
               }
+              onCitaGuardada={handleAgregarCita}
+              onVolver={() => {
+                const desdeRefuerzo = vistaActual === 'programar-cita-refuerzo';
+
+                setRefuerzoParaCita(null);
+                setVistaActual(
+                  desdeRefuerzo ? 'proximas-vacunas' : 'dashboard'
+                );
+              }}
             />
 
           ) : vistaActual === 'calendario' ? (
@@ -370,6 +416,9 @@ export default function App() {
 
             <ProximasVacunasPage
               onVolver={() => setVistaActual('dashboard')}
+              onAgendarCita={
+                puedeAgendarRefuerzo ? handleAgendarRefuerzo : undefined
+              }
             />
 
           ) : (vistaActual === 'vacunacion' || vacunacionDesdeConsulta) ? (

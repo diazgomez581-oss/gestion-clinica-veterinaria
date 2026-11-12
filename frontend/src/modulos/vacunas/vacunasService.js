@@ -40,4 +40,12 @@ export const vacunasService = {
 
     return procesarRespuesta(res, 'Error al consultar las próximas vacunas.');
   },
+
+  async listarProximasHasta(hasta) {
+    const res = await fetch(
+      `${API_BASE_URL}/vacunas/proximas?hasta=${encodeURIComponent(hasta)}`
+    );
+
+    return procesarRespuesta(res, 'Error al consultar las próximas vacunas.');
+  },
 };

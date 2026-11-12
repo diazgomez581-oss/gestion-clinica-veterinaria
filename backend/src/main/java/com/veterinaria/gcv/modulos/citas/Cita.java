@@ -34,10 +34,14 @@ public class Cita {
     @Column(name = "id_veterinario", nullable = false)
     private Long idVeterinario;
 
+    @Column(name = "id_aplicacion_vacuna")
+    private Long idAplicacionVacuna;
+
     public Cita() {
     }
 
-    public Cita(LocalDate fecha, LocalTime hora, String motivo, Long idMascota, Long idVeterinario) {
+    public Cita(LocalDate fecha, LocalTime hora, String motivo,
+                Long idMascota, Long idVeterinario) {
         this.fecha = fecha;
         this.hora = hora;
         this.motivo = motivo;
@@ -46,7 +50,6 @@ public class Cita {
         this.estado = "Programada";
     }
 
-    // Getters y Setters
     public Long getIdCita() {
         return idCita;
     }
@@ -109,5 +112,13 @@ public class Cita {
 
     public void setIdVeterinario(Long idVeterinario) {
         this.idVeterinario = idVeterinario;
+    }
+
+    public Long getIdAplicacionVacuna() {
+        return idAplicacionVacuna;
+    }
+
+    public void setIdAplicacionVacuna(Long idAplicacionVacuna) {
+        this.idAplicacionVacuna = idAplicacionVacuna;
     }
 }
