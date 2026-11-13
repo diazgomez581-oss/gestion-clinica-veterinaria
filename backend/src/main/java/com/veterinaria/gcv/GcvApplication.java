@@ -14,7 +14,7 @@ public class GcvApplication {
         SpringApplication.run(GcvApplication.class, args);
     }
 
-    // Permite conexiones desde React local y Vercel
+    // Configuración global de CORS para React y Vercel
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
@@ -34,7 +34,9 @@ public class GcvApplication {
                         "PATCH",
                         "OPTIONS"
                     )
-                    .allowedHeaders("*");
+                    .allowedHeaders("*")
+                    .allowCredentials(true)
+                    .maxAge(3600);
             }
         };
     }

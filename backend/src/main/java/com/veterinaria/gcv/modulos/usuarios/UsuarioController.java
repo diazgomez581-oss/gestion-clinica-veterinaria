@@ -7,7 +7,7 @@ import com.veterinaria.gcv.modulos.citas.VeterinarioRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
-import org.springframework.dao.DataIntegrityViolationException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,10 +20,9 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/api/usuarios")
-@CrossOrigin(
-    origins = "http://localhost:5173",
-    allowCredentials = "true"
-)
+
+
+
 public class UsuarioController {
 
     private final UsuarioRepository usuarioRepository;
