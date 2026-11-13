@@ -1,4 +1,8 @@
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/+$/, '');
+const API_BASE = (
+  import.meta.env.VITE_API_URL || 'http://localhost:8080'
+).replace(/\/+$/, '');
+
+const API_BASE_URL = `${API_BASE}/api`;
 
 export async function reprogramarCita(idCita, datos) {
   const respuesta = await fetch(`${API_BASE_URL}/citas/${encodeURIComponent(idCita)}/reprogramar`, {

@@ -1,5 +1,9 @@
 // frontend/src/modulos/citas/citasService.js
-const API_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8080/api').replace(/\/$/, '');
+const API_BASE = (
+  import.meta.env.VITE_API_URL || 'http://localhost:8080'
+).replace(/\/+$/, '');
+
+const API_BASE_URL = `${API_BASE}/api`;
 
 export const citasService = {
   // 1. Obtener citas del día actual (Dashboard)

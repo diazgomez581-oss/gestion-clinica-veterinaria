@@ -23,8 +23,11 @@ import GestionUsuariosPage from './modulos/usuarios/GestionUsuariosPage';
 
 import './App.css';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const API_BASE = (
+  import.meta.env.VITE_API_URL || 'http://localhost:8080'
+).replace(/\/+$/, '');
+
+const API_BASE_URL = `${API_BASE}/api`;
 
 export default function App() {
 
@@ -49,83 +52,7 @@ export default function App() {
   // CITAS
   // =========================
 
-  const [citas, setCitas] = useState([
-    {
-      id: 1,
-      hora: '08:00',
-      fecha: new Date().toISOString().split('T')[0],
-      mascota: 'Max',
-      dueno: 'María Rodríguez',
-      vet: 'Dr. Morales',
-      veterinario: 'Dr. Morales',
-      motivo: 'Consulta general',
-      estado: 'Atendida',
-      espera: null
-    },
-    {
-      id: 2,
-      hora: '09:00',
-      fecha: new Date().toISOString().split('T')[0],
-      mascota: 'Luna',
-      dueno: 'Ana Martínez',
-      vet: 'Dra. García',
-      veterinario: 'Dra. García',
-      motivo: 'Control rutina',
-      estado: 'En espera',
-      espera: '23 min esperando',
-      alerta: true
-    },
-    {
-      id: 3,
-      hora: '10:00',
-      fecha: new Date().toISOString().split('T')[0],
-      mascota: 'Rocky',
-      dueno: 'Carlos López',
-      vet: 'Dr. Morales',
-      veterinario: 'Dr. Morales',
-      motivo: 'Vacunación',
-      estado: 'En espera',
-      espera: '8 min esperando',
-      alerta: false
-    },
-    {
-      id: 4,
-      hora: '10:30',
-      fecha: new Date().toISOString().split('T')[0],
-      mascota: 'Pico',
-      dueno: 'José Pérez',
-      vet: 'Dr. Santos',
-      veterinario: 'Dr. Santos',
-      motivo: 'Revisión anual',
-      estado: 'En espera',
-      espera: '8 min esperando',
-      alerta: false
-    },
-    {
-      id: 5,
-      hora: '11:00',
-      fecha: new Date().toISOString().split('T')[0],
-      mascota: 'Miel',
-      dueno: 'Laura Hernández',
-      vet: 'Dra. García',
-      veterinario: 'Dra. García',
-      motivo: 'Desparasitación',
-      estado: 'Programada',
-      espera: null
-    },
-    {
-      id: 6,
-      hora: '14:00',
-      fecha: new Date().toISOString().split('T')[0],
-      mascota: 'Max',
-      dueno: 'María Rodríguez',
-      vet: 'Dr. Santos',
-      veterinario: 'Dr. Santos',
-      motivo: 'Seguimiento',
-      estado: 'Programada',
-      espera: null
-    }
-  ]);
+  const [citas, setCitas] = useState([]);
 
   // =========================
   // AUTENTICACIÓN

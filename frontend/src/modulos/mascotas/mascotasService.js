@@ -1,8 +1,11 @@
 import axios from 'axios';
 
-// URL base de tu API de backend (ajústala si tu puerto o ruta es diferente)
-const API_URL = 'http://localhost:8080/api/mascotas';
-const API_PROPIETARIOS_URL = 'http://localhost:8080/api/propietarios';
+const API_BASE = (
+  import.meta.env.VITE_API_URL || 'http://localhost:8080'
+).replace(/\/+$/, '');
+
+const API_URL = `${API_BASE}/api/mascotas`;
+const API_PROPIETARIOS_URL = `${API_BASE}/api/propietarios`;
 
 // Obtener la lista de todas las mascotas
 export const obtenerMascotas = async () => {

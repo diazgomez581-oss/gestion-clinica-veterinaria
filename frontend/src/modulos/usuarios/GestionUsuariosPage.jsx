@@ -3,8 +3,11 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { ArrowLeft, CircleCheck, Plus, TriangleAlert, UserRound, X } from 'lucide-react';
 import './GestionUsuariosPage.css';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+const API_BASE = (
+  import.meta.env.VITE_API_URL || 'http://localhost:8080'
+).replace(/\/+$/, '');
+
+const API_BASE_URL = `${API_BASE}/api`;
 
 const roles = {
   ADMIN: 'Administrador',
