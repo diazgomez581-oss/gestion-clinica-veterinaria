@@ -357,6 +357,7 @@ export default function App() {
           ) : vistaActual === 'calendario' ? (
 
             <CalendarioCitasPage
+              usuario={usuarioActual}
               onVolver={() =>
                 setVistaActual('dashboard')
               }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, ClipboardList, PawPrint, Plus, Stethoscope } from 'lucide-react';
 import { citasService } from './citasService';
+import ProgramarCitaPage from './ProgramarCitaPage';
 
 const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
@@ -38,7 +39,10 @@ const coloresEstado = (estado) => {
   return { fondo: '#e0f2fe', texto: '#0369a1', borde: '#06b6d4' };
 };
 
-export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
+export default function CalendarioCitasPage({ onVolver, onIrAProgramar, usuario }) {
+  const [citaReprogramar, setCitaReprogramar] = useState(null);
+  const [recarga, setRecarga] = useState(0);
+  const puedeReprogramar = ['ADMIN', 'RECEPCIONISTA'].includes(usuario?.rol?.toUpperCase());
   const [vista, setVista] = useState('mes'); // 'mes' | 'agenda'
   const [citas, setCitas] = useState([]);
   const [mascotas, setMascotas] = useState([]);
@@ -58,7 +62,8 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
           citasService.getVeterinarios()
         ]);
         if (!activo) return;
-        setCitas(Array.isArray(listaCitas) ? listaCitas : []);
+        if (!Array.isArray(listaCitas)) throw new Error('No se pudo cargar la agenda.');
+        setCitas(listaCitas);
         setMascotas(Array.isArray(listaMascotas) ? listaMascotas : []);
         setVeterinarios(Array.isArray(listaVets) ? listaVets : []);
         setError('');
@@ -70,7 +75,23 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
     };
     cargar();
     return () => { activo = false; };
-  }, []);
+  }, [recarga]);
+
+  const sucesorasPorId = useMemo(() => new Map(
+    citas.filter(c => c.idCitaOrigen != null).map(c => [String(c.idCitaOrigen), c])
+  ), [citas]);
+
+  const accionReprogramar = (cita) => {
+    const siguiente = sucesorasPorId.get(String(cita.idCita));
+    if (siguiente) return (
+      <span style={{color: '#166534', fontSize: '0.78rem'}}>
+        Ya reprogramada · #{siguiente.idCita}<br />
+        {normalizarFecha(siguiente.fecha)} · {horaCita(siguiente.hora)}
+      </span>
+    );
+    if (!['Cancelada', 'No Asistió'].includes(cita.estado)) return '—';
+    return <button type="button" style={estilos.navBtn} onClick={() => setCitaReprogramar(cita)}>Reprogramar</button>;
+  };
 
   const mascotasPorId = useMemo(
     () => new Map(mascotas.map(m => [String(m.idMascota), m])),
@@ -144,6 +165,15 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
   const tituloSemana = `${etiquetaDia(semana[0].fecha)} – ${etiquetaDia(semana[6].fecha)} de ${semana[6].fecha.getFullYear()}`;
   const hoy = fechaLocal(new Date());
 
+  if (citaReprogramar && puedeReprogramar) {
+    return <ProgramarCitaPage
+      key={`reprogramar-${citaReprogramar.idCita}`}
+      citaReprogramar={citaReprogramar}
+      onCitaGuardada={nueva => setCitas(prev => [...prev, nueva])}
+      onVolver={() => { setCitaReprogramar(null); setRecarga(prev => prev + 1); }}
+    />;
+  }
+
   return (
     <div style={estilos.container}>
       <div style={estilos.header}>
@@ -163,7 +193,7 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
       <div style={estilos.toolbar}>
         <div style={estilos.viewToggle}>
           <button type="button" onClick={() => setVista('mes')} style={vista === 'mes' ? estilos.toggleBtnActive : estilos.toggleBtn}><Calendar size="1em" className="icono-texto" /> Calendario Mensual</button>
-          <button type="button" onClick={() => setVista('agenda')} style={vista === 'agenda' ? estilos.toggleBtnActive : estilos.toggleBtn}><ClipboardList size="1em" className="icono-texto" /> Agenda Semanal ({citas.length})</button>
+          <button type="button" onClick={() => setVista('agenda')} style={vista === 'agenda' ? estilos.toggleBtnActive : estilos.toggleBtn}><ClipboardList size="1em" className="icono-texto" /> Agenda Semanal ({semana.reduce((total, dia) => total + dia.citasDelDia.length, 0)})</button>
         </div>
         <div style={estilos.navMesBox}>
           <button type="button" onClick={() => cambiarPeriodo(-1)} style={estilos.navBtn}><ChevronLeft size="1em" className="icono-texto" /> Anterior</button>
@@ -232,6 +262,7 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
                             <th style={estilos.th}>Veterinario</th>
                             <th style={estilos.th}>Motivo</th>
                             <th style={estilos.th}>Estado</th>
+                            {puedeReprogramar && <th style={estilos.th}>Acciones</th>}
                           </tr>
                         </thead>
                         <tbody>
@@ -242,6 +273,7 @@ export default function CalendarioCitasPage({ onVolver, onIrAProgramar }) {
                               <td style={estilos.td}>{nombreVeterinario(cita)}</td>
                               <td style={estilos.td}>{cita.motivo || '—'}</td>
                               <td style={estilos.td}><span style={{ ...estilos.badgeEstado(cita.estado), background: coloresEstado(cita.estado).fondo, color: coloresEstado(cita.estado).texto }}>{cita.estado || 'Sin estado'}</span></td>
+                              {puedeReprogramar && <td style={estilos.td}>{accionReprogramar(cita)}</td>}
                             </tr>
                           ))}
                         </tbody>

@@ -113,6 +113,44 @@ public class CitaController {
     @PostMapping
     @Transactional
     public ResponseEntity<?> programarCita(@RequestBody Cita cita) {
+        if (cita.getIdCitaOrigen() != null) {
+            return ResponseEntity.badRequest().body("Usá la opción Reprogramar de la agenda.");
+        }
+        return guardarCita(cita, false);
+    }
+
+    public record DatosReprogramacion(LocalDate fecha, LocalTime hora, Long idVeterinario) {}
+
+    @PostMapping("/{id}/reprogramar")
+    @Transactional
+    public ResponseEntity<?> reprogramarCita(
+            @PathVariable Long id, @RequestBody DatosReprogramacion datos) {
+        // La fila original se bloquea para impedir dos reprogramaciones simultáneas.
+        Cita original = entityManager.find(Cita.class, id, LockModeType.PESSIMISTIC_WRITE);
+        if (original == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No se encontró la cita original.");
+        }
+        if (!List.of("Cancelada", "No Asistió").contains(
+                original.getEstado() == null ? "" : original.getEstado())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Solo se pueden reprogramar citas canceladas o no asistidas.");
+        }
+        Long sucesoras = entityManager.createQuery(
+                "SELECT COUNT(c) FROM Cita c WHERE c.idCitaOrigen = :id", Long.class)
+                .setParameter("id", id).getSingleResult();
+        if (sucesoras > 0L) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("Esta cita ya fue reprogramada. Consultá la nueva cita en la agenda.");
+        }
+        // Identidad, motivo y vacuna se toman del registro original, no del navegador.
+        Cita nueva = new Cita(datos.fecha(), datos.hora(), original.getMotivo(),
+                original.getIdMascota(), datos.idVeterinario());
+        nueva.setIdAplicacionVacuna(original.getIdAplicacionVacuna());
+        nueva.setIdCitaOrigen(original.getIdCita());
+        return guardarCita(nueva, true);
+    }
+
+    private ResponseEntity<?> guardarCita(Cita cita, boolean reprogramacion) {
 
         if (cita.getIdCita() != null) {
             return ResponseEntity.badRequest().body(
@@ -193,7 +231,7 @@ public class CitaController {
                     FROM AplicacionVacuna a
                     WHERE a.idAplicacionVacuna = :idAplicacion
                       AND a.mascota.idMascota = :idMascota
-                      AND a.proximaDosis = :fecha
+                      AND (:reprogramacion = true OR a.proximaDosis = :fecha)
                     """, Long.class)
                     .setParameter(
                             "idAplicacion",
@@ -204,6 +242,7 @@ public class CitaController {
                     .setParameter(
                             "fecha",
                             cita.getFecha())
+                    .setParameter("reprogramacion", reprogramacion)
                     .getSingleResult();
 
             if (coincidencias == 0L) {

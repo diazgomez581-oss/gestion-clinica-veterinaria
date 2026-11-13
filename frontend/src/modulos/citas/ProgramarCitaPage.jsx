@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, CircleCheck, PawPrint, TriangleAlert } from 'lucide-react';
 import { citasService } from './citasService';
+import { reprogramarCita } from './reprogramacionService';
 // Bloques de 30 minutos. El bloque de 21:00 termina a las 21:30.
 const generarBloques = (inicio, fin) => {
   const aMinutos = hora => {
@@ -18,8 +19,14 @@ const BLOQUES_HORARIOS = [
   ...generarBloques('14:00', '21:00')
 ];
 
-export default function ProgramarCitaPage({ onCitaGuardada, onVolver, refuerzoInicial = null}) {
-    const esCitaDeRefuerzo = refuerzoInicial != null;
+export default function ProgramarCitaPage({ onCitaGuardada, onVolver, refuerzoInicial = null, citaReprogramar = null}) {
+    const esReprogramacion = citaReprogramar != null;
+    const pacienteBloqueado = refuerzoInicial != null || esReprogramacion;
+    const esCitaDeRefuerzo = refuerzoInicial != null && !esReprogramacion;
+    const motivoOriginal = citaReprogramar?.motivo || '';
+    const separadorMotivo = motivoOriginal.indexOf(' - ');
+    const servicioOriginal = separadorMotivo >= 0 ? motivoOriginal.slice(0, separadorMotivo) : 'Consulta general';
+    const detalleOriginal = separadorMotivo >= 0 ? motivoOriginal.slice(separadorMotivo + 3) : motivoOriginal;
     const obtenerFechaHoyLocal = () => {
     const d = new Date();
     const anio = d.getFullYear();
@@ -44,10 +51,10 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, refuerzoIn
   const [formulario, setFormulario] = useState({
     idVeterinario: '',
     veterinario: '',
-    fecha: refuerzoInicial?.proximaDosis || hoyStr,
+    fecha: esReprogramacion ? hoyStr : (refuerzoInicial?.proximaDosis || hoyStr),
     hora: '',
-    tipoServicio: esCitaDeRefuerzo ? 'Vacunación' : 'Consulta general',
-    motivo: esCitaDeRefuerzo ? `Refuerzo de ${refuerzoInicial.nombreTipoVacuna}` : '',
+    tipoServicio: esReprogramacion ? servicioOriginal : (esCitaDeRefuerzo ? 'Vacunación' : 'Consulta general'),
+    motivo: esReprogramacion ? detalleOriginal : (esCitaDeRefuerzo ? `Refuerzo de ${refuerzoInicial.nombreTipoVacuna}` : ''),
     notas: ''
   });
 
@@ -211,6 +218,26 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, refuerzoIn
     }));
   }, [refuerzoInicial, listaPropietarios, cargandoCatalogos, errorCatalogos]);
 
+  useEffect(() => {
+    if (!citaReprogramar || cargandoCatalogos || errorCatalogos) return;
+    const propietario = listaPropietarios.find(p => p.mascotas.some(
+      m => String(m.idMascota) === String(citaReprogramar.idMascota)
+    ));
+    const mascota = propietario?.mascotas.find(
+      m => String(m.idMascota) === String(citaReprogramar.idMascota)
+    );
+    if (!propietario || !mascota) {
+      setErrorValidacion('No se encontró el propietario de la mascota de esta cita.');
+      return;
+    }
+    setPropietarioSeleccionado(propietario);
+    setMascotasDisponibles(propietario.mascotas);
+    setMascotaSeleccionada(mascota);
+    setTerminoBusqueda(propietario.nombre);
+    const vet = listaVeterinarios.find(v => String(v.idVeterinario) === String(citaReprogramar.idVeterinario));
+    if (vet) setFormulario(prev => ({...prev, idVeterinario: vet.idVeterinario, veterinario: vet.nombre, hora: ''}));
+  }, [citaReprogramar, cargandoCatalogos, errorCatalogos, listaPropietarios, listaVeterinarios]);
+
   // Filtro reactivo para el autocompletado del buscador
   const propietariosFiltrados = terminoBusqueda.trim() === ''
     ? []
@@ -220,7 +247,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, refuerzoIn
       );
 
   const handleSeleccionarPropietario = (prop) => {
-    if (esCitaDeRefuerzo) return;
+    if (pacienteBloqueado) return;
     setPropietarioSeleccionado(prop);
     setTerminoBusqueda(prop.nombre);
     setMascotasDisponibles(prop.mascotas || []);
@@ -235,7 +262,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, refuerzoIn
   };
 
   const handleCambioMascota = (e) => {
-    if (esCitaDeRefuerzo) return;
+    if (pacienteBloqueado) return;
     const idSel = parseInt(e.target.value, 10);
     const m = mascotasDisponibles.find(item => String(item.idMascota) === String(idSel));
     setMascotaSeleccionada(m);
@@ -273,6 +300,10 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, refuerzoIn
       return;
     }
 
+    if (esReprogramacion && String(mascotaSeleccionada?.idMascota) !== String(citaReprogramar.idMascota)) {
+      setErrorValidacion('La mascota debe coincidir con la cita original.');
+      return;
+    }
     if (!propietarioSeleccionado) {
       setErrorValidacion('Debes buscar y seleccionar un propietario registrado en el sistema.');
       return;
@@ -338,12 +369,15 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, refuerzoIn
     try {
       guardadoEnCurso.current = true;
       setGuardando(true);
-      const citaGuardada = await citasService.guardarCita(payloadBackend);
+      const citaGuardada = esReprogramacion
+        ? await reprogramarCita(citaReprogramar.idCita, payloadBackend)
+        : await citasService.guardarCita(payloadBackend);
       if (!montado.current) return;
 
       // Objeto formateado para actualizar el estado del Dashboard visualmente de inmediato
       const nuevaCitaUI = {
         id: citaGuardada.idCita,
+        idCitaOrigen: citaGuardada.idCitaOrigen ?? null,
         idCita: citaGuardada.idCita,
         idAplicacionVacuna: citaGuardada.idAplicacionVacuna ?? payloadBackend.idAplicacionVacuna,
         hora: formulario.hora,
@@ -356,7 +390,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, refuerzoIn
         telefono: propietarioSeleccionado.telefono,
         vet: formulario.veterinario,
         veterinario: formulario.veterinario,
-        motivo: formulario.motivo,
+        motivo: citaGuardada.motivo,
         tipoServicio: formulario.tipoServicio,
         estado: 'Programada',
         idVeterinario: formulario.idVeterinario,
@@ -403,23 +437,28 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, refuerzoIn
       <div className="cita-page-header">
         <div>
           <div className="cita-breadcrumb">
-            <span onClick={onVolver} className="breadcrumb-link" style={{ cursor: 'pointer' }}>{esCitaDeRefuerzo ? 'Próximas vacunas' : 'Dashboard'}</span> &gt; <span>Programación de Citas</span>
+            <span onClick={onVolver} className="breadcrumb-link" style={{ cursor: 'pointer' }}>{esReprogramacion ? 'Calendario y Agenda' : esCitaDeRefuerzo ? 'Próximas vacunas' : 'Dashboard'}</span> &gt; <span>Programación de Citas</span>
           </div>
-          <h1 className="cita-page-title">Agendar Nueva Cita Médica</h1>
+          <h1 className="cita-page-title">{esReprogramacion ? 'Reprogramar Cita Médica' : 'Agendar Nueva Cita Médica'}</h1>
           <p className="cita-page-sub">Asignación de paciente y programación de la cita</p>
         </div>
 
         <button type="button" onClick={onVolver} disabled={guardando || exitoMensaje} className="btn-volver-dash">
-          <ArrowLeft size="1em" className="icono-texto" /> {esCitaDeRefuerzo ? 'Volver a próximas vacunas' : 'Volver al Dashboard'}
+          <ArrowLeft size="1em" className="icono-texto" /> {esReprogramacion ? 'Volver a la agenda' : esCitaDeRefuerzo ? 'Volver a próximas vacunas' : 'Volver al Dashboard'}
         </button>
       </div>
 
       {exitoMensaje && (
         <div className="alert-banner-success" style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', padding: '12px 16px', borderRadius: '8px', marginBottom: '16px' }}>
-          <CircleCheck size="1em" className="icono-texto" /> Cita médica guardada con éxito (Fecha: {formulario.fecha}). {esCitaDeRefuerzo ? 'Regresando a próximas vacunas...' : 'Regresando al Dashboard...'}
+          <CircleCheck size="1em" className="icono-texto" /> Cita médica guardada con éxito (Fecha: {formulario.fecha}). {esReprogramacion ? 'Regresando a la agenda...' : esCitaDeRefuerzo ? 'Regresando a próximas vacunas...' : 'Regresando al Dashboard...'}
         </div>
       )}
 
+      {esReprogramacion && <p style={{color: '#0369a1'}}>
+        Cita original #{citaReprogramar.idCita}: {citaReprogramar.fecha} · {citaReprogramar.estado}.
+        Seleccioná una nueva fecha y horario. Se conservarán el paciente y el motivo original.
+        {citaReprogramar.idAplicacionVacuna != null && ' El refuerzo seguirá vinculado; su fecha médica recomendada no se modifica.'}
+      </p>}
       {cargandoCatalogos && <p role="status">Cargando propietarios, mascotas y veterinarios...</p>}
       {errorCatalogos && <div className="alert-banner-danger" role="alert">{errorCatalogos}</div>}
       {esCitaDeRefuerzo && (
@@ -459,7 +498,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, refuerzoIn
                   type="text"
                   placeholder="Escribe para buscar... Ej. Carlos, Lucía, 0512..."
                   value={terminoBusqueda}
-                  readOnly={esCitaDeRefuerzo || guardando || exitoMensaje}
+                  readOnly={pacienteBloqueado || guardando || exitoMensaje}
                   onChange={(e) => {
                     setTerminoBusqueda(e.target.value);
                     if (propietarioSeleccionado && e.target.value !== propietarioSeleccionado.nombre) {
@@ -472,7 +511,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, refuerzoIn
                 />
 
                 {/* Lista Flotante de Resultados */}
-                {!esCitaDeRefuerzo && !guardando && !exitoMensaje && propietariosFiltrados.length > 0 && !propietarioSeleccionado && (
+                {!pacienteBloqueado && !guardando && !exitoMensaje && propietariosFiltrados.length > 0 && !propietarioSeleccionado && (
                   <div className="dropdown-prop-results" style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid #cbd5e1', borderRadius: '8px', zIndex: 10, boxShadow: '0 4px 6px rgba(0,0,0,0.1)', maxHeight: '200px', overflowY: 'auto' }}>
                     {propietariosFiltrados.map(p => (
                       <div
@@ -521,7 +560,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, refuerzoIn
               <div className="input-group-vet">
                 <label>Mascota Vinculada a Atender *</label>
                 <select
-                  disabled={esCitaDeRefuerzo || guardando || exitoMensaje || !propietarioSeleccionado || mascotasDisponibles.length === 0}
+                  disabled={pacienteBloqueado || guardando || exitoMensaje || !propietarioSeleccionado || mascotasDisponibles.length === 0}
                   value={mascotaSeleccionada ? mascotaSeleccionada.idMascota : ''}
                   onChange={handleCambioMascota}
                   style={{ fontWeight: 600 }}
@@ -641,7 +680,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, refuerzoIn
                 <label>Tipo de Servicio *</label>
                 <select
                   name="tipoServicio"
-                  disabled={guardando || exitoMensaje}
+                  disabled={esReprogramacion || guardando || exitoMensaje}
                   value={formulario.tipoServicio}
                   onChange={(e) => setFormulario(prev => ({ ...prev, tipoServicio: e.target.value }))}
                 >
@@ -660,7 +699,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, refuerzoIn
                   type="text"
                   placeholder="Ej. Chequeo anual, cojera en pata delantera..."
                   value={formulario.motivo}
-                  readOnly={guardando || exitoMensaje}
+                  readOnly={esReprogramacion || guardando || exitoMensaje}
                   maxLength={255}
                   onChange={(e) => setFormulario(prev => ({ ...prev, motivo: e.target.value }))}
                   required
@@ -721,7 +760,7 @@ export default function ProgramarCitaPage({ onCitaGuardada, onVolver, refuerzoIn
 
             <div className="summary-actions">
               <button type="submit" className="btn-confirm-save" disabled={guardando || exitoMensaje || cargandoCatalogos || Boolean(errorCatalogos) || estadoHorarios !== 'listo' || !formulario.hora || !propietarioSeleccionado || !mascotaSeleccionada}>
-                {guardando ? 'Guardando...' : 'Confirmar y Agendar Cita'}
+                {guardando ? 'Guardando...' : esReprogramacion ? 'Confirmar reprogramación' : 'Confirmar y Agendar Cita'}
               </button>
               <button type="button" onClick={onVolver} className="btn-cancel-flat" disabled={guardando || exitoMensaje}>
                 Cancelar
