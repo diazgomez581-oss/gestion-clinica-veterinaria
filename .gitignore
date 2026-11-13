@@ -1,1 +1,6 @@
+# Archivos generados por Maven
 backend/target/
+
+# Variables de entorno
+.env
+.env.*
