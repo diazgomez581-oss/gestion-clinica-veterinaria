@@ -1,3 +1,4 @@
+
 package com.veterinaria.gcv;
 
 import org.springframework.boot.SpringApplication;
@@ -13,15 +14,27 @@ public class GcvApplication {
         SpringApplication.run(GcvApplication.class, args);
     }
 
-    // Habilita la comunicación con React en Vite (puerto 5173)
+    // Permite conexiones desde React local y Vercel
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS");
+                    .allowedOrigins(
+                        "http://localhost:5173",
+                        "http://127.0.0.1:5173",
+                        "https://gestion-clinica-veterinaria.vercel.app"
+                    )
+                    .allowedMethods(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "DELETE",
+                        "PATCH",
+                        "OPTIONS"
+                    )
+                    .allowedHeaders("*");
             }
         };
     }
