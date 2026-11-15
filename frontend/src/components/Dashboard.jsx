@@ -5,10 +5,13 @@ import { citasService } from '../modulos/citas/citasService';
 export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }) {
   const esRecepcionista = usuario?.rol === 'RECEPCIONISTA';
   const esVeterinario = usuario?.rol === 'VETERINARIO';
+  const esAdmin = usuario?.rol === 'ADMIN';
   const puedeGestionarLlegadas = esRecepcionista || usuario?.rol === 'ADMIN';
   const idVeterinarioActual = usuario?.idVeterinario;
   const esMiPaciente = (cita) => esVeterinario && idVeterinarioActual != null && String(cita.idVeterinario) === String(idVeterinarioActual);
+  const puedeAtenderPaciente = (cita) => esAdmin || esMiPaciente(cita);
   const [aviso, setAviso] = useState('');
+  const [advertencia, setAdvertencia] = useState('');
   const [procesando, setProcesando] = useState(null);
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('TODOS');
@@ -119,23 +122,38 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
 
   // Llamar al paciente e iniciar consulta
   const handleLlamarAConsulta = async (cita) => {
-    if (!esMiPaciente(cita) || procesando) return;
+    if (!puedeAtenderPaciente(cita) || procesando) return;
+    setAdvertencia('');
     setProcesando(cita.idCita);
     try {
-      // Actualizar el estado en PostgreSQL
+      // Consultar nuevamente el servidor para evitar decisiones basadas en datos desactualizados.
+      const citasActuales = await citasService.getCitasHoy();
+      const citasDelDia = Array.isArray(citasActuales) ? citasActuales : [];
+      const citaActual = citasDelDia.find((item) => String(item.idCita) === String(cita.idCita));
+
+      if (!citaActual || !['En espera', 'En Sala de Espera'].includes(citaActual.estado)) {
+        setAdvertencia('La cita ya no está en sala de espera. Actualiza el Dashboard antes de continuar.');
+        await cargarCitasDeBD(true);
+        return;
+      }
+
+      const otraConsultaActiva = citasDelDia.find((item) =>
+        String(item.idCita) !== String(cita.idCita) &&
+        item.estado === 'En Consulta' &&
+        item.idVeterinario != null &&
+        String(item.idVeterinario) === String(cita.idVeterinario)
+      );
+
+      if (otraConsultaActiva) {
+        setAdvertencia(`Este veterinario ya tiene una consulta en curso (${otraConsultaActiva.nombreMascota || 'otro paciente'}). Debes finalizar la consulta anterior antes de iniciar otra.`);
+        return;
+      }
+
       await citasService.actualizarEstado(cita.idCita, 'En Consulta');
-
-      // Actualizar el dashboard
-      await cargarCitasDeBD();
-
-      // Abrir el módulo de consultas médicas
-      onIniciarConsulta?.({
-        ...cita,
-        estado: 'En Consulta'
-      });
-
+      await cargarCitasDeBD(true);
+      onIniciarConsulta?.({ ...cita, estado: 'En Consulta' });
     } catch (error) {
-      alert(`Error al llamar a consulta: ${error.message}`);
+      setAdvertencia(`No se pudo iniciar la consulta: ${error.message}`);
     } finally {
       setProcesando(null);
     }
@@ -191,6 +209,12 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
         </div>
       )}
 
+      {advertencia && (
+        <div role="alert" style={{ background: '#fff7ed', color: '#9a3412', border: '1px solid #fdba74', padding: 14, borderRadius: 10, marginBottom: 16, display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+          <span>⚠️ {advertencia}</span>
+          <button type="button" onClick={() => setAdvertencia('')} aria-label="Cerrar advertencia" style={{ background: 'transparent', border: 0, cursor: 'pointer' }}><X size="1em" /></button>
+        </div>
+      )}
       {aviso && <div role="status" style={{ background: '#dcfce7', color: '#166534', border: '1px solid #86efac', padding: 14, borderRadius: 10, marginBottom: 16, display: 'flex', justifyContent: 'space-between', gap: 12 }}>
         <span><CircleCheck size="1em" className="icono-texto" /> {aviso}</span><button type="button" onClick={() => setAviso('')} aria-label="Cerrar aviso"><X size="1em" /></button>
       </div>}
@@ -459,7 +483,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
 
                   <div className="queue-btn-group">
                     
-                  {esMiPaciente(item) && <button
+                  {puedeAtenderPaciente(item) && <button
                     type="button"
                     className="btn-call-patient"
                     style={{ background: '#16a34a', color: 'white' }}
@@ -469,7 +493,7 @@ export default function Dashboard({ onIrAProgramar, onIniciarConsulta, usuario }
                     <Stethoscope size="1em" className="icono-texto" /> {procesando === item.idCita ? 'Iniciando...' : 'Atender paciente'}
                   </button>}
 
-                    <span style={{ fontSize: 12, color: "#64748b" }}>{esMiPaciente(item) ? "Asignado a vos" : "Esperando al veterinario asignado"}</span>
+                    <span style={{ fontSize: 12, color: "#64748b" }}>{esAdmin ? "Acceso de administrador" : esMiPaciente(item) ? "Asignado a vos" : "Esperando al veterinario asignado"}</span>
                   </div>
                 </div>
               ))

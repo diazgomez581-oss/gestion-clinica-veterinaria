@@ -175,6 +175,8 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
         : null
     );
 
+  const puedeEditarConsulta = citaSeleccionada?.estado === 'En Consulta' && !consultaRegistrada;
+
   const handleSeleccionarCita = (cita) => {
     setCitaSeleccionada(cita);
     setFormulario({ ...formularioInicial, motivoConsulta: cita.motivo || '' });
@@ -339,7 +341,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
             <span onClick={onVolver} className="breadcrumb-link">Dashboard</span> &gt; <span>Área Clínica</span> &gt; <span>Consultas Médicas</span>
           </div>
           <h1 className="cita-page-title">Registro de Consulta Médica</h1>
-          <p className="cita-page-sub">Historia GCV-8 [CON-01] · Motivo, evaluación clínica, diagnóstico y observaciones</p>
+          <p className="cita-page-sub">Registro de evaluación clínica, diagnóstico, tratamiento y observaciones del paciente.</p>
         </div>
         <button type="button" onClick={onVolver} className="btn-volver-dash">← Volver al Dashboard</button>
       </div>
@@ -348,15 +350,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
         <div className="alert-banner-success">✓ {mensajeVacunacion}</div>
       )}
       {error && <div className="alert-banner-danger">⚠️ {error}</div>}
-      {citaSeleccionada &&
-  citaSeleccionada.estado !== 'En Consulta' &&
-  !consultaRegistrada && (
-    <div className="alert-banner-danger">
-      ⚠️ El paciente todavía no está en consulta.
-      Primero debes llamar al paciente desde la sala de espera
-      para poder registrar su consulta médica.
-    </div>
-)}
+
       {mensajeFinalizacion && (
       <div className="alert-banner-success">
         ✓ {mensajeFinalizacion}
@@ -377,7 +371,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
               <strong>Pacientes en atención</strong>
               <span>{citasEspera.length} paciente(s)</span>
             </div>
-            <span className="panel-tag-aqua">CON-01</span>
+
           </div>
 
           {cargando ? (
@@ -430,9 +424,20 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="consulta-form-stack">
+              {!puedeEditarConsulta && !consultaRegistrada && (
+                <div role="alert" className="alert-banner-danger" style={{ marginBottom: 16 }}>
+                  🔒 Formulario bloqueado. El paciente todavía está en sala de espera.
+                  Los campos clínicos se habilitarán cuando se inicie su consulta médica desde el Dashboard.
+                </div>
+              )}
+              {consultaRegistrada && (
+                <div role="status" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af', padding: 12, borderRadius: 10, marginBottom: 16 }}>
+                  🔒 Esta consulta ya fue registrada. Los datos clínicos no se pueden editar desde este formulario.
+                </div>
+              )}
               <fieldset
-                className={consultaRegistrada ? 'consulta-datos-bloqueados' : ''}
-                disabled={Boolean(consultaRegistrada) || cargandoHistorial}
+                className={!puedeEditarConsulta ? 'consulta-datos-bloqueados' : ''}
+                disabled={!puedeEditarConsulta || cargandoHistorial || guardando}
                 style={{
                   border: 'none',
                   padding: 0,
@@ -625,7 +630,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
 
               <div className="consulta-actions-bar">
                 <div>
-                  <strong>Registro clínico CON-01</strong>
+                  <strong>Registro clínico</strong>
                   <span>
                     {cargandoHistorial
                       ? 'Verificando consulta registrada...'
