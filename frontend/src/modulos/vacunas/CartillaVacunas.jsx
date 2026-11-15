@@ -30,20 +30,33 @@ export default function CartillaVacunas({
   const [guardando, setGuardando] = useState(false);
 
   const fechaActual = fechaElSalvador();
-  const esVeterinario = usuarioActual?.rol === 'VETERINARIO';
+  const rol = String(usuarioActual?.rol ?? '').toUpperCase();
+  const esAdmin = rol === 'ADMIN';
+  const esVeterinario = rol === 'VETERINARIO';
   const veterinarioCoincide =
-    String(usuarioActual?.idVeterinario ?? '') ===
-    String(citaActiva?.idVeterinario ?? '');
+    usuarioActual?.idVeterinario != null &&
+    citaActiva?.idVeterinario != null &&
+    String(usuarioActual.idVeterinario) === String(citaActiva.idVeterinario);
   const mascotaCoincide =
-    String(idMascota) === String(citaActiva?.idMascota ?? '');
-  const puedeRegistrar = Boolean(
+    idMascota != null &&
+    citaActiva?.idMascota != null &&
+    String(idMascota) === String(citaActiva.idMascota);
+  const consultaEnCurso = Boolean(
     citaActiva?.idCita &&
     citaActiva?.estado === 'En Consulta' &&
-    esVeterinario && veterinarioCoincide && mascotaCoincide
+    mascotaCoincide
   );
+  const puedeRegistrar = consultaEnCurso && (esAdmin || (esVeterinario && veterinarioCoincide));
+
+  // Si el administrador registra la vacuna, el backend debe identificar
+  // correctamente al profesional aplicador y autorizar el rol ADMIN.
+  const nombreAplicador = esVeterinario
+    ? (usuarioActual?.nombre || 'Veterinario autenticado')
+    : (citaActiva?.nombreVeterinario || citaActiva?.veterinario?.nombre || 'Veterinario asignado a la cita');
 
   useEffect(() => {
     let activo = true;
+    setError('');
     vacunasService.listarVacunas(idMascota)
       .then((datos) => {
         if (activo) setVacunas(Array.isArray(datos) ? datos : []);
@@ -65,7 +78,7 @@ export default function CartillaVacunas({
     setError('');
 
     if (!puedeRegistrar) {
-      setError('Solo el veterinario responsable puede registrar vacunas durante una consulta activa.');
+      setError('Solo un administrador o el veterinario responsable puede registrar vacunas durante una consulta activa.');
       return;
     }
     if (formulario.proximaDosis && formulario.proximaDosis <= fechaActual) {
@@ -81,9 +94,6 @@ export default function CartillaVacunas({
         lote: formulario.lote.trim(),
         proximaDosis: formulario.proximaDosis || null
       });
-
-      // El POST ya se guardó: volver de inmediato evita repetirlo si falla un GET posterior.
-      // Al volver, RegistrarConsultaPage consulta la cartilla actualizada.
       if (onVacunaRegistrada) onVacunaRegistrada(guardada);
     } catch (err) {
       setError(err.message || 'No se pudo registrar la vacuna.');
@@ -121,9 +131,13 @@ export default function CartillaVacunas({
               />
             </div>
             <div className="input-group-vet">
-              <label>Veterinario que aplica *</label>
-              <input type="text" value={usuarioActual?.nombre || 'Veterinario autenticado'} disabled readOnly />
-              <small style={{ color: '#64748b' }}>Se identifica automáticamente por la sesión.</small>
+              <label>Veterinario responsable *</label>
+              <input type="text" value={nombreAplicador} disabled readOnly />
+              <small style={{ color: '#64748b' }}>
+                {esAdmin
+                  ? 'Se muestra el veterinario asignado; el servidor debe verificar quién aplicó realmente la vacuna.'
+                  : 'Se identifica automáticamente por la sesión.'}
+              </small>
             </div>
             <div className="input-group-vet">
               <label>Fecha de aplicación *</label>
@@ -151,7 +165,7 @@ export default function CartillaVacunas({
           <strong>Cartilla en modo consulta (solo lectura).</strong>
           <p style={{ marginTop: 8 }}>
             Para registrar una vacuna, abrí esta cartilla desde una consulta médica en estado
-            «En Consulta» con el veterinario responsable conectado.
+            «En Consulta», como administrador o como veterinario responsable.
           </p>
         </div>
       )}
