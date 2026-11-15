@@ -37,6 +37,13 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
   const [mensajeFinalizacion, setMensajeFinalizacion] = useState('');
   const [vacunasAplicadas, setVacunasAplicadas] = useState([]);
   const [errorVacunas, setErrorVacunas] = useState('');
+  const [notificacion, setNotificacion] = useState(null);
+
+  useEffect(() => {
+    if (!notificacion) return;
+    const temporizador = setTimeout(() => setNotificacion(null), 5000);
+    return () => clearTimeout(temporizador);
+  }, [notificacion]);
 
   useEffect(() => {
     const cargarBase = async () => {
@@ -173,6 +180,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
     setFormulario({ ...formularioInicial, motivoConsulta: cita.motivo || '' });
     setExito(null);
     setError('');
+    setNotificacion(null);
   };
 
   const handleChange = (e) => {
@@ -188,11 +196,20 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
 
     if (!citaSeleccionada) {
       setError('Selecciona primero un paciente que se encuentre en sala de espera.');
+      setNotificacion({ tipo: 'error', mensaje: 'Selecciona primero un paciente.' });
+      return;
+    }
+
+    if (citaSeleccionada.estado !== 'En Consulta') {
+      const mensaje = 'Primero debes llamar al paciente a consulta desde la sala de espera.';
+      setError(mensaje);
+      setNotificacion({ tipo: 'error', mensaje });
       return;
     }
 
     if (!formulario.motivoConsulta.trim() || !formulario.diagnostico.trim() || !formulario.observaciones.trim()) {
       setError('Motivo de consulta, diagnóstico y observaciones son campos obligatorios.');
+      setNotificacion({ tipo: 'error', mensaje: 'Completa el motivo, diagnóstico y observaciones.' });
       return;
     }
 
@@ -214,11 +231,17 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
       setGuardando(true);
       const guardada = await consultasService.registrarConsulta(payload);
       setExito(guardada);
+      setNotificacion({ tipo: 'exito', mensaje: 'Consulta médica registrada correctamente.' });
 
-      const nuevoHistorial = await consultasService.getHistorialMascota(citaSeleccionada.idMascota);
-      setHistorial(nuevoHistorial);
+      try {
+        const nuevoHistorial = await consultasService.getHistorialMascota(citaSeleccionada.idMascota);
+        setHistorial(Array.isArray(nuevoHistorial) ? nuevoHistorial : []);
+      } catch {
+        setError('La consulta se guardó, pero no se pudo actualizar el historial.');
+      }
     } catch (err) {
       setError(err.message || 'No fue posible registrar la consulta.');
+      setNotificacion({ tipo: 'error', mensaje: err.message || 'No fue posible registrar la consulta.' });
     } finally {
       setGuardando(false);
     }
@@ -252,6 +275,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
         prev.filter((c) => c.idCita !== citaSeleccionada.idCita)
       );
 
+      setNotificacion({ tipo: 'exito', mensaje: 'Consulta finalizada correctamente.' });
       setMensajeFinalizacion(
         `La consulta de ${mascota?.nombre || 'la mascota'} fue finalizada. ` +
         'La cita ahora está Atendida.'
@@ -264,6 +288,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
 
     } catch (err) {
       setError(err.message || 'No se pudo finalizar la consulta.');
+      setNotificacion({ tipo: 'error', mensaje: err.message || 'No se pudo finalizar la consulta.' });
     } finally {
       setGuardando(false);
     }
@@ -292,6 +317,22 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
         }
         .consulta-datos-bloqueados .input-group-vet label { color: #64748b; }
       `}</style>
+      {notificacion && (
+        <div role="alert" aria-live="assertive" style={{
+          position: 'fixed', top: 20, right: 20, zIndex: 9999,
+          maxWidth: 380, padding: '16px 20px', borderRadius: 12,
+          background: notificacion.tipo === 'exito' ? '#dcfce7' : '#fee2e2',
+          color: notificacion.tipo === 'exito' ? '#166534' : '#991b1b',
+          border: `1px solid ${notificacion.tipo === 'exito' ? '#86efac' : '#fca5a5'}`,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.15)', display: 'flex', gap: 12,
+          alignItems: 'flex-start'
+        }}>
+          <span>{notificacion.tipo === 'exito' ? '✓' : '⚠️'} {notificacion.mensaje}</span>
+          <button type="button" aria-label="Cerrar notificación"
+            onClick={() => setNotificacion(null)}
+            style={{ border: 0, background: 'transparent', cursor: 'pointer', fontSize: 18 }}>×</button>
+        </div>
+      )}
       <div className="cita-page-header">
         <div>
           <div className="cita-breadcrumb">
@@ -307,6 +348,15 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
         <div className="alert-banner-success">✓ {mensajeVacunacion}</div>
       )}
       {error && <div className="alert-banner-danger">⚠️ {error}</div>}
+      {citaSeleccionada &&
+  citaSeleccionada.estado !== 'En Consulta' &&
+  !consultaRegistrada && (
+    <div className="alert-banner-danger">
+      ⚠️ El paciente todavía no está en consulta.
+      Primero debes llamar al paciente desde la sala de espera
+      para poder registrar su consulta médica.
+    </div>
+)}
       {mensajeFinalizacion && (
       <div className="alert-banner-success">
         ✓ {mensajeFinalizacion}
@@ -617,10 +667,7 @@ export default function RegistrarConsultaPage({ citaInicial = null, onVolver, on
                     <button
                       type="submit"
                       className="btn-confirm-save"
-                      disabled={
-                        guardando ||
-                        citaSeleccionada?.estado !== 'En Consulta'
-                      }
+                      disabled={guardando}
                     >
                       {guardando
                         ? 'Guardando en PostgreSQL...'
